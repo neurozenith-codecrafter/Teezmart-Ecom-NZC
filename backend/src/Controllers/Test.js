@@ -1,29 +1,39 @@
 const User = require("../Models/UserSchema");
 
 const TestController = async (req, res) => {
-
   try {
+    const { name, email, phone } = req.body;
 
-    // Extracts the input fields from the request body
-    const { name, email, phone, password } = req.body;
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
 
-    // Validates the input fields
-    if (!name || !email || !phone || !password) return res.status(400).json({ success: false, message: "All fields are required" });
+    const existingUser = await User.findOne({ email });
 
-    // Store only after validation success
-    else User.create({ name, email, phone, password });  
-    
-    // Respond with success message and the stored data
-    res.status(200).json({ success: true, message: "Test successful", data: { name, email, phone, password } });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
 
+    const user = await User.create({ name, email, phone });
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: user,
+    });
   } catch (error) {
-
-    // Handle any unexpected errors
-    res.status(500).json({ success: false, message: "Test failed", error: error.message });
-
+    res.status(500).json({
+      success: false,
+      message: "Test failed",
+      error: error.message,
+    });
   }
-}
+};
 
-module.exports = {
-  TestController
-}
+module.exports = { TestController };
