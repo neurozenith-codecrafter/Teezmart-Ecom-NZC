@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
+    googleId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
     name: {
       type: String,
       required: true,
@@ -11,23 +16,21 @@ const userSchema = new mongoose.Schema(
 
     phone: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
     },
 
     email: {
       type: String,
       unique: true,
-      sparse: true,
+      required: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Invalid email"],
     },
 
-    password: {
+    avatar: {
       type: String,
-      required: true,
-      select: false,
     },
 
     role: {
@@ -36,9 +39,13 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    isVerified: {
+    isActive: {
       type: Boolean,
-      default: false,
+      default: true,
+    },
+
+    lastLogin: {
+      type: Date,
     },
 
     addresses: [
@@ -55,14 +62,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-
-  this.password = await bcrypt.hash(this.password, 10);
-});
-
-userSchema.methods.comparePassword = async (enteredPassword) => {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
