@@ -10,6 +10,7 @@ const {
 } = require("../Controllers/ProductControllers/getRoutes.js");
 
 const { createProduct } = require("../Controllers/ProductControllers/postRoutes.js");
+const upload = require("../Middleware/upload.js");
 
 const router = express.Router();
 
@@ -39,6 +40,6 @@ router.get("/:id/suggestions", getProductSuggestions);
 // POST /api/products
 
 // `POST /api/products` - Create a new product (admin use)
-router.post("/", createProduct);
+router.post("/add", upload.array("images", 5), createProduct);
 
 module.exports = router;
