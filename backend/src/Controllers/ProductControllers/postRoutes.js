@@ -1,73 +1,122 @@
-const Product = require("../../Models/ProductSchema");
-
 // Controller to create a new product (for admin use)
+
+const Product = require("../../Models/ProductSchema");
+const cloudinary = require("../../Config/Cloudinary");
+const streamifier = require("streamifier");
+const slugify = require("slugify");
+const { CATEGORIES } = require("../../Constants/constant.js");
+
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "products",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
+const normalizeCategory = (value) =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
 const createProduct = async (req, res) => {
   try {
+    let { title, description, price, discountPrice, category } = req.body;
 
-    let { title, description, price, discountPrice, category, images } = req.body;
-
-    // Trim strings
-    title = title?.trim();
-    description = description?.trim();
-    category = category?.trim();
-
-    // Validation
-    if (!title || !description || !category) {
+    // 🔥 Validate title
+    if (!title || title.trim().length === 0 || title.length > 120) {
       return res.status(400).json({
         success: false,
-        message: "Title, description, and category are required",
+        message: "Title is required and must be < 120 chars",
       });
     }
 
-    // Validate price and discountPrice
-    if (!price || isNaN(price) || price <= 0) {
+    // 🔥 Generate slug
+    const slug = slugify(title, { lower: true });
+
+    // 🔥 Validate description
+    if (!description || description.trim().length === 0 || description.length > 2000) {
       return res.status(400).json({
         success: false,
-        message: "Valid price is required",
+        message: "Description must be < 2000 chars",
       });
     }
 
-    // Discount price is validated over actual price
-    if (discountPrice && discountPrice >= price) {
+    // 🔥 Parse numbers
+    price = Number(price);
+    discountPrice = discountPrice ? Number(discountPrice) : undefined;
+
+    if (isNaN(price) || price <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Discount price must be less than actual price",
+        message: "Invalid price",
       });
     }
 
-    // Validate images array
-    if (!images || !Array.isArray(images) || images.length === 0) {
+    if (discountPrice && (isNaN(discountPrice) || discountPrice >= price)) {
       return res.status(400).json({
         success: false,
-        message: "At least one image is required",
+        message: "Invalid discount price",
       });
     }
 
-    // Create product
+    // 🔥 Normalize category
+    const normalizedCategory = normalizeCategory(category);
+
+    if (!CATEGORIES.includes(normalizedCategory)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category",
+      });
+    }
+
+    // 🔥 Validate images
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one image required",
+      });
+    }
+
+    // 🔥 Upload images
+    const uploadPromises = req.files.map((file) =>
+      uploadToCloudinary(file.buffer)
+    );
+
+    const results = await Promise.all(uploadPromises);
+
+    const images = results.map((img) => ({
+      url: img.secure_url,
+      public_id: img.public_id,
+    }));
+
     const product = await Product.create({
-      title,
-      description,
+      title: title.trim(),
+      slug,
+      description: description.trim(),
       price,
       discountPrice,
-      category,
+      category: normalizedCategory,
       images,
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
-      message: "Product created successfully",
       data: product,
     });
 
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Failed to create product",
-      error: error.message,
+      message: error.message,
     });
   }
 };
 
-module.exports = {
-  createProduct,
-}
+module.exports = { createProduct };

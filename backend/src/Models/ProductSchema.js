@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { CATEGORIES } = require("../Constants/constant.js");
 
 const productSchema = new mongoose.Schema(
   {
@@ -6,33 +7,54 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 120,
+    },
+
+    slug: {
+      type: String,
+      unique: true,
     },
 
     description: {
       type: String,
+      maxlength: 2000,
     },
 
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     discountPrice: {
       type: Number,
+      validate: {
+        validator: function (value) {
+          return value < this.price;
+        },
+        message: "Discount price must be less than price",
+      },
     },
 
-    // T-Shirt or Tracks
     category: {
       type: String,
+      enum: CATEGORIES,
       required: true,
+      lowercase: true, // optional but useful
+      trim: true,
     },
 
-    // Array of image URLs for the product, URLs will be stored as strings, URLs are getting from cloudinary after uploading the images
     images: [
       {
-        url: String,
-        public_id: String
-      }
+        url: {
+          type: String,
+          required: true,
+        },
+        public_id: {
+          type: String,
+          required: true,
+        },
+      },
     ],
 
     salesCount: {
@@ -40,19 +62,19 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // Stores the average rating of the product based on user reviews
     rating: {
       type: Number,
       default: 0,
+      min: 0,
+      max: 5,
+      set: (val) => Math.round(val * 10) / 10, // 4.3 format
     },
 
-    // Stores the total number of reviews for the product
     numReviews: {
       type: Number,
       default: 0,
     },
 
-    // Stores the breakdown of ratings (1 to 5 stars) for the product
     ratingsBreakdown: {
       1: { type: Number, default: 0 },
       2: { type: Number, default: 0 },
@@ -61,7 +83,12 @@ const productSchema = new mongoose.Schema(
       5: { type: Number, default: 0 },
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
+
+productSchema.index({ price: 1 });
+productSchema.index({ rating: -1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ salesCount: -1 });
 
 module.exports = mongoose.model("Product", productSchema);
