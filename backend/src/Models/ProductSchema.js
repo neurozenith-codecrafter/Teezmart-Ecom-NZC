@@ -21,12 +21,24 @@ const productSchema = new mongoose.Schema(
       type: Number,
     },
 
+    // T-Shirt or Tracks
     category: {
       type: String,
       required: true,
     },
 
-    images: [String],
+    // Array of image URLs for the product, URLs will be stored as strings, URLs are getting from cloudinary after uploading the images
+    images: [
+      {
+        url: String,
+        public_id: String
+      }
+    ],
+
+    salesCount: {
+      type: Number,
+      default: 0,
+    },
 
     // Stores the average rating of the product based on user reviews
     rating: {
