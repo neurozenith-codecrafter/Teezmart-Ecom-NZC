@@ -8,13 +8,13 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
+import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(true);
 
   const lastScrollY = useRef(0);
-  const containerStyles = "max-w-[1700px] mx-auto px-4 md:px-8";
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -36,7 +36,7 @@ const Navbar = () => {
       {/* 1. TOP NAVBAR (Permanently Fixed) */}
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
         <div
-          className={`${containerStyles} h-[55px] md:h-[68px] flex items-center justify-between relative`}
+          className={`${PAGE_CONTAINER_CLASS} h-[55px] md:h-[68px] flex items-center justify-between relative`}
         >
           <div className="flex-1 flex justify-start">
             <button
@@ -75,7 +75,7 @@ const Navbar = () => {
         ${showBottomNav ? "top-[68px] opacity-100 translate-y-0" : "top-[10px] opacity-0 -translate-y-full pointer-events-none"}`}
       >
         <div
-          className={`${containerStyles} flex items-center justify-between h-[58px] gap-x-6`}
+          className={`${PAGE_CONTAINER_CLASS} flex items-center justify-between h-[58px] gap-x-6`}
         >
           <div className="flex items-center gap-x-3 shrink-0">
             <button className="flex items-center justify-between min-w-[145px] bg-[#f9f9f9] border border-[#f0f0f0] px-5 py-2.5 rounded-xl hover:bg-white transition-all cursor-pointer group">

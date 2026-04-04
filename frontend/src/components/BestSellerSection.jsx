@@ -1,5 +1,6 @@
 import React from "react";
 import { Heart, ChevronRight } from "lucide-react";
+import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 
 const products = [
   {
@@ -70,8 +71,8 @@ const products = [
 
 export const BestSellerSection = () => {
   return (
-    <main className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full">
-      <div className="w-full px-4 md:px-10 lg:px-20">
+    <section className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full">
+      <div className={PAGE_CONTAINER_CLASS}>
         {/* --- HEADER --- */}
         <div className="mb-8 md:mb-14 flex flex-col items-start">
           <div className="flex items-center gap-3 md:gap-4 w-full">
@@ -87,19 +88,15 @@ export const BestSellerSection = () => {
           {products.map((item) => (
             <div
               key={item.id}
-              /* CARD HOVER EFFECT:
-                - hover:scale-[1.02]: Fast zoom on the whole card
-                - hover:shadow-lg: Produces a soft shadow
-                - transition-all duration-200: Fast transition
-              */
-              className="group flex flex-col p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
+              className="group flex flex-col p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
             >
-              {/* IMAGE LAYOUT - Removed inner zoom/hover */}
+              {/* IMAGE LAYOUT - Optimized for Browser Zoom Fluidity */}
               <div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white">
                 <img
                   src={item.img}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  /* Added block and h-auto to ensure standard image scaling behavior alongside the aspect ratio div */
+                  className="block w-full h-full object-cover transition-transform duration-500 will-change-transform"
                 />
 
                 <button className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-slate-500 hover:text-red-500 transition-colors border border-white/50">
@@ -145,50 +142,8 @@ export const BestSellerSection = () => {
             </div>
           ))}
         </div>
-
-        {/* --- WHY US SECTION --- */}
-        <section className="pt-16 md:pt-20 border-t border-slate-200/60">
-          <div className="flex items-center gap-4 mb-8 md:mb-12">
-            <h2 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight whitespace-nowrap">
-              Why Us
-            </h2>
-            <div className="h-[1px] bg-slate-200 flex-grow"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {[
-              {
-                id: "01",
-                title: "Minimal Design",
-                desc: "Clean and modern styles that fit effortlessly.",
-              },
-              {
-                id: "02",
-                title: "Premium Quality",
-                desc: "High-quality fabrics with long-lasting comfort.",
-              },
-              {
-                id: "03",
-                title: "Trusted Brand",
-                desc: "Loved for our consistency and design.",
-              },
-            ].map((feature) => (
-              <div key={feature.id} className="space-y-2 md:space-y-4">
-                <span className="text-xs font-bold text-slate-400 block tracking-widest">
-                  {feature.id}
-                </span>
-                <h4 className="text-sm md:text-base font-bold text-slate-800 uppercase tracking-wide">
-                  {feature.title}
-                </h4>
-                <p className="text-xs md:text-[14px] leading-relaxed text-slate-500 font-normal">
-                  {feature.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
-    </main>
+    </section>
   );
 };
 
