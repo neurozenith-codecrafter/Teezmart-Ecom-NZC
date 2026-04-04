@@ -1,0 +1,71 @@
+const User = require("../../Models/UserSchema");
+
+
+const updateUserProfile = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account is deactivated",
+      });
+    }
+
+    const { name, phone, avatar, addresses } = req.body;
+
+    if (name !== undefined) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (avatar !== undefined) user.avatar = avatar;
+
+    // ✅ THIS WAS MISSING
+    if (addresses !== undefined) {
+      user.addresses = addresses;
+    }
+
+    await user.save();
+
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatar: user.avatar,
+      role: user.role,
+      addresses: user.addresses,
+      createdAt: user.createdAt,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: safeUser,
+    });
+
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number already in use",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
+};
+
+module.exports = {
+  updateUserProfile,
+};
