@@ -25,9 +25,21 @@ const updateUserProfile = async (req, res) => {
     if (phone !== undefined) user.phone = phone;
     if (avatar !== undefined) user.avatar = avatar;
 
-    // ✅ THIS WAS MISSING
+    // Validate addresses if provided
     if (addresses !== undefined) {
-      user.addresses = addresses;
+      if (!Array.isArray(addresses)) {
+        return res.status(400).json({
+          success: false,
+          message: "Addresses must be an array",
+        });
+      }
+
+      if (addresses.length > 5) {
+        return res.status(400).json({
+          success: false,
+          message: "You can add up to 5 addresses only",
+        });
+      }
     }
 
     await user.save();
