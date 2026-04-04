@@ -1,39 +1,60 @@
 import React from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <div className="relative h-[380px] md:h-[600px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100">
+    <div className="relative h-[380px] md:h-[580px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100">
+      {/* Background Image */}
       <img
         src="/bst4.jpg"
         alt="Hero"
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.5),transparent_75%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.4),transparent_80%)]" />
 
-      <div className="absolute top-8 left-6 md:top-12 md:left-12 max-w-sm md:max-w-xl text-white z-10">
-        <h1 className="text-[36px] md:text-[75px] font-bold mb-3 md:mb-5 tracking-tighter leading-[1.0] drop-shadow-xl">
-          TeezMartStyles.
+      {/* TOP-LEFT Content Block */}
+      <div className="absolute top-8 left-8 md:top-12 md:left-16 max-w-sm md:max-w-3xl text-white z-10">
+        <h1 className="text-[36px] md:text-[72px] font-light mb-2 md:mb-4 tracking-tight leading-[1.1] drop-shadow-lg">
+          TeezStyles.
         </h1>
-        <div className="flex items-start gap-3 opacity-95">
-          <span className="text-xl md:text-2xl mt-1 rotate-45">↘</span>
-          <p className="text-sm md:text-lg font-normal leading-snug drop-shadow-md max-w-[320px]">
-            Discover our wide ranging and timeless lifestyle products.
-          </p>
+        
+        <div className="flex items-center gap-2 md:gap-4 opacity-90 transform -translate-x-2">
+          <ArrowDownRight 
+            size={14} 
+            className="md:size-[26px] shrink-0 opacity-100 text-white transform -translate-y-[1px] md:-translate-y-[8px]" 
+            strokeWidth={2.5}
+          />
+          
+          <div className="text-sm md:text-base font-light leading-relaxed drop-shadow-md max-w-xs md:max-w-md">
+            <p className="block md:hidden uppercase tracking-[0.2em] text-[11px] font-medium">
+              Shop smart
+            </p>
+            <p className="hidden md:block">
+              Upgrade your wardrobe with tees that speak style. Pick your favourite stuff that matches your personal taste, style and suits your style.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-10">
-        <div className="flex items-center gap-3">
-          <button className="bg-white text-black px-10 md:px-14 py-4 rounded-full font-bold text-base md:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer">
-            Start shopping
-          </button>
-          <button className="bg-white text-black w-[55px] h-[55px] md:w-[60px] md:h-[60px] rounded-full flex items-center justify-center shadow-2xl hover:scale-105 transition-all cursor-pointer">
-            <ArrowUpRight size={24} />
-          </button>
-        </div>
-        <span className="text-white text-[11px] md:text-[12px] font-semibold tracking-[0.2em] uppercase drop-shadow-xl opacity-90">
+      {/* BOTTOM-CENTER CTA Block */}
+      <div className="absolute bottom-6 md:bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 z-10 w-full px-4">
+        
+        {/* COMPACT UNIFIED BUTTON: 
+            - Reduced horizontal padding (px-5 on mobile, md:px-8 on desktop)
+            - Gap kept tight for a unified look
+        */}
+        <button className="group flex items-center gap-2 bg-white text-black px-5 py-3 md:px-8 md:py-4 rounded-full font-medium shadow-xl hover:bg-black hover:text-white transition-all duration-300 cursor-pointer whitespace-nowrap">
+          <span className="text-sm md:text-lg">Start shopping</span>
+          
+          <ArrowUpRight 
+            size={18} 
+            className="md:size-[22px] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" 
+            strokeWidth={2.5}
+          />
+        </button>
+        
+        <span className="text-white text-[10px] md:text-[11px] font-light tracking-[0.3em] uppercase drop-shadow-xl opacity-80 cursor-pointer transition-all duration-300 hover:underline underline-offset-4 decoration-white decoration-1">
           Top Collection
         </span>
       </div>
