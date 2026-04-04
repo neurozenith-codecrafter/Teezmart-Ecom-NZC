@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
+import { BestSellerSection } from "../components/BestSellerSection";
 
 const containerStyles = "max-w-[1700px] mx-auto px-4 md:px-8";
 
@@ -13,6 +14,7 @@ const Home = () => {
           <HeroSection />
         </main>
       </div>
+      <BestSellerSection />
     </div>
   );
 };
