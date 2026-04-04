@@ -6,7 +6,7 @@ const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔥 1. Validate ObjectId
+    // 1. Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -14,7 +14,7 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-    // 🔥 2. Find product
+    // 2. Find product
     const product = await Product.findById(id);
 
     if (!product) {
@@ -24,7 +24,7 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-    // 🔥 3. Delete images safely
+    // 3. Delete images safely
     if (product.images?.length) {
       const deletePromises = product.images.map((img) =>
         cloudinary.uploader.destroy(img.public_id)
@@ -41,7 +41,7 @@ const deleteProduct = async (req, res) => {
       }
     }
 
-    // 🔥 4. Delete product
+    // 4. Delete product
     await Product.findByIdAndDelete(id);
 
     res.status(200).json({

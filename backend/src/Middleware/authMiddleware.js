@@ -25,7 +25,7 @@ exports.protect = async (req, res, next) => {
   }
 };
 
-// ✅ Scalable role middleware
+// Role-based access control middleware
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

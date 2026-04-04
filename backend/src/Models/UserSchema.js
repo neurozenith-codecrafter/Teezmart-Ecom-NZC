@@ -72,7 +72,15 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
 
-    addresses: [addressSchema],
+    addresses: {
+      type: [addressSchema],
+      validate: {
+        validator: function (val) {
+          return val.length <= 5; // max 5 addresses
+        },
+        message: "You can add up to 5 addresses only",
+      },
+    },
 
   },
   {

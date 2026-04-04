@@ -29,7 +29,7 @@ const createProduct = async (req, res) => {
   try {
     let { title, description, price, discountPrice, category } = req.body;
 
-    // 🔥 Validate title
+    // Validate title
     if (!title || title.trim().length === 0 || title.length > 120) {
       return res.status(400).json({
         success: false,
@@ -37,10 +37,10 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // 🔥 Generate slug
+    // Generate slug
     const slug = slugify(title, { lower: true });
 
-    // 🔥 Validate description
+    // Validate description
     if (!description || description.trim().length === 0 || description.length > 2000) {
       return res.status(400).json({
         success: false,
@@ -48,7 +48,7 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // 🔥 Parse numbers
+    // Parse numbers
     price = Number(price);
     discountPrice = discountPrice ? Number(discountPrice) : undefined;
 
@@ -66,7 +66,7 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // 🔥 Normalize category
+    // Normalize category
     const normalizedCategory = normalizeCategory(category);
 
     if (!CATEGORIES.includes(normalizedCategory)) {
@@ -76,7 +76,7 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // 🔥 Validate images
+    // Validate images
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
@@ -84,7 +84,7 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // 🔥 Upload images
+    // Upload images
     const uploadPromises = req.files.map((file) =>
       uploadToCloudinary(file.buffer)
     );
