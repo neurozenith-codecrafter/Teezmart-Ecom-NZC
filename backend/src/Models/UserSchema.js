@@ -88,6 +88,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+
+module.exports =
+mongoose.models.User || mongoose.model("User", userSchema);
 // // 🔒 Ensure only one default address
 // userSchema.pre("save", function (next) {
 //   if (this.addresses.length > 0) {
@@ -98,6 +101,3 @@ const userSchema = new mongoose.Schema(
 //   }
 //   next();
 // });
-
-module.exports =
-  mongoose.models.User || mongoose.model("User", userSchema);
