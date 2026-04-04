@@ -32,6 +32,8 @@ const Auth = () => {
 
       // Save user (IMPORTANT for UI)
       localStorage.setItem("user", JSON.stringify(data.user));
+      console.log("User authenticated:", data.user);
+      console.log("JWT token:", data.token);
 
       // Redirect
       navigate("/");
