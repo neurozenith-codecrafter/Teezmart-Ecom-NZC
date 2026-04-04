@@ -1,4 +1,4 @@
-const User = require("../../Models/ProductSchema");
+const User = require("../../Models/UserSchema");
 
 exports.getAllUsers = async (req, res) => {
   try {
