@@ -6,7 +6,7 @@ const HeroSection = () => {
     <div className="relative h-[380px] md:h-[580px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100">
       {/* Background Image */}
       <img
-        src="/bst4.jpg"
+        src="/bst4.jpg.jpeg"
         alt="Hero"
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -18,20 +18,22 @@ const HeroSection = () => {
         <h1 className="text-[36px] md:text-[72px] font-light mb-2 md:mb-4 tracking-tight leading-[1.1] drop-shadow-lg">
           TeezStyles.
         </h1>
-        
+
         <div className="flex items-center gap-2 md:gap-4 opacity-90 transform -translate-x-2">
-          <ArrowDownRight 
-            size={14} 
-            className="md:size-[26px] shrink-0 opacity-100 text-white transform -translate-y-[1px] md:-translate-y-[8px]" 
+          <ArrowDownRight
+            size={14}
+            className="md:size-[26px] shrink-0 opacity-100 text-white transform -translate-y-[1px] md:-translate-y-[8px]"
             strokeWidth={2.5}
           />
-          
+
           <div className="text-sm md:text-base font-light leading-relaxed drop-shadow-md max-w-xs md:max-w-md">
             <p className="block md:hidden uppercase tracking-[0.2em] text-[11px] font-medium">
               Shop smart
             </p>
             <p className="hidden md:block">
-              Upgrade your wardrobe with tees that speak style. Pick your favourite stuff that matches your personal taste, style and suits your style.
+              Upgrade your wardrobe with tees that speak style. Pick your
+              favourite stuff that matches your personal taste, style and suits
+              your style.
             </p>
           </div>
         </div>
@@ -39,21 +41,20 @@ const HeroSection = () => {
 
       {/* BOTTOM-CENTER CTA Block */}
       <div className="absolute bottom-6 md:bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 z-10 w-full px-4">
-        
         {/* COMPACT UNIFIED BUTTON: 
             - Reduced horizontal padding (px-5 on mobile, md:px-8 on desktop)
             - Gap kept tight for a unified look
         */}
         <button className="group flex items-center gap-2 bg-white text-black px-5 py-3 md:px-8 md:py-4 rounded-full font-medium shadow-xl hover:bg-black hover:text-white transition-all duration-300 cursor-pointer whitespace-nowrap">
           <span className="text-sm md:text-lg">Start shopping</span>
-          
-          <ArrowUpRight 
-            size={18} 
-            className="md:size-[22px] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" 
+
+          <ArrowUpRight
+            size={18}
+            className="md:size-[22px] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
             strokeWidth={2.5}
           />
         </button>
-        
+
         <span className="text-white text-[10px] md:text-[11px] font-light tracking-[0.3em] uppercase drop-shadow-xl opacity-80 cursor-pointer transition-all duration-300 hover:underline underline-offset-4 decoration-white decoration-1">
           Top Collection
         </span>

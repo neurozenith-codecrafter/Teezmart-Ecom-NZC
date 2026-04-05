@@ -25,16 +25,10 @@ const whyUsData = [
 
 export const WhyUsSection = () => {
   return (
-    /* Matching the background tone and vertical rhythm (py-20) 
-       of the BestSellerSection for a seamless transition.
-    */
     <section className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full border-t border-slate-100">
       <div className={PAGE_CONTAINER_CLASS}>
-        {/* --- SECTION HEADER --- 
-            Maintains the same "Line-through" or "Left-aligned" logic 
-            used in your Best Seller header for visual brand identity.
-        */}
-        <div className="mb-12 md:mb-16 flex flex-col items-start">
+        {/* --- SECTION HEADER --- */}
+        <div className="mb-10 md:mb-14 flex flex-col items-start">
           <div className="flex items-center gap-3 md:gap-4 w-full">
             <h2 className="text-xl md:text-3xl font-normal text-slate-800 tracking-tight whitespace-nowrap">
               Why Us
@@ -43,27 +37,37 @@ export const WhyUsSection = () => {
           </div>
         </div>
 
-        {/* --- FEATURES GRID --- 
-            3 columns on desktop, stacked on mobile.
-            Clean, balanced spacing (gap-8).
+        {/* --- BRAND STORY PARAGRAPH --- 
+            FIXED: Added 'md:border-2 md:border-dotted md:border-slate-200' 
+            Added 'md:rounded-[2.5rem]' and 'md:bg-white/40' for a premium look
         */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+        <div className="mb-12 md:mb-24 max-w-5xl mx-auto md:p-12 md:border-2 md:border-dotted md:border-slate-200 md:rounded-[3rem] md:bg-white/40 transition-all duration-300 hover:border-slate-300">
+          <p className="text-[15px] md:text-lg text-slate-600 font-light leading-relaxed italic opacity-90 text-justify md:text-center [hyphens:auto] px-2 md:px-0">
+            "At TeezMart, we don’t just make t-shirts — we craft oversized
+            comfort with attitude. Our collections are designed for those who
+            love to stand out, offering a wide range of unique styles from
+            minimal aesthetics to bold streetwear statements. Every piece is
+            made using premium-quality fabrics that feel soft, breathable, and
+            incredibly comfortable for all-day wear. We focus on delivering the
+            perfect blend of durability and style, ensuring that your tee looks
+            fresh even after multiple washes. And the best part? You get all of
+            this at prices that don’t burn your wallet, because great fashion
+            should be accessible to everyone. So go ahead, pick your vibe, wear
+            it loud, and let your tee do the talking."
+          </p>
+        </div>
+
+        {/* --- FEATURES GRID (Hidden on Mobile) --- */}
+        <div className="hidden md:grid grid-cols-3 gap-8 md:gap-10">
           {whyUsData.map(({ id, title, desc, Icon }) => (
             <div
               key={id}
-              /* HOVER INTERACTION:
-                 - Slight upward move: -translate-y-1
-                 - Soft shadow enhancement
-                 - Fast, snappy transition (duration-200)
-              */
               className="group flex flex-col items-center text-center p-8 md:p-10 bg-white rounded-2xl md:rounded-[2rem] border border-slate-100/50 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
             >
-              {/* ICON BLOCK: Slightly larger, minimal, and modern */}
               <div className="mb-6 flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-50 text-slate-700 transition-colors duration-200 group-hover:bg-slate-900 group-hover:text-white">
                 <Icon size={28} strokeWidth={1.5} />
               </div>
 
-              {/* TEXT CONTENT: Clean font and subtle hierarchy */}
               <div className="space-y-3">
                 <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">
                   {title}
