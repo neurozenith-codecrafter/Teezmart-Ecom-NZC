@@ -71,7 +71,8 @@ const products = [
 
 export const BestSellerSection = () => {
   return (
-    <section className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full">
+    /* FIXED: Removed padding-bottom (pb-0) and border-bottom */
+    <section className="bg-[#FBFBFB] pt-12 md:pt-20 pb-0 text-slate-900 font-sans w-full">
       <div className={PAGE_CONTAINER_CLASS}>
         {/* --- HEADER --- */}
         <div className="mb-8 md:mb-14 flex flex-col items-start">
@@ -83,28 +84,26 @@ export const BestSellerSection = () => {
           </div>
         </div>
 
-        {/* --- PRODUCT GRID --- */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-10 md:gap-y-16 mb-24 md:mb-32">
+        {/* --- PRODUCT GRID --- 
+            FIXED: Removed margin-bottom (mb-0)
+        */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-10 md:gap-y-16 mb-0">
           {products.map((item) => (
             <div
               key={item.id}
               className="group flex flex-col p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
             >
-              {/* IMAGE LAYOUT - Optimized for Browser Zoom Fluidity */}
               <div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white">
                 <img
                   src={item.img}
                   alt={item.name}
-                  /* Added block and h-auto to ensure standard image scaling behavior alongside the aspect ratio div */
                   className="block w-full h-full object-cover transition-transform duration-500 will-change-transform"
                 />
-
                 <button className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-slate-500 hover:text-red-500 transition-colors border border-white/50">
                   <Heart size={14} className="md:size-[18px]" strokeWidth={2} />
                 </button>
               </div>
 
-              {/* DETAILS BLOCK */}
               <div className="flex flex-col space-y-1.5 md:space-y-3 px-1">
                 <h3 className="text-sm md:text-lg font-bold text-slate-800 leading-tight line-clamp-1">
                   {item.name}
@@ -112,7 +111,6 @@ export const BestSellerSection = () => {
                 <p className="hidden sm:block text-[11px] md:text-[13px] text-slate-500 leading-relaxed font-medium line-clamp-2">
                   {item.desc}
                 </p>
-
                 <div className="flex items-center gap-1.5">
                   {item.colors.map((color, idx) => (
                     <div
@@ -122,15 +120,12 @@ export const BestSellerSection = () => {
                     />
                   ))}
                 </div>
-
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 gap-2 mt-auto">
                   <span className="text-base md:text-2xl font-bold text-slate-900">
                     ${item.price}
                   </span>
-
                   <button className="w-full sm:w-auto flex items-center justify-center gap-1 bg-gradient-to-r from-[#32F18F] to-[#3AF6C9] text-slate-900 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-[12px] shadow-sm active:scale-95 transition-all">
-                    Add
-                    <span className="hidden md:inline"> to cart</span>
+                    Add <span className="hidden md:inline">to cart</span>
                     <ChevronRight
                       size={12}
                       className="md:size-[14px]"

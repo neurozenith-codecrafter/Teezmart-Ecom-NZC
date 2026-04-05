@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import { BestSellerSection } from "../components/BestSellerSection";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { WhyUsSection } from "../components/WhyUsSection";
 
 const Home = () => {
   return (
@@ -14,6 +15,7 @@ const Home = () => {
             <HeroSection />
           </div>
           <BestSellerSection />
+          <WhyUsSection />
         </main>
       </div>
     </div>
