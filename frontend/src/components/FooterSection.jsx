@@ -1,150 +1,216 @@
 import React from "react";
-import { Instagram, Youtube, ArrowRight } from "lucide-react";
+import { Mail, MapPin, PhoneCall } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 
 const FooterSection = () => {
   return (
-    <footer className="bg-[#FBFBFB] pt-20 pb-10 text-slate-900 font-sans w-full border-t border-slate-100">
+    /* PREMIUM BG: Added a linear gradient from zinc-50 to slate-50.
+       This matches the "clean room" aesthetic of your product cards.
+    */
+    <footer className="relative bg-gradient-to-b from-white via-zinc-50 to-slate-100 pt-24 pb-12 text-slate-900 font-sans w-full border-t border-slate-200/50">
+      {/* Decorative top glow to blend with previous sections */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#32F18F]/20 to-transparent" />
+
       <div className={PAGE_CONTAINER_CLASS}>
-        {/* --- TOP SECTION: BRAND & NEWSLETTER --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
-          {/* Brand Identity Block */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tighter text-slate-900">
-              TeezMart<span className="text-[#32F18F]">.</span>
-            </h2>
-            <p className="text-slate-500 text-sm md:text-base leading-relaxed max-w-sm">
-              Crafting oversized comfort with attitude. Join our community and
-              stay updated on our latest streetwear drops and minimal
-              essentials.
-            </p>
-            {/* Social Links - Cleaned to Instagram and YouTube */}
-            <div className="flex gap-5 text-slate-400">
-              <Instagram
-                size={20}
-                className="hover:text-slate-900 cursor-pointer transition-colors"
-              />
-              <Youtube
-                size={20}
-                className="hover:text-slate-900 cursor-pointer transition-colors"
-              />
+        {/* --- MAIN FOOTER GRID --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-24">
+          {/* Column 1: Brand & Social */}
+          <div className="space-y-8 flex flex-col items-start">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold tracking-tighter text-slate-950">
+                TeezMart<span className="text-[#32F18F]">.</span>
+              </h2>
+              <p className="text-slate-500 text-sm leading-relaxed max-w-sm font-medium">
+                At TeezMart, we don’t just make t-shirts — we craft oversized
+                comfort with attitude. Premium fabrics, unique vibes.
+              </p>
+            </div>
+
+            {/* Social Icons - Raw SVGs */}
+            <div className="flex gap-6 text-slate-400">
+              <a
+                href="#"
+                className="hover:text-slate-950 hover:scale-110 transition-all duration-300"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="hover:text-slate-950 hover:scale-110 transition-all duration-300"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="hover:text-slate-950 hover:scale-110 transition-all duration-300"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="hover:text-slate-950 hover:scale-110 transition-all duration-300"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.9.9L22 4z"></path>
+                </svg>
+              </a>
             </div>
           </div>
 
-          {/* Premium Newsletter Input */}
+          {/* Column 2: Quick Links */}
           <div className="space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-slate-800">
-              Newsletter
-            </h3>
-            <div className="relative max-w-md group">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full bg-transparent border-b border-slate-200 py-3 pr-12 focus:outline-none focus:border-slate-900 transition-colors text-sm placeholder:text-slate-300"
-              />
-              <button className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-slate-400 group-hover:text-slate-900 transition-colors">
-                <ArrowRight size={18} strokeWidth={1.5} />
-              </button>
+            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
+              Navigation
+            </h4>
+            <ul className="text-sm text-slate-600 space-y-4 font-semibold">
+              {[
+                "About Us",
+                "New Arrivals",
+                "Best Sellers",
+                "Our Story",
+                "Careers",
+              ].map((link) => (
+                <li
+                  key={link}
+                  className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
+                >
+                  {link}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Collections */}
+          <div className="space-y-6">
+            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
+              Collections
+            </h4>
+            <ul className="text-sm text-slate-600 space-y-4 font-semibold">
+              {[
+                "Streetwear Drop",
+                "Minimalist Tech",
+                "Abstract Graphics",
+                "Essentials",
+                "Vintage Wash",
+              ].map((link) => (
+                <li
+                  key={link}
+                  className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
+                >
+                  {link}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Contact Details */}
+          <div className="space-y-6">
+            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
+              Contact Us
+            </h4>
+            <div className="space-y-5 pt-1">
+              <div className="flex items-start gap-4 group">
+                <MapPin
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
+                />
+                <span className="text-sm text-slate-600 font-medium leading-snug">
+                  75 TeezMart Blvd,
+                  <br />
+                  New York, NY 10001
+                </span>
+              </div>
+              <div className="flex items-center gap-4 group">
+                <Mail
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
+                />
+                <span className="text-sm text-slate-600 font-medium">
+                  care@teezmart.com
+                </span>
+              </div>
+              <div className="flex items-center gap-4 group">
+                <PhoneCall
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
+                />
+                <span className="text-sm text-slate-600 font-medium">
+                  +1 (555) 123-4567
+                </span>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-400 uppercase tracking-widest">
-              Get 10% off your first order.
-            </p>
           </div>
         </div>
 
-        {/* --- MIDDLE SECTION: QUICK LINKS --- */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-20 border-t border-slate-100 pt-16">
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900">
-              Shop
-            </h4>
-            <ul className="text-sm text-slate-500 space-y-2">
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Best Sellers
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                New Arrivals
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Streetwear
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Accessories
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900">
-              Information
-            </h4>
-            <ul className="text-sm text-slate-500 space-y-2">
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Our Story
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Sustainability
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Wholesale
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Careers
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900">
-              Support
-            </h4>
-            <ul className="text-sm text-slate-500 space-y-2">
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Shipping Policy
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Returns & Exchanges
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Size Guide
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Contact Us
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900">
-              Legal
-            </h4>
-            <ul className="text-sm text-slate-500 space-y-2">
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Privacy Policy
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Terms of Service
-              </li>
-              <li className="hover:text-slate-900 cursor-pointer transition-colors">
-                Cookie Settings
-              </li>
-            </ul>
-          </div>
-        </div>
+        {/* --- BOTTOM BAR: Copyright & Links --- */}
+        <div className="flex flex-col md:flex-row items-center justify-between pt-12 border-t border-slate-200/60 gap-8">
+          <p className="text-[10px] text-slate-400 font-bold tracking-[0.4em] uppercase">
+            © NeuroZenith 2026
+          </p>
 
-        {/* --- BOTTOM SECTION: COPYRIGHT --- */}
-        <div className="flex flex-col md:flex-row items-center justify-between pt-10 border-t border-slate-100 gap-6">
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="h-[1px] bg-slate-200 flex-grow w-12 md:hidden"></div>
-            <p className="text-[11px] text-slate-400 font-medium tracking-widest uppercase text-center">
-              © NeuroZenith 2026
-            </p>
-            <div className="h-[1px] bg-slate-200 flex-grow w-12 md:hidden"></div>
+          <div className="flex gap-8 text-[10px] text-slate-400 font-bold tracking-[0.3em] uppercase">
+            {["Terms", "Privacy", "Cookies"].map((link) => (
+              <span
+                key={link}
+                className="hover:text-slate-950 cursor-pointer transition-colors"
+              >
+                {link}
+              </span>
+            ))}
           </div>
 
-          <div className="flex gap-6 text-[11px] text-slate-400 font-medium tracking-widest uppercase">
-            <span className="hover:text-slate-900 cursor-pointer transition-colors italic">
-              Built for Comfort
-            </span>
-            <span className="hover:text-slate-900 cursor-pointer transition-colors italic">
-              Worn with Attitude
+          <div className="flex gap-4">
+            <div className="w-8 h-[1px] bg-slate-200"></div>
+            <span className="text-[10px] italic text-slate-400 font-medium">
+              Wear it loud.
             </span>
           </div>
         </div>
