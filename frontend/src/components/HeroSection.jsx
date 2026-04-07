@@ -1,15 +1,34 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const HeroSection = () => {
+
+  const [heroImage, setHeroImage] = useState("");
+
+  useEffect(() => {
+    const fetchHeroImage = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/products/hero-image");
+        const data = await response.json();
+        setHeroImage(data.data);
+      } catch (error) {
+        console.error("Error fetching hero image:", error);
+      }
+    };
+
+    fetchHeroImage();
+  }, []);
+
   return (
     <div className="relative h-[380px] md:h-[580px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100">
       {/* Background Image */}
+    
       <img
-        src="/bst4.jpg.jpeg"
-        alt="Hero"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+          src={heroImage}
+          alt="Hero"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
 
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.4),transparent_80%)]" />
 

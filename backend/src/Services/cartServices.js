@@ -149,7 +149,15 @@ exports.removeItem = async (userId, productId) => {
 
 exports.clearCart = async (userId) => {
   const cart = await Cart.findOne({ user: userId });
-  if (!cart) throw new Error("Cart not found");
+  if (!cart) {
+    // If no cart, create an empty one
+    const newCart = new Cart({
+      user: userId,
+      items: [],
+    });
+    await newCart.save();
+    return newCart;
+  }
 
   cart.items = [];
   cart.totalQuantity = 0;

@@ -7,6 +7,7 @@ const {
   getProductsByCategory,
   getRecommendedProducts,
   getProductSuggestions,
+  getHeroImage
 } = require("../Controllers/ProductControllers/getRoutes.js");
 
 
@@ -18,14 +19,16 @@ const router = express.Router();
 // `GET /api/products` - Fetch all products with new and top-rated sections
 router.get("/", getAllProducts);
 
-// `GET /api/products/:id` - Fetch product details by ID
-router.get("/:id", getProductById);
-
 // `GET /api/products?sort=most-reviewed` - Fetch products sorted by number of reviews
 router.get("/most-reviewed", getMostReviewedProducts);
 
 // `GET /api/products?sort=most-selling` - Fetch products sorted by sales count
 router.get("/most-selling", getMostSellingProducts);
+
+router.get("/hero-image", getHeroImage);
+
+// `GET /api/products/:id` - Fetch product details by ID
+router.get("/:id", getProductById);
 
 // `GET /api/products/category/:category` - Fetch products by category
 router.get("/category/:category", getProductsByCategory);

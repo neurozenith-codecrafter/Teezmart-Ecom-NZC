@@ -109,7 +109,7 @@ const getMostReviewedProducts = async (req, res) => {
   }
 };
 
-// `GET /api/products?sort=most-selling` - Fetch products sorted by sales count
+// `GET /api/products/most-selling` - Fetch products sorted by sales count
 const getMostSellingProducts = async (req, res) => {
   try {
     const products = await Product.find({})
@@ -263,6 +263,32 @@ const getProductSuggestions = async (req, res) => {
   }
 };
 
+const getHeroImage = async (req, res) => {
+  try {
+
+    const heroImage = await Product.findOne({title: "HeroImage"}).select("images");
+
+    if (!heroImage) {
+      return res.status(404).json({
+        success: false,
+        message: "Hero image not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Hero image fetched successfully",
+      data: heroImage.images[0].url, // Assuming you want to return the URL of the first image
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch hero image",
+      error: error.message,
+    });
+  } 
+}
 module.exports = {
   getAllProducts,
   getProductById,
@@ -271,4 +297,5 @@ module.exports = {
   getProductsByCategory,
   getRecommendedProducts,
   getProductSuggestions,
+  getHeroImage
 };
