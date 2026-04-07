@@ -1,6 +1,6 @@
 import React from "react";
 import { Sparkles, ShieldCheck, Tag } from "lucide-react";
-import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 const whyUsData = [
   {

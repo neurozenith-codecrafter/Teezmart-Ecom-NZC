@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Heart, ChevronRight } from "lucide-react";
-import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 // const products = [
 //   {
