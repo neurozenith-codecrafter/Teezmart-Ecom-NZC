@@ -8,7 +8,7 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, MapPin, PhoneCall } from "lucide-react";
-import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 const FooterSection = () => {
   return (

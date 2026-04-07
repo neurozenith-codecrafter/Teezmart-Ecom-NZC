@@ -1,10 +1,10 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import HeroSection from "../components/HeroSection";
-import { BestSellerSection } from "../components/BestSellerSection";
+import Navbar from "../components/HomepageComponents/Navbar";
+import HeroSection from "../components/HomepageComponents/HeroSection";
+import { BestSellerSection } from "../components/HomepageComponents/BestSellerSection";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
-import { WhyUsSection } from "../components/WhyUsSection";
-import FooterSection from "../components/FooterSection";
+import { WhyUsSection } from "../components/HomepageComponents/WhyUsSection";
+import FooterSection from "../components/HomepageComponents/FooterSection";
 
 const Home = () => {
   return (

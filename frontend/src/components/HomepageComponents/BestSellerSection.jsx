@@ -1,6 +1,6 @@
 import React from "react";
 import { Heart, ChevronRight } from "lucide-react";
-import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 const products = [
   {
