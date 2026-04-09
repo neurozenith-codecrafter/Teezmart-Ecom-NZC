@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import Navbar from "../components/Navbar";
+import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 
 const ProductPage = () => {
   const [selectedSize, setSelectedSize] = useState("S");
@@ -123,55 +124,7 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* --- BOTTOM: RATING ONLY SECTION --- */}
-          <section className="pt-20 border-t border-zinc-100 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-medium tracking-tight text-black mb-12 text-center lg:text-left">
-              Rating & Reviews
-            </h2>
-
-            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-24">
-              {/* Massive Score */}
-              <div className="flex flex-col items-center lg:items-start">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[100px] font-bold leading-none tracking-tighter">
-                    4,5
-                  </span>
-                  <span className="text-zinc-400 text-2xl">/5</span>
-                </div>
-                <span className="text-zinc-400 text-sm mt-4 font-medium uppercase tracking-widest">
-                  (50 New Reviews)
-                </span>
-              </div>
-
-              {/* Progress Bars */}
-              <div className="w-full max-w-md space-y-4 pt-4">
-                {[
-                  { star: 5, width: "w-full" },
-                  { star: 4, width: "w-1/4" },
-                  { star: 3, width: "w-[8%]" },
-                  { star: 2, width: "w-[4%]" },
-                  { star: 1, width: "w-[4%]" },
-                ].map((row) => (
-                  <div key={row.star} className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 w-8 shrink-0">
-                      <Star
-                        size={14}
-                        className="fill-amber-400 text-amber-400"
-                      />
-                      <span className="text-xs font-bold text-black">
-                        {row.star}
-                      </span>
-                    </div>
-                    <div className="flex-grow h-[2px] bg-zinc-100 relative overflow-hidden">
-                      <div
-                        className={`absolute top-0 left-0 h-full bg-black ${row.width} transition-all duration-1000 ease-out`}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+          <RatingSummary />
         </div>
       </main>
     </div>
