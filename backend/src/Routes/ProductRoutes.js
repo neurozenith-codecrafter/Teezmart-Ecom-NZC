@@ -6,8 +6,7 @@ const {
   getMostSellingProducts,
   getProductsByCategory,
   getRecommendedProducts,
-  getProductSuggestions,
-  getHeroImage
+  getProductSuggestions
 } = require("../Controllers/ProductControllers/getRoutes.js");
 
 
@@ -25,19 +24,17 @@ router.get("/most-reviewed", getMostReviewedProducts);
 // `GET /api/products?sort=most-selling` - Fetch products sorted by sales count
 router.get("/most-selling", getMostSellingProducts);
 
-router.get("/hero-image", getHeroImage);
-
-// `GET /api/products/:id` - Fetch product details by ID
-router.get("/:id", getProductById);
+// `GET /api/products/recommended` - Fetch recommended products based on rating and reviews for homepage (Top 10)
+router.get("/recommended", getRecommendedProducts);
 
 // `GET /api/products/category/:category` - Fetch products by category
 router.get("/category/:category", getProductsByCategory);
 
-// `GET /api/products/recommended` - Fetch recommended products based on rating and reviews for homepage (Top 10)
-router.get("/recommended", getRecommendedProducts);
-
 // `GET /api/products/:id/suggestions` - Fetch product suggestions based on a given product ID to show in the product details page
 router.get("/:id/suggestions", getProductSuggestions);
+
+// `GET /api/products/:id` - Fetch product details by ID
+router.get("/:id", getProductById);
 
 
 

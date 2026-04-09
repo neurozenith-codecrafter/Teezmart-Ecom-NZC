@@ -1,10 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./src/Routes/UserRoutes.js");
-const productRoutes = require("./src/Routes/productRoutes");
+const productRoutes = require("./src/Routes/ProductRoutes");
 const adminRoutes = require("./src/Routes/AdminRoutes/adminRoutes");
 const authRoutes = require("./src/Routes/authRoutes.js");
 const cartRoutes = require("./src/Routes/CartRoutes.js");
+const orderRoutes = require("./src/Routes/OrderRoute.js");
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/cart", cartRoutes);
+
+app.use("/api/orders", orderRoutes);
 
 // Default route to check if server is running
 app.get("/", (req, res) => {
