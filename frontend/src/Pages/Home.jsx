@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../components/HomepageComponents/Navbar";
+import Navbar from "../components/Navbar";
 import HeroSection from "../components/HomepageComponents/HeroSection";
 import { BestSellerSection } from "../components/HomepageComponents/BestSellerSection";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";

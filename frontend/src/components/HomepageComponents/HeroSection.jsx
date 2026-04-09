@@ -2,13 +2,12 @@ import React from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const HeroSection = () => {
-
   return (
     <div className="relative h-[380px] md:h-[580px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100">
       {/* Background Image */}
-    
+
       <img
-        src={"https://res.cloudinary.com/dnypxpkvl/image/upload/v1775539653/products/hnethockpbuzz2puyrvr.jpg"}
+        src="./bst4.jpg.jpeg"
         alt="Hero"
         className="absolute inset-0 w-full h-full object-cover"
       />
