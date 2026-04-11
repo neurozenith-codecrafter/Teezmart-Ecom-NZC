@@ -1,104 +1,42 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Heart, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
-// const products = [
-//   {
-//     id: 1,
-//     name: "Classic Oversized Tee",
-//     desc: "100% Organic Cotton Heavyweight Boxy Fit",
-//     price: 29,
-//     img: "https://i.pinimg.com/1200x/27/b5/a1/27b5a1602087a7113d58118e357bdc54.jpg",
-//     colors: ["#FFFFFF", "#000000", "#4A5568"],
-//   },
-//   {
-//     id: 2,
-//     name: "Minimal Logo Tee",
-//     desc: "Premium Pima Cotton with chest embroidery",
-//     price: 25,
-//     img: "https://i.pinimg.com/736x/8e/5c/d8/8e5cd80146b3c15908b8701b4b3d4875.jpg",
-//     colors: ["#000000", "#E2E8F0", "#2D3748"],
-//   },
-//   {
-//     id: 3,
-//     name: "Streetwear Graphic",
-//     desc: "Limited edition screen-print on vintage-wash",
-//     price: 35,
-//     img: "https://i.pinimg.com/1200x/97/af/c3/97afc3efa46ad27828d18fcfb6005673.jpg",
-//     colors: ["#1A202C", "#FFFFFF", "#718096"],
-//   },
-//   {
-//     id: 4,
-//     name: "Vintage Washed Tee",
-//     desc: "Sun-faded effect with distressed edges",
-//     price: 32,
-//     img: "https://i.pinimg.com/1200x/3a/7c/a4/3a7ca40c29b66e1abaa6bd3ac8dd252b.jpg",
-//     colors: ["#718096", "#2D3748", "#EDF2F7"],
-//   },
-//   {
-//     id: 5,
-//     name: "Anime Print Tee",
-//     desc: "High-definition DTG print on combed cotton",
-//     price: 30,
-//     img: "https://i.pinimg.com/1200x/98/be/39/98be394e8367b05a7ac2668f202f0ca1.jpg",
-//     colors: ["#FFFFFF", "#1A202C"],
-//   },
-//   {
-//     id: 6,
-//     name: "Plain Cotton Essential",
-//     desc: "Breathable daily driver, shrink-resistant",
-//     price: 20,
-//     img: "https://i.pinimg.com/1200x/33/48/26/33482684ade520220b9096a08f79bc14.jpg",
-//     colors: ["#F7FAFC", "#000000"],
-//   },
-//   {
-//     id: 7,
-//     name: "Premium Black Tee",
-//     desc: "Jet black reactive dye that stays dark",
-//     price: 28,
-//     img: "https://i.pinimg.com/1200x/39/3d/35/393d353825cfd8d2f0fa41c9ce3b68ef.jpg",
-//     colors: ["#000000", "#1A202C"],
-//   },
-//   {
-//     id: 8,
-//     name: "Relaxed Drop Shoulder",
-//     desc: "Modern silhouette with reinforced seams",
-//     price: 34,
-//     img: "https://i.pinimg.com/1200x/b6/59/11/b65911151ac5b605cbb505add20e9145.jpg",
-//     colors: ["#CBD5E0", "#000000", "#FFFFFF"],
-//   },
-// ];
-
-
-
 export const BestSellerSection = () => {
-
   const [bestSellers, setBestSellers] = useState([]);
+  // State to track liked products locally
+  const [likedProducts, setLikedProducts] = useState({});
 
   useEffect(() => {
-
     const fetchBestSellers = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/products/most-selling");
+        const response = await axios.get(
+          "http://localhost:5000/api/products/most-selling",
+        );
         setBestSellers(response.data.data);
-        console.log(response.message);
       } catch (error) {
         console.error("Error fetching best sellers:", error);
       }
     };
-
     fetchBestSellers();
-
   }, []);
 
+  const toggleLike = (e, productId) => {
+    // IMPORTANT: Prevents the click from bubbling up to the Link component
+    e.preventDefault();
+    e.stopPropagation();
+
+    setLikedProducts((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
+  };
+
   return (
-    /* FIXED: Removed padding-bottom (pb-0) and border-bottom */
     <section className="bg-[#FBFBFB] pt-12 md:pt-20 pb-0 text-slate-900 font-sans w-full">
       <div className={PAGE_CONTAINER_CLASS}>
-        {/* --- HEADER --- */}
         <div className="mb-8 md:mb-14 flex flex-col items-start">
           <div className="flex items-center gap-3 md:gap-4 w-full">
             <h2 className="text-xl md:text-3xl font-normal text-slate-800 tracking-tight whitespace-nowrap">
@@ -108,59 +46,74 @@ export const BestSellerSection = () => {
           </div>
         </div>
 
-        {/* --- PRODUCT GRID --- 
-            FIXED: Removed margin-bottom (mb-0)
-        */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-10 md:gap-y-16 mb-0">
-          {bestSellers.map((item) => (
-            <Link
-              to={`/product/${item._id}`}
-              key={item._id}
-              className="group flex flex-col p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
-            >
-              <div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white">
-                <img
-                  src={item.images[0].url}
-                  alt={item.title}
-                  className="block w-full h-full object-cover transition-transform duration-500 will-change-transform"
-                />
-                <button className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-slate-500 hover:text-red-500 transition-colors border border-white/50">
-                  <Heart size={14} className="md:size-[18px]" strokeWidth={2} />
-                </button>
-              </div>
+          {bestSellers.map((item) => {
+            const isLiked = likedProducts[item._id];
 
-              <div className="flex flex-col space-y-1.5 md:space-y-3 px-1">
-                <h3 className="text-sm md:text-lg font-bold text-slate-800 leading-tight line-clamp-1">
-                  {item.title}
-                </h3>
-                <p className="hidden sm:block text-[11px] md:text-[13px] text-slate-500 leading-relaxed font-medium line-clamp-2">
-                  {item.description}
-                </p>
-                {/* <div className="flex items-center gap-1.5">
-                  {item.colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className="w-3 h-3 md:w-4 md:h-4 rounded-full border border-slate-200"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div> */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 gap-2 mt-auto">
-                  <span className="text-base md:text-2xl font-bold text-slate-900">
-                    ₹{item.price}
-                  </span>
-                  <button className="w-full sm:w-auto flex items-center justify-center gap-1 bg-gradient-to-r from-[#32F18F] to-[#3AF6C9] text-slate-900 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-[12px] shadow-sm active:scale-95 transition-all">
-                    Add <span className="hidden md:inline">to cart</span>
-                    <ChevronRight
-                      size={12}
-                      className="md:size-[14px]"
-                      strokeWidth={3}
+            return (
+              <Link
+                to={`/product/${item._id}`}
+                key={item._id}
+                className="group flex flex-col h-full p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
+              >
+                {/* IMAGE CONTAINER */}
+                <div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white shrink-0">
+                  <img
+                    src={item.images[0].url}
+                    alt={item.title}
+                    className="block w-full h-full object-cover transition-transform duration-500 will-change-transform"
+                  />
+
+                  {/* WISHLIST BUTTON */}
+                  <button
+                    onClick={(e) => toggleLike(e, item._id)}
+                    className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm transition-all duration-300 border border-white/50 z-20 group/heart"
+                  >
+                    <Heart
+                      size={14}
+                      className={`md:size-[18px] transition-all duration-300 transform ${
+                        isLiked
+                          ? "fill-red-500 text-red-500 scale-110"
+                          : "text-slate-500 group-hover/heart:text-red-400"
+                      }`}
+                      strokeWidth={isLiked ? 0 : 2}
                     />
                   </button>
                 </div>
-              </div>
-            </Link>
-          ))}
+
+                {/* DETAILS BLOCK */}
+                <div className="flex flex-col flex-grow space-y-1.5 md:space-y-3 px-1">
+                  <h3 className="text-sm md:text-lg font-bold text-slate-800 leading-tight line-clamp-1">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-[11px] md:text-[13px] text-slate-500 leading-relaxed font-medium line-clamp-1 h-[1.2em]">
+                    {item.description}
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 gap-2 mt-auto">
+                    <span className="text-base md:text-2xl font-bold text-slate-900 whitespace-nowrap">
+                      ₹{item.price}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevents nav if you just want to add to cart
+                        console.log("Added to cart");
+                      }}
+                      className="w-full sm:w-auto flex items-center justify-center gap-1 bg-gradient-to-r from-[#32F18F] to-[#3AF6C9] text-slate-900 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-[12px] shadow-sm active:scale-95 transition-all"
+                    >
+                      Add <span className="hidden md:inline">to cart</span>
+                      <ChevronRight
+                        size={12}
+                        className="md:size-[14px]"
+                        strokeWidth={3}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
