@@ -52,7 +52,7 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
 
   // 🔹 4. Check if item already exists
   const existingItem = cart.items.find(
-    (item) => item.product.toString() === productId
+    (item) => item.product.toString() === productId && item.size === size
   );
 
   if (existingItem) {
@@ -68,6 +68,7 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
       name: product.title,                // snapshot
       image: product.images?.[0]?.url,    // snapshot
       price: product.price,               // snapshot
+      size,
       quantity,
       totalItemPrice: product.price * quantity,
     });
@@ -111,7 +112,7 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   if (!cart) throw new Error("Cart not found");
 
   const item = cart.items.find(
-    (i) => i.product.toString() === productId
+    (i) => i.product.toString() === productId && i.size === size
   );
 
   if (!item) throw new Error("Item not found in cart");
@@ -119,7 +120,7 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   if (quantity === 0) {
     // remove item
     cart.items = cart.items.filter(
-      (i) => i.product.toString() !== productId
+      (i) => !(i.product.toString() === productId && i.size === size)
     );
   } else {
     item.quantity = quantity;
@@ -133,12 +134,12 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   return cart;
 };
 
-exports.removeItem = async (userId, productId) => {
+exports.removeItem = async (userId, productId, size) => {
   const cart = await Cart.findOne({ user: userId });
   if (!cart) throw new Error("Cart not found");
 
   cart.items = cart.items.filter(
-    (item) => item.product.toString() !== productId
+    (item) => !(item.product.toString() === productId && item.size === size)
   );
 
   recalculateCart(cart);

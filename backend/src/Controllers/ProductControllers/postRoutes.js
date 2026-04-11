@@ -27,7 +27,7 @@ const normalizeCategory = (value) =>
 
 const createProduct = async (req, res) => {
   try {
-    let { title, description, price, discountPrice, category } = req.body;
+    let { title, description, price, discountPrice, category, sizes } = req.body;
 
     // Validate title
     if (!title || title.trim().length === 0 || title.length > 120) {
@@ -103,6 +103,7 @@ const createProduct = async (req, res) => {
       price,
       discountPrice,
       category: normalizedCategory,
+      sizes: sizes ? (Array.isArray(sizes) ? sizes : [sizes]) : undefined,
       images,
     });
 

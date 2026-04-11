@@ -77,7 +77,8 @@ exports.removeItem = async (req, res) => {
   try {
     const cart = await cartService.removeItem(
       req.user.id,
-      req.params.productId
+      req.params.productId,
+      req.query.size || req.body.size
     );
 
     res.json({
