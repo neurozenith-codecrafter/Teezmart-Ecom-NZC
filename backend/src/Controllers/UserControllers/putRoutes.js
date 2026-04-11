@@ -40,8 +40,22 @@ const updateUserProfile = async (req, res) => {
           message: "You can add up to 5 addresses only",
         });
       }
-    }
 
+      const defaultCount = addresses.filter(addr => addr.isDefault).length;
+
+      if (defaultCount > 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Only one address can be default",
+        });
+      }
+
+      if (defaultCount === 0 && addresses.length > 0) {
+        addresses[0].isDefault = true;
+      }
+
+      user.addresses = addresses; // 🔥 critical line
+    }
     await user.save();
 
     const safeUser = {

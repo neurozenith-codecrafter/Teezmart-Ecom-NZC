@@ -12,8 +12,8 @@ router.use(protect);
 router.get("/", authorizeRoles("admin", "devAdmin"), getAllUsers);
 router.get("/:id", authorizeRoles("admin", "devAdmin"), getUserById);
 
-router.put("/:id/role", authorizeRoles("devAdmin"), updateUserRole)
 router.delete("/:id", authorizeRoles("devAdmin"), deleteUser)
+router.put("/:id/role", authorizeRoles("devAdmin"), updateUserRole)
 
 
 module.exports = router;

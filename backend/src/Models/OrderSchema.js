@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ORDER_STATUSES } = require("../Constants/constant");
 
 const orderItemSchema = new mongoose.Schema(
   {
@@ -9,8 +10,8 @@ const orderItemSchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     image: { type: String, required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true }
+    price: { type: Number, required: true, min: 0 },
+    quantity: { type: Number, required: true, min: 1 }
   },
   { _id: false }
 );
@@ -22,7 +23,7 @@ const shippingAddressSchema = new mongoose.Schema(
     addressLine: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    postalCode: { type: String, required: true },
+    pincode: { type: String, required: true },
     country: { type: String, required: true }
   },
   { _id: false }
@@ -38,6 +39,7 @@ const orderSchema = new mongoose.Schema(
 
     items: {
       type: [orderItemSchema],
+      required: true,
       validate: [(val) => val.length > 0, "Order must have at least one item"]
     },
 
@@ -46,31 +48,30 @@ const orderSchema = new mongoose.Schema(
       required: true
     },
 
-    payment: {
-      method: { type: String, default: "COD" },
-      status: { type: String, default: "pending" }
+    status: {
+      type: String,
+      enum: ORDER_STATUSES,
+      default: "order placed"
     },
 
-    delivery: {
-      type: {
-        type: String,
-        default: "standard"
-      },
-      status: {
-        type: String,
-        enum: ["processing", "shipped", "delivered"],
-        default: "processing"
-      }
+    shippedAt: {
+      type: Date,
+      default: null
+    },
+
+    deliveredAt: {
+      type: Date,
+      default: null
     },
 
     pricing: {
-      subtotal: { type: Number, required: true },
+      subtotal: { type: Number, required: true, min: 0 },
       shippingFee: { type: Number, default: 0 },
-      tax: { type: Number, default: 0 },
-      total: { type: Number, required: true }
+      total: { type: Number, required: true, min: 0 }
     }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Order", orderSchema);
+module.exports =
+  mongoose.models.Order || mongoose.model("Order", orderSchema);
