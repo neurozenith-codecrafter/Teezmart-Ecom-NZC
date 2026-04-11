@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Heart, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 // const products = [
@@ -112,7 +113,8 @@ export const BestSellerSection = () => {
         */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-10 md:gap-y-16 mb-0">
           {bestSellers.map((item) => (
-            <div
+            <Link
+              to={`/product/${item._id}`}
               key={item._id}
               className="group flex flex-col p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
             >
@@ -145,7 +147,7 @@ export const BestSellerSection = () => {
                 </div> */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 gap-2 mt-auto">
                   <span className="text-base md:text-2xl font-bold text-slate-900">
-                    ${item.price}
+                    ₹{item.price}
                   </span>
                   <button className="w-full sm:w-auto flex items-center justify-center gap-1 bg-gradient-to-r from-[#32F18F] to-[#3AF6C9] text-slate-900 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-[12px] shadow-sm active:scale-95 transition-all">
                     Add <span className="hidden md:inline">to cart</span>
@@ -157,7 +159,7 @@ export const BestSellerSection = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -18,7 +18,7 @@ const recalculateCart = (cart) => {
   return cart;
 };
 
-exports.addToCart = async (userId, { productId, quantity = 1 }) => {
+exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
   // 🔹 1. Validate input
   if (!productId) {
     throw new Error("Product ID is required");
@@ -102,7 +102,7 @@ exports.getCart = async (userId) => {
   return cart;
 };
 
-exports.updateCartItem = async (userId, { productId, quantity }) => {
+exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   if (quantity < 0) {
     throw new Error("Quantity cannot be negative");
   }
