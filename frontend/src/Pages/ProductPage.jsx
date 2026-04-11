@@ -6,7 +6,6 @@ import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import Navbar from "../components/Navbar";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
-import { useCart } from "../Hooks/useCart";
 
 motion;
 // Animation settings

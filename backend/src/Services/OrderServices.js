@@ -66,6 +66,7 @@ const buildBuyNowItems = async (buyNowItem) => {
         name: product.title,
         image: product.images?.[0]?.url || "",
         price: product.price,
+        size: buyNowItem.size,
         quantity
       }
     ],
@@ -99,6 +100,7 @@ const buildCartItems = async (userId) => {
       name: product.title,
       image: product.images?.[0]?.url || "",
       price: product.price,
+      size: item.size,
       quantity: item.quantity
     });
 

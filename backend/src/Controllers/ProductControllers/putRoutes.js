@@ -33,6 +33,7 @@ const updateProduct = async (req, res) => {
       discountPrice,
       category,
       stock,
+      sizes,
       removeImages, // array of public_ids
     } = req.body;
 
@@ -43,6 +44,7 @@ const updateProduct = async (req, res) => {
       discountPrice === undefined &&
       category === undefined &&
       stock === undefined &&
+      sizes === undefined &&
       removeImages === undefined &&
       (!req.files || req.files.length === 0)
     ) {
@@ -81,6 +83,7 @@ const updateProduct = async (req, res) => {
 
     if (discountPrice !== undefined) product.discountPrice = discountPrice;
     if (category !== undefined) product.category = category;
+    if (sizes !== undefined) product.sizes = Array.isArray(sizes) ? sizes : [sizes];
 
     // REMOVE SELECTED IMAGES
     let safeRemoveList = [];

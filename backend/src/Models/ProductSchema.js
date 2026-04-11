@@ -57,6 +57,12 @@ const productSchema = new mongoose.Schema(
       },
     ],
 
+    sizes: {
+      type: [String],
+      enum: ["XS", "S", "M", "L", "XL", "XXL"],
+      default: [],
+    },
+
     salesCount: {
       type: Number,
       default: 0,
@@ -83,7 +89,7 @@ const productSchema = new mongoose.Schema(
       5: { type: Number, default: 0 },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 productSchema.index({ price: 1 });
