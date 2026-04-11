@@ -7,6 +7,7 @@ const deleteUserAccount = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+        data: null,
       });
     }
 
@@ -15,6 +16,7 @@ const deleteUserAccount = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Account already deactivated",
+        data: null,
       });
     }
 
@@ -27,6 +29,7 @@ const deleteUserAccount = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Account deactivated successfully",
+      data: null,
     });
 
   } catch (error) {
@@ -35,6 +38,7 @@ const deleteUserAccount = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to deactivate account",
+      data: null,
     });
   }
 };
