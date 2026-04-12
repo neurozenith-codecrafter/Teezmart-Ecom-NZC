@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { faker } = require("@faker-js/faker");
 const Product = require("../Models/ProductSchema"); // adjust path
 
-const MONGO_URI = "mongodb+srv://pbala1851_db_user:teez@teez-mart-dummy-data.n5jexrv.mongodb.net/";
+const MONGO_URI = process.env.MONGO_URI_DUMMY;
 
 // Match your constants
 const CATEGORIES = ["tshirt", "trackpant"];

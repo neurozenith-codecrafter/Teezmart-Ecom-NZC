@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const { faker } = require("@faker-js/faker");
 const Order = require("../Models/OrderSchema");
 
-const MONGO_URI =
-  "mongodb+srv://pbala1851_db_user:teez@teez-mart-dummy-data.n5jexrv.mongodb.net/";
+const MONGO_URI = process.env.MONGO_URI_DUMMY;
 
 const ORDER_STATUSES = ["order placed", "shipped", "delivered", "cancelled"];
 
