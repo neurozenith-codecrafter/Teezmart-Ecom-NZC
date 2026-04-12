@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const Product = require("../../Models/ProductSchema");
 
 // `GET /api/products` - Fetch all products with new and top-rated sections
@@ -46,20 +45,12 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-// `GET /api/products/:id` - Fetch product details by ID
-const getProductById = async (req, res) => {
+// `GET /api/products/:slug` - Fetch product details by slug
+const getProductBySlug = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    // Validate ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid product ID",
-      });
-    }
-
-    const product = await Product.findById(id);
+    const product = await Product.findOne({ slug });
 
     // Not found
     if (!product) {
@@ -180,7 +171,7 @@ const getRecommendedProducts = async (req, res) => {
   try {
     const recommendedProducts = await Product.find({})
       .sort({ rating: -1, numReviews: -1, createdAt: -1 })
-      .limit(10);
+      .limit(8);
 
     return res.status(200).json({
       success: true,
@@ -266,7 +257,7 @@ const getProductSuggestions = async (req, res) => {
 
 module.exports = {
   getAllProducts,
-  getProductById,
+  getProductBySlug,
   getMostReviewedProducts,
   getMostSellingProducts,
   getProductsByCategory,

@@ -15,7 +15,7 @@ export const BestSellerSection = () => {
     const fetchBestSellers = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/products/most-selling",
+          "http://localhost:5000/api/products/recommended",
         );
         setBestSellers(response.data.data);
       } catch (error) {
@@ -54,7 +54,7 @@ export const BestSellerSection = () => {
 
             return (
               <Link
-                to={`/product/${item._id}`}
+                to={`/product/${item.slug}`}
                 key={item._id}
                 className="group flex flex-col h-full p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
               >
