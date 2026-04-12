@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import Navbar from "../components/Navbar";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
+import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
 import { useCart } from "../Hooks/useCart";
 
-motion;
 // Animation settings
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -85,7 +85,7 @@ const ProductPage = () => {
   };
 
   return (
-    <motion.div
+    <Motion.div
       initial="hidden"
       animate="visible"
       className="min-h-screen bg-[#FBFBFB] font-sans text-black"
@@ -96,13 +96,13 @@ const ProductPage = () => {
         <div className={`${PAGE_CONTAINER_CLASS} max-w-screen-xl mx-auto`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-start mb-24">
             {/* LEFT: GALLERY (Animated as a single block) */}
-            <motion.div
+            <Motion.div
               variants={subtleReveal}
               className="lg:col-span-8 flex gap-6 justify-start"
             >
               <div className="hidden lg:flex flex-col gap-3 shrink-0">
                 {productImages.map((image, idx) => (
-                  <motion.button
+                  <Motion.button
                     key={image._id}
                     onClick={() => setSelectedImg(idx)}
                     // Subtle, controlled interaction
@@ -124,13 +124,13 @@ const ProductPage = () => {
                       className="w-full h-full object-cover"
                       alt={`thumb-${image._id}`}
                     />
-                  </motion.button>
+                  </Motion.button>
                 ))}
               </div>
 
               <div className="flex-grow aspect-[4/5] max-w-[480px] rounded-xl overflow-hidden bg-white border border-zinc-100 shadow-sm">
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <Motion.img
                     key={productImages[selectedImg]?.url}
                     src={productImages[selectedImg]?.url}
                     alt="Main Product"
@@ -145,14 +145,14 @@ const ProductPage = () => {
                   />
                 </AnimatePresence>
               </div>
-            </motion.div>
+            </Motion.div>
 
             {/* RIGHT: INFO (Elements appear one by one) */}
-            <motion.div
+            <Motion.div
               variants={containerVariants}
               className="lg:col-span-4 space-y-6 lg:-ml-12 px-2 lg:px-0"
             >
-              <motion.div variants={fadeInUp} className="space-y-4">
+              <Motion.div variants={fadeInUp} className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-900">
                     Premium Collection
@@ -168,15 +168,15 @@ const ProductPage = () => {
                 <p className="text-2xl font-bold text-black tracking-tighter">
                   ₹{product?.price || "499"}
                 </p>
-              </motion.div>
+              </Motion.div>
 
-              <motion.div variants={fadeInUp} className="space-y-3 pt-2">
+              <Motion.div variants={fadeInUp} className="space-y-3 pt-2">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                   Select Size
                 </h4>
                 <div className="flex flex-wrap gap-2.5">
                   {["S", "M", "L", "XL", "XXL"].map((size) => (
-                    <motion.button
+                    <Motion.button
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       // Interactive States
@@ -190,7 +190,7 @@ const ProductPage = () => {
                     >
                       {/* High-end "Indicator" Dot (Optional) */}
                       {selectedSize === size && (
-                        <motion.div
+                        <Motion.div
                           layoutId="activeSize"
                           className="absolute inset-0 rounded-lg ring-2 ring-black ring-offset-2"
                           initial={false}
@@ -203,16 +203,16 @@ const ProductPage = () => {
                       )}
 
                       <span className="relative z-10">{size}</span>
-                    </motion.button>
+                    </Motion.button>
                   ))}
                 </div>
-              </motion.div>
+              </Motion.div>
 
-              <motion.div
+              <Motion.div
                 variants={fadeInUp}
                 className="flex items-center gap-3 pt-2"
               >
-                <motion.button
+                <Motion.button
                   // 1. Define the Spring Physics
                   transition={{
                     type: "spring",
@@ -242,9 +242,9 @@ const ProductPage = () => {
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                   <span className="relative z-10">Add to Cart</span>
-                </motion.button>
+                </Motion.button>
 
-                <motion.button
+                <Motion.button
                   onClick={() => setIsLiked(!isLiked)}
                   // Bouncy hover and tap
                   whileHover={{ scale: 1.1 }}
@@ -256,7 +256,7 @@ const ProductPage = () => {
                       : "border-zinc-200 bg-white"
                   }`}
                 >
-                  <motion.div
+                  <Motion.div
                     // This makes the heart "pop" whenever isLiked changes
                     key={isLiked ? "liked" : "unliked"}
                     initial={{ scale: 1 }}
@@ -270,58 +270,45 @@ const ProductPage = () => {
                         isLiked ? "fill-red-500 text-red-500" : "text-black"
                       }`}
                     />
-                  </motion.div>
-                </motion.button>
-              </motion.div>
+                  </Motion.div>
+                </Motion.button>
+              </Motion.div>
 
-              <motion.div
+              <Motion.div
                 variants={fadeInUp}
                 className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-y-5"
               >
-<<<<<<< HEAD
-                <ShippingItem icon={Percent} label="Offer" val="50% Off" />
-                <ShippingItem icon={Box} label="Packaging" val="Luxury Box" />
-                <ShippingItem icon={Truck} label="Delivery" val="Fast Track" />
-                <ShippingItem icon={Calendar} label="Arrival" val="10-12 Oct" />
-=======
-                <ShippingItem Icon={Percent} label="Offer" val="27% Off" />
-                <ShippingItem
+                <ShippingInfoItem Icon={Percent} label="Offer" val="27% Off" />
+                <ShippingInfoItem
                   Icon={Box}
                   label="Packaging"
                   val="Secure Packaging"
                 />
-                <ShippingItem Icon={Truck} label="Delivery" val="Fast Delivery" />
-                <ShippingItem Icon={Calendar} label="Arrival" val={getDeliveryRange()} />
->>>>>>> c91d1309bdd4d3a7bc7fe72f513ce6774411f4c3
-              </motion.div>
-            </motion.div>
+                <ShippingInfoItem
+                  Icon={Truck}
+                  label="Delivery"
+                  val="Fast Delivery"
+                />
+                <ShippingInfoItem
+                  Icon={Calendar}
+                  label="Arrival"
+                  val={getDeliveryRange()}
+                />
+              </Motion.div>
+            </Motion.div>
           </div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
             <RatingSummary />
-          </motion.div>
+          </Motion.div>
         </div>
       </main>
-    </motion.div>
+    </Motion.div>
   );
 };
-
-const ShippingItem = ({ icon, label, val }) => (
-  <div className="flex items-center gap-3">
-    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-50 text-black">
-      {React.createElement(icon, { size: 14, strokeWidth: 1.5 })}
-    </div>
-    <div>
-      <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">
-        {label}
-      </p>
-      <p className="text-[11px] text-black font-bold">{val}</p>
-    </div>
-  </div>
-);
 
 export default ProductPage;
