@@ -2,6 +2,7 @@ const express = require("express");
 const { protect } = require("../../Middleware/authMiddleware");
 const { authorizeRoles } = require("../../Middleware/authMiddleware");
 
+
 const router = express.Router();
 
 router.use(protect, authorizeRoles("admin", "devAdmin"));
@@ -12,5 +13,6 @@ router.get("/dashboard", (req, res) => {
 
 router.use("/products", require("./adminProductRoutes"));
 router.use("/users", require("./adminUserRoutes"));
+router.use("/orders", require("../AdminRoutes/adminOrderRoutes"))
 
 module.exports = router;

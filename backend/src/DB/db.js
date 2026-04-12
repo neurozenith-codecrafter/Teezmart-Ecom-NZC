@@ -5,13 +5,13 @@ const mongoose = require("mongoose");
 dns.setDefaultResultOrder("ipv4first");
 
 const connectDb = async () => {
-  if (!process.env.MONGO_URI) {
+  if (!process.env.MONGO_URI_DUMMY) {
     console.error("MONGO_URI is missing. Add it to backend/.env");
     process.exit(1);
   }
 
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(process.env.MONGO_URI_DUMMY, {
       serverSelectionTimeoutMS: 15_000,
     });
     console.log("DB connected");
