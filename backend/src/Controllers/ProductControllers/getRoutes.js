@@ -135,7 +135,7 @@ const getMostSellingProducts = async (req, res) => {
 // `GET /api/products/category/:category` - Fetch products by category
 const getProductsByCategory = async (req, res) => {
   try {
-    const { category } = req.query;
+    const category = req.params.category || req.query.category;
 
     // Validate category parameter
     if (!category) {

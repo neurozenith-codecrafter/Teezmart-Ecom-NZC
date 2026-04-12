@@ -5,7 +5,11 @@ exports.protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Not authorized" });
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized",
+      data: null,
+    });
   }
 
   try {
@@ -15,13 +19,21 @@ exports.protect = async (req, res, next) => {
     const user = await User.findById(decoded.id).select("-__v -password");
 
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+        data: null,
+      });
     }
 
     req.user = user;
     next();
   } catch (e) {
-    res.status(401).json({ message: "Invalid token" });
+    res.status(401).json({
+      success: false,
+      message: "Invalid token",
+      data: null,
+    });
   }
 };
 
@@ -29,7 +41,11 @@ exports.protect = async (req, res, next) => {
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+        data: null,
+      });
     }
     next();
   };
@@ -37,5 +53,10 @@ exports.authorizeRoles = (...roles) => {
 
 // Optional helper
 exports.getMe = (req, res) => {
-  res.status(200).json(req.user);
+  res.status(200).json({
+    success: true,
+    message: "User fetched successfully",
+    data: req.user,
+    user: req.user,
+  });
 };

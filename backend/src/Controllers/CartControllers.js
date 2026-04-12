@@ -30,6 +30,7 @@ exports.addItem = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message || "Failed to add to cart",
+      data: null,
     });
   }
 };
@@ -41,6 +42,7 @@ exports.getCart = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: "Cart fetched successfully",
       data: cart,
     });
   } catch (error) {
@@ -48,7 +50,8 @@ exports.getCart = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch cart",
+      message: error.message || "Failed to fetch cart",
+      data: null,
     });
   }
 };
@@ -69,6 +72,7 @@ exports.updateItem = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message,
+      data: null,
     });
   }
 };
@@ -90,6 +94,7 @@ exports.removeItem = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message,
+      data: null,
     });
   }
 };
@@ -107,6 +112,7 @@ exports.clearCart = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message,
+      data: null,
     });
   }
 };

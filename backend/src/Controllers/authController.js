@@ -1,6 +1,7 @@
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../Models/UserSchema");
 const jwt = require("jsonwebtoken");
+const { buildSafeUser } = require("../Services/userServices");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -18,7 +19,11 @@ exports.googleAuth = async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-      return res.status(400).json({ message: "Google token missing" });
+      return res.status(400).json({
+        success: false,
+        message: "Google token missing",
+        data: null,
+      });
     }
 
     const ticket = await client.verifyIdToken({
@@ -29,13 +34,21 @@ exports.googleAuth = async (req, res) => {
     const payload = ticket.getPayload();
 
     if (!payload) {
-      return res.status(400).json({ message: "Invalid Google token" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Google token",
+        data: null,
+      });
     }
 
     const { sub, email, name, picture } = payload;
 
     if (!email) {
-      return res.status(400).json({ message: "Google account has no email" });
+      return res.status(400).json({
+        success: false,
+        message: "Google account has no email",
+        data: null,
+      });
     }
 
     // ✅ Determine role dynamically
@@ -78,21 +91,22 @@ exports.googleAuth = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    const safeUser = {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      role: user.role,
-    };
+    const safeUser = buildSafeUser(user);
 
     res.status(200).json({
+      success: true,
+      message: "Authentication successful",
       token: appToken,
+      data: safeUser,
       user: safeUser,
     });
 
   } catch (err) {
     console.error("Google Auth Error:", err);
-    res.status(500).json({ message: "Authentication failed" });
+    res.status(500).json({
+      success: false,
+      message: "Authentication failed",
+      data: null,
+    });
   }
 };

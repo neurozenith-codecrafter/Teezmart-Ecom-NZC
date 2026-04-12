@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { motion } from "framer-motion";
 import { Heart, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 export const BestSellerSection = () => {
+  motion;
   const [bestSellers, setBestSellers] = useState([]);
   // State to track liked products locally
   const [likedProducts, setLikedProducts] = useState({});
@@ -57,7 +59,7 @@ export const BestSellerSection = () => {
                 className="group flex flex-col h-full p-2 md:p-3 rounded-2xl md:rounded-3xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white/50 hover:bg-white cursor-pointer"
               >
                 {/* IMAGE CONTAINER */}
-                <div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white shrink-0">
+                <motion.div className="relative aspect-[3/4] mb-3 md:mb-6 overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-white shrink-0">
                   <img
                     src={item.images[0].url}
                     alt={item.title}
@@ -65,21 +67,31 @@ export const BestSellerSection = () => {
                   />
 
                   {/* WISHLIST BUTTON */}
-                  <button
+                  <motion.button
                     onClick={(e) => toggleLike(e, item._id)}
-                    className="absolute top-2 right-2 md:top-4 md:right-4 p-1.5 md:p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm transition-all duration-300 border border-white/50 z-20 group/heart"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className={`absolute top-3 right-3 z-10 p-2.5 rounded-full backdrop-blur-md transition-colors duration-300 ${
+                      isLiked ? "bg-red-50/70" : "bg-white/70"
+                    }`}
                   >
-                    <Heart
-                      size={14}
-                      className={`md:size-[18px] transition-all duration-300 transform ${
-                        isLiked
-                          ? "fill-red-500 text-red-500 scale-110"
-                          : "text-slate-500 group-hover/heart:text-red-400"
-                      }`}
-                      strokeWidth={isLiked ? 0 : 2}
-                    />
-                  </button>
-                </div>
+                    <motion.div
+                      key={isLiked ? "liked" : "unliked"}
+                      initial={{ scale: 1 }}
+                      animate={{ scale: isLiked ? [1, 1.4, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Heart
+                        size={16}
+                        strokeWidth={1.5}
+                        className={`transition-colors duration-300 ${
+                          isLiked ? "fill-red-500 text-red-500" : "text-black"
+                        }`}
+                      />
+                    </motion.div>
+                  </motion.button>
+                </motion.div>
 
                 {/* DETAILS BLOCK */}
                 <div className="flex flex-col flex-grow space-y-1.5 md:space-y-3 px-1">

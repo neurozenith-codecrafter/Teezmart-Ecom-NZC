@@ -6,6 +6,7 @@ import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import Navbar from "../components/Navbar";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
+import { useCart } from "../Hooks/useCart";
 
 motion;
 // Animation settings
@@ -37,7 +38,7 @@ const subtleReveal = {
 const ProductPage = () => {
   const { id } = useParams();
 
-  // const { handleAddToCart } = useCart();
+  const { handleAddToCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [productImages, setProductImages] = useState([]);
@@ -65,6 +66,23 @@ const ProductPage = () => {
     };
     fecthProductDetails();
   }, [id]);
+
+  const getDeliveryRange = () => {
+    const today = new Date();
+
+    const start = new Date(today);
+    start.setDate(today.getDate() + 3);
+
+    const end = new Date(today);
+    end.setDate(today.getDate() + 5);
+
+    const options = { day: "numeric", month: "short" };
+
+    const startStr = start.toLocaleDateString("en-GB", options);
+    const endStr = end.toLocaleDateString("en-GB", options);
+
+    return `${startStr} - ${endStr}`;
+  };
 
   return (
     <motion.div
@@ -213,11 +231,14 @@ const ProductPage = () => {
                   }}
                   // 4. Cleaned up className (removed transition and hover/active transform utilities)
                   className="group relative flex-grow bg-black text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
-                  onClick={() => {
-                    console.log("Add to cart clicked ->", product);
-                  }} // Implement this function to add the product to cart
+                  onClick={() =>
+                    handleAddToCart({
+                      productId: product._id,
+                      quantity: 1,
+                      size: selectedSize,
+                    })
+                  }
                 >
-                  {/* The Shine Layer (Kept exactly the same) */}
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
                   <span className="relative z-10">Add to Cart</span>
@@ -257,10 +278,21 @@ const ProductPage = () => {
                 variants={fadeInUp}
                 className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-y-5"
               >
+<<<<<<< HEAD
                 <ShippingItem icon={Percent} label="Offer" val="50% Off" />
                 <ShippingItem icon={Box} label="Packaging" val="Luxury Box" />
                 <ShippingItem icon={Truck} label="Delivery" val="Fast Track" />
                 <ShippingItem icon={Calendar} label="Arrival" val="10-12 Oct" />
+=======
+                <ShippingItem Icon={Percent} label="Offer" val="27% Off" />
+                <ShippingItem
+                  Icon={Box}
+                  label="Packaging"
+                  val="Secure Packaging"
+                />
+                <ShippingItem Icon={Truck} label="Delivery" val="Fast Delivery" />
+                <ShippingItem Icon={Calendar} label="Arrival" val={getDeliveryRange()} />
+>>>>>>> c91d1309bdd4d3a7bc7fe72f513ce6774411f4c3
               </motion.div>
             </motion.div>
           </div>

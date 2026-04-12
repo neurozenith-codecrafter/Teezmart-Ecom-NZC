@@ -1,15 +1,21 @@
-import axios from 'axios';
+import axios from "axios";
 
-export const addToCart = async (userId, { productId, quantity = 1, size }) => {
-  try {
-    const response = await axios.post(`/api/carts/${userId}/items`, {
+export const addToCartAPI = async ({ productId, quantity, size, token }) => {
+  const response = await axios.post(
+    "/api/cart",
+    {
       productId,
       quantity,
       size,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    throw error;
-  }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log("Post api sent -> ", response.data);
+
+  return response.data;
 };

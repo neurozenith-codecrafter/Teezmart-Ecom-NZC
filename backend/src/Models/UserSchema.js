@@ -9,7 +9,7 @@ const addressSchema = new mongoose.Schema(
     country: { type: String, default: "India" },
     isDefault: { type: Boolean, default: false },
   },
-  { _id: true }
+  { _id: true },
 );
 
 const userSchema = new mongoose.Schema(
@@ -82,15 +82,19 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    wishlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-
-module.exports =
-mongoose.models.User || mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
 // // 🔒 Ensure only one default address
 // userSchema.pre("save", function (next) {
 //   if (this.addresses.length > 0) {
