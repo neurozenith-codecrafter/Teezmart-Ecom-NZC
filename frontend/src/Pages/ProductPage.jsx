@@ -4,7 +4,6 @@ import axios from "axios";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
-import Navbar from "../components/Navbar";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
 import { useCart } from "../Hooks/useCart";
@@ -90,9 +89,7 @@ const ProductPage = () => {
       animate="visible"
       className="min-h-screen bg-[#FBFBFB] font-sans text-black"
     >
-      <Navbar />
-
-      <main className="pt-28 md:pt-40 pb-20">
+      <main className="pt-12 md:pt-4 pb-20">
         <div className={`${PAGE_CONTAINER_CLASS} max-w-screen-xl mx-auto`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-start mb-24">
             {/* LEFT: GALLERY (Animated as a single block) */}
