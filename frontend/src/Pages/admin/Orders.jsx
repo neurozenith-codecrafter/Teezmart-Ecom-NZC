@@ -1,15 +1,22 @@
 import React from "react";
-import { MoreHorizontal } from "lucide-react";
+import {
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+} from "lucide-react";
 
 const StatusBadge = ({ status }) => {
   const styles = {
-    Pending: "bg-amber-50 text-amber-600 border-amber-100",
-    Shipped: "bg-blue-50 text-blue-600 border-blue-100",
-    Delivered: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    Pending: "bg-[#FFF4E5] text-[#FFB648]",
+    Shipped: "bg-[#E6F9F0] text-[#34D399]",
+    Delivered: "bg-[#EEF2FF] text-[#6366F1]",
+    Cancelled: "bg-[#FFE4E6] text-[#FB7185]",
   };
+
   return (
     <span
-      className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${styles[status]}`}
+      className={`px-4 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-tight ${styles[status] || styles.Pending}`}
     >
       {status}
     </span>
@@ -19,85 +26,149 @@ const StatusBadge = ({ status }) => {
 export const Orders = () => {
   const mockOrders = [
     {
-      id: "#8429",
-      product: "Vintage Oversized Tee",
-      qty: 2,
-      price: "₹1,998",
+      id: "#TZ-99201",
+      product: "Vintage Heavyweight Tee",
+      category: "Oversized",
+      size: "L, XL",
+      price: "₹1,499",
       status: "Pending",
-      date: "Oct 12, 2026",
     },
     {
-      id: "#8428",
+      id: "#TZ-99198",
       product: "Acid Wash Boxy Fit",
-      qty: 1,
+      category: "Streetwear",
+      size: "M",
       price: "₹1,299",
       status: "Shipped",
-      date: "Oct 11, 2026",
     },
     {
-      id: "#8427",
-      product: "Heavyweight Essential",
-      qty: 3,
-      price: "₹3,450",
+      id: "#TZ-99195",
+      product: "Classic Essential White",
+      category: "Basics",
+      size: "S, M, L",
+      price: "₹999",
       status: "Delivered",
-      date: "Oct 10, 2026",
+    },
+    {
+      id: "#TZ-99192",
+      product: "Retro Graphic Tee",
+      category: "Graphic",
+      size: "XL",
+      price: "₹1,899",
+      status: "Cancelled",
+    },
+    {
+      id: "#TZ-99188",
+      product: "Sand Boxy Fit Tee",
+      category: "Oversized",
+      size: "M, L",
+      price: "₹1,399",
+      status: "Shipped",
     },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Order Log
+          </h2>
+          <p className="text-xs text-slate-400 font-medium mt-1">
+            Manage incoming store purchases and fulfillment
+          </p>
+        </div>
         <div className="flex gap-3">
-          <select className="bg-white border-zinc-200 rounded-xl text-xs font-bold px-4 py-2 focus:ring-black">
-            <option>All Status</option>
-            <option>Pending</option>
-            <option>Shipped</option>
-            <option>Delivered</option>
+          <select className="bg-white border-slate-200 rounded-xl text-xs font-bold px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-slate-100 transition-all cursor-pointer">
+            <option>All Orders</option>
+            <option>Recent</option>
+            <option>High Value</option>
           </select>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-zinc-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-zinc-50/50 border-b border-zinc-100">
-              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Product
+            <tr className="border-b border-slate-50 bg-[#FDFDFD]">
+              <th className="px-8 py-5">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Product Name <ChevronsUpDown size={12} />
+                </div>
               </th>
-              <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Order ID
+              <th className="px-6 py-5">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Order ID <ChevronsUpDown size={12} />
+                </div>
               </th>
-              <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Price
+              <th className="px-6 py-5">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Category <ChevronsUpDown size={12} />
+                </div>
               </th>
-              <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Status
+              <th className="px-6 py-5">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Size <ChevronsUpDown size={12} />
+                </div>
               </th>
-              <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 text-right">
-                Actions
+              <th className="px-6 py-5">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Amount <ChevronsUpDown size={12} />
+                </div>
+              </th>
+              <th className="px-6 py-5 text-center">
+                <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Status
+                </div>
+              </th>
+              <th className="px-8 py-5 text-right text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                Action
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-50">
+
+          <tbody className="divide-y divide-slate-50">
             {mockOrders.map((order) => (
               <tr
                 key={order.id}
-                className="hover:bg-zinc-50/30 transition-colors group"
+                className="hover:bg-slate-50/50 transition-colors group"
               >
-                <td className="px-8 py-6">
-                  <p className="text-sm font-bold text-zinc-900 tracking-tight">{order.product}</p>
-                  <p className="text-[10px] text-zinc-400 font-medium mt-0.5">Qty: {order.qty}</p>
+                {/* Product Name (Text Only) */}
+                <td className="px-8 py-5">
+                  <span className="text-[14px] font-bold text-slate-800 tracking-tight">
+                    {order.product}
+                  </span>
                 </td>
-                <td className="px-6 py-6 font-mono text-xs text-zinc-500 font-bold">{order.id}</td>
-                <td className="px-6 py-6 text-sm font-bold text-zinc-900">{order.price}</td>
-                <td className="px-6 py-6">
+
+                <td className="px-6 py-5">
+                  <span className="text-[12px] font-bold text-[#5D5FEF] bg-[#5D5FEF]/5 px-2 py-1 rounded-md">
+                    {order.id}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5 text-sm font-medium text-slate-500">
+                  {order.category}
+                </td>
+
+                <td className="px-6 py-5">
+                  <span className="text-xs font-black text-slate-400">
+                    {order.size}
+                  </span>
+                </td>
+
+                <td className="px-6 py-5 text-[14px] font-black text-slate-900">
+                  {order.price}
+                </td>
+
+                <td className="px-6 py-5 text-center">
                   <StatusBadge status={order.status} />
                 </td>
-                <td className="px-6 py-6 text-right">
+
+                <td className="px-8 py-5 text-right">
                   <button
                     type="button"
-                    className="p-2 hover:bg-zinc-100 rounded-lg transition-colors text-zinc-400"
+                    className="p-2 text-slate-300 hover:text-slate-600 transition-all hover:bg-slate-100 rounded-full"
                   >
                     <MoreHorizontal size={18} />
                   </button>
@@ -106,6 +177,32 @@ export const Orders = () => {
             ))}
           </tbody>
         </table>
+
+        {/* Footer Pagination */}
+        <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between bg-[#FDFDFD]">
+          <button className="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-slate-500 transition-all">
+            <ChevronLeft size={16} /> Previous
+          </button>
+
+          <div className="flex items-center gap-2">
+            {[1, 2, 3].map((page) => (
+              <button
+                key={page}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                  page === 1
+                    ? "bg-black text-white shadow-lg shadow-black/10"
+                    : "text-slate-400 hover:bg-slate-100"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-black transition-all">
+            Next <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
