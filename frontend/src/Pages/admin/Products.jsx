@@ -1,81 +1,124 @@
 import React, { useState } from "react";
-import { Plus, Edit3, Trash2, X, Upload, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Edit3,
+  Trash2,
+  X,
+  Upload,
+  Image as ImageIcon,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 motion;
 
 const ProductFormModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  // Move the null check inside AnimatePresence in the parent,
+  // or use the presence of the component to handle the animation.
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/20 backdrop-blur-md"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white w-full max-w-2xl rounded-[2rem] p-8 md:p-12 relative z-10 shadow-2xl border border-zinc-100"
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-6 right-6 p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-all"
-        >
-          <X size={20} />
-        </button>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+          />
 
-        <h2 className="text-2xl font-bold mb-8 tracking-tight text-slate-900">
-          Add New Product
-        </h2>
-
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2 space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
-              Product Name
-            </label>
-            <input
-              type="text"
-              className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium"
-              placeholder="Classic Oversized Tee"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
-              Price (₹)
-            </label>
-            <input
-              type="number"
-              className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium"
-              placeholder="1299"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
-              Initial Stock
-            </label>
-            <input
-              type="number"
-              className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium"
-              placeholder="100"
-            />
-          </div>
-
-          <div className="md:col-span-2 pt-4">
+          {/* Modal Content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 40 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-white w-full max-w-2xl rounded-[2rem] p-8 md:p-12 relative z-10 shadow-2xl border border-zinc-100 overflow-y-auto max-h-[90vh] no-scrollbar"
+          >
             <button
-              type="submit"
-              className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-lg shadow-zinc-200 hover:bg-zinc-800 active:scale-[0.98] transition-all"
+              type="button"
+              onClick={onClose}
+              className="absolute top-6 right-6 p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-all"
             >
-              Add Product
+              <X size={20} />
             </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+
+            <h2 className="text-2xl font-bold mb-8 tracking-tight text-slate-900">
+              Add New Product
+            </h2>
+
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Image Upload Area */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                  Product Imagery
+                </label>
+                <div className="group relative border-2 border-dashed border-zinc-100 rounded-[1.5rem] bg-[#FBFBFB] hover:bg-zinc-50 hover:border-zinc-300 transition-all duration-300 min-h-[180px] flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                  />
+                  <div className="flex flex-col items-center gap-3 py-6">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-zinc-400 group-hover:text-black group-hover:scale-110 transition-all duration-300">
+                      <Upload size={20} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-slate-800">
+                        Upload primary image
+                      </p>
+                      <p className="text-[10px] text-zinc-400 mt-1 font-medium">
+                        Drag and drop or click to browse
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium"
+                  placeholder="Classic Oversized Tee"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                  Price (₹)
+                </label>
+                <input
+                  type="number"
+                  className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="1299"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                  Initial Stock
+                </label>
+                <input
+                  type="number"
+                  className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="100"
+                />
+              </div>
+
+              <div className="md:col-span-2 pt-4">
+                <button
+                  type="submit"
+                  className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-lg shadow-zinc-200 hover:bg-zinc-800 active:scale-[0.98] transition-all"
+                >
+                  Add Product
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -84,7 +127,7 @@ export const Products = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* HEADER SECTION - Compact and inline */}
+      {/* HEADER SECTION */}
       <div className="flex items-center gap-4">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
           Inventory
@@ -144,14 +187,10 @@ export const Products = () => {
         ))}
       </div>
 
-      <AnimatePresence>
-        {isModalOpen && (
-          <ProductFormModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      <ProductFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
