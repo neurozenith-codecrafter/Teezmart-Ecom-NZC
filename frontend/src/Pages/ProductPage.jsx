@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
@@ -36,7 +36,7 @@ const subtleReveal = {
 };
 
 const ProductPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
 
   const { handleAddToCart } = useCart();
 
@@ -48,14 +48,14 @@ const ProductPage = () => {
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
-    // Fetch product details using the id from the URL
-    // Example: axios.get(`/api/products/${id}`).then(response => setProduct(response.data));
+    // Fetch product details using the slug from the URL
 
-    const fecthProductDetails = async () => {
+    const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`/api/products/${id}`);
+        const response = await axios.get(`/api/products/${slug}`);
         setProduct(response.data.data);
         setProductImages(response.data.data.images);
+        setSelectedImg(0);
 
         console.log("Response message ->", response.data.message);
         console.log("Product data ->", response.data.data);
@@ -64,8 +64,8 @@ const ProductPage = () => {
         console.error("Error fetching product details:", error);
       }
     };
-    fecthProductDetails();
-  }, [id]);
+    fetchProductDetails();
+  }, [slug]);
 
   const getDeliveryRange = () => {
     const today = new Date();

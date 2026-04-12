@@ -28,7 +28,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Auth />} />
-          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/product/:slug" element={<ProductPage />} />
 
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />

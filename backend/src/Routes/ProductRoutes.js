@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   getAllProducts,
-  getProductById,
+  getProductBySlug,
   getMostReviewedProducts,
   getMostSellingProducts,
   getProductsByCategory,
@@ -33,8 +33,8 @@ router.get("/category/:category", getProductsByCategory);
 // `GET /api/products/:id/suggestions` - Fetch product suggestions based on a given product ID to show in the product details page
 router.get("/:id/suggestions", getProductSuggestions);
 
-// `GET /api/products/:id` - Fetch product details by ID
-router.get("/:id", getProductById);
+// `GET /api/products/:slug` - Fetch product details by slug
+router.get("/:slug", getProductBySlug);
 
 
 
