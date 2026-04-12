@@ -257,10 +257,10 @@ const ProductPage = () => {
                 variants={fadeInUp}
                 className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-y-5"
               >
-                <ShippingItem Icon={Percent} label="Offer" val="50% Off" />
-                <ShippingItem Icon={Box} label="Packaging" val="Luxury Box" />
-                <ShippingItem Icon={Truck} label="Delivery" val="Fast Track" />
-                <ShippingItem Icon={Calendar} label="Arrival" val="10-12 Oct" />
+                <ShippingItem icon={Percent} label="Offer" val="50% Off" />
+                <ShippingItem icon={Box} label="Packaging" val="Luxury Box" />
+                <ShippingItem icon={Truck} label="Delivery" val="Fast Track" />
+                <ShippingItem icon={Calendar} label="Arrival" val="10-12 Oct" />
               </motion.div>
             </motion.div>
           </div>
@@ -278,10 +278,10 @@ const ProductPage = () => {
   );
 };
 
-const ShippingItem = ({ Icon, label, val }) => (
+const ShippingItem = ({ icon, label, val }) => (
   <div className="flex items-center gap-3">
     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-50 text-black">
-      <Icon size={14} strokeWidth={1.5} />
+      {React.createElement(icon, { size: 14, strokeWidth: 1.5 })}
     </div>
     <div>
       <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">

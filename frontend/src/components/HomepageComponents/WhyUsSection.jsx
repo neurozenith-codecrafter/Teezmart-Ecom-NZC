@@ -7,19 +7,19 @@ const whyUsData = [
     id: 1,
     title: "Unique Designs",
     desc: "Stand out with exclusive styles made for you.",
-    Icon: Sparkles,
+    icon: Sparkles,
   },
   {
     id: 2,
     title: "Premium Quality",
     desc: "Soft, durable fabric with long-lasting prints.",
-    Icon: ShieldCheck,
+    icon: ShieldCheck,
   },
   {
     id: 3,
     title: "Affordable Prices",
     desc: "Trendy fashion without breaking the bank.",
-    Icon: Tag,
+    icon: Tag,
   },
 ];
 
@@ -59,13 +59,13 @@ export const WhyUsSection = () => {
 
         {/* --- FEATURES GRID (Hidden on Mobile) --- */}
         <div className="hidden md:grid grid-cols-3 gap-8 md:gap-10">
-          {whyUsData.map(({ id, title, desc, Icon }) => (
+          {whyUsData.map(({ id, title, desc, icon }) => (
             <div
               key={id}
               className="group flex flex-col items-center text-center p-8 md:p-10 bg-white rounded-2xl md:rounded-[2rem] border border-slate-100/50 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]"
             >
               <div className="mb-6 flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-50 text-slate-700 transition-colors duration-200 group-hover:bg-slate-900 group-hover:text-white">
-                <Icon size={28} strokeWidth={1.5} />
+                {React.createElement(icon, { size: 28, strokeWidth: 1.5 })}
               </div>
 
               <div className="space-y-3">
