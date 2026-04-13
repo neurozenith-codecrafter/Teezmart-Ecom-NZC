@@ -183,29 +183,28 @@ export const CartPage = () => {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  if (items.length === 0) {
+  if (!items.length) {
     return <EmptyCart />;
   }
 
   return (
-    <div className="min-h-screen bg-[#FBFBFB] selection:bg-black selection:text-white">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-20 py-10 md:py-20">
-        <header className="flex items-center gap-6 mb-10 md:mb-16">
-          <button className="p-3 md:p-4 bg-white border border-zinc-100 rounded-2xl shadow-sm hover:bg-zinc-50 transition-all active:scale-95">
-            <ChevronLeft size={20} strokeWidth={2.5} />
+    <div className="min-h-screen bg-[#FBFBFB] selection:bg-black selection:text-white md:flex md:items-center md:justify-center lg:items-start lg:pt-20">
+      <div className="max-w-[1400px] w-full mx-auto px-4 md:px-10 lg:px-20 py-10 md:py-12 lg:py-0">
+        {/* PRECISE HEADER EXTRACTION FROM IMAGE */}
+        <header className="relative flex items-center justify-center mb-10 md:mb-16 py-2">
+          {/* Back Button positioned absolutely to the left to allow true centering of title */}
+          <button className="absolute left-0 p-2 text-zinc-900 hover:opacity-60 transition-opacity active:scale-90">
+            <ChevronLeft size={24} strokeWidth={2.5} />
           </button>
-          <div>
-            <h1 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-none">
-              Your Cart
-            </h1>
-            <p className="text-slate-400 text-xs md:text-sm font-medium mt-1 md:mt-2">
-              Review your selection
-            </p>
-          </div>
+
+          {/* Centered Title matching the image typography */}
+          <h1 className="text-[20px] md:text-2xl font-bold text-zinc-800 tracking-tight">
+            Cart
+          </h1>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-          {/* List Section */}
+          {/* ... rest of the code remains exactly the same */}
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
             <AnimatePresence mode="popLayout">
               {items.map((item) => (
@@ -223,13 +222,12 @@ export const CartPage = () => {
             </AnimatePresence>
           </div>
 
-          {/* Sticky Sidebar Section */}
-          <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28">
+          <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-10">
             <div className="bg-white rounded-[2.5rem] border border-zinc-100 p-8 md:p-10 shadow-xl shadow-zinc-200/40">
               <h2 className="text-xl font-black text-slate-800 mb-8 tracking-tight">
                 Order Summary
               </h2>
-
+              {/* Summary content continues... */}
               <div className="bg-[#FBFBFB] p-1.5 rounded-[2rem] border border-zinc-100 flex items-center mb-8">
                 <input
                   type="text"
@@ -240,7 +238,6 @@ export const CartPage = () => {
                   Apply
                 </button>
               </div>
-
               <div className="space-y-5 px-1 mb-10">
                 <div className="flex justify-between items-center text-sm md:text-base">
                   <span className="font-bold text-slate-500">Sub Total</span>
@@ -261,7 +258,6 @@ export const CartPage = () => {
                   </div>
                 </div>
               </div>
-
               <button className="w-full bg-[#18181B] text-white py-5 rounded-[2.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
                 Checkout Now <ArrowRight size={18} />
               </button>
