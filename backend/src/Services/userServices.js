@@ -1,28 +1,13 @@
 const User = require("../Models/UserSchema");
-const { ensureValidObjectId } = require("../Utils/validation");
+const {
+  ensureValidObjectId,
+  ADDRESS_ROUTE_MESSAGE,
+  validateAndNormalizeAddresses,
+  validateAndNormalizeAvatar,
+  validateAndNormalizeName,
+  validateAndNormalizePhone,
+} = require("../Utils/validation");
 const { buildSafeUser } = require("../Utils/userResponse");
-
-const validateAddresses = (addresses) => {
-  if (!Array.isArray(addresses)) {
-    throw new Error("Addresses must be an array");
-  }
-
-  if (addresses.length > 5) {
-    throw new Error("You can add up to 5 addresses only");
-  }
-
-  const defaultCount = addresses.filter((address) => address.isDefault).length;
-
-  if (defaultCount > 1) {
-    throw new Error("Only one address can be default");
-  }
-
-  if (defaultCount === 0 && addresses.length > 0) {
-    addresses[0].isDefault = true;
-  }
-
-  return addresses;
-};
 
 const getUserOrThrow = async (userId) => {
   ensureValidObjectId(userId, "user ID");
@@ -40,6 +25,19 @@ const getUserOrThrow = async (userId) => {
   return user;
 };
 
+const ensureCanManageUser = (currentUser, targetUserId) => {
+  if (!currentUser) {
+    throw new Error("Not authorized");
+  }
+
+  const requesterId = currentUser._id?.toString?.() || currentUser.id?.toString?.();
+  const isAdmin = currentUser.role === "admin" || currentUser.role === "devAdmin";
+
+  if (!isAdmin && requesterId !== targetUserId) {
+    throw new Error("Unauthorized");
+  }
+};
+
 const getUserProfile = async (userId) => {
   const user = await getUserOrThrow(userId);
   return buildSafeUser(user);
@@ -47,24 +45,49 @@ const getUserProfile = async (userId) => {
 
 const updateUserProfile = async (userId, payload) => {
   const user = await getUserOrThrow(userId);
-  const { name, phone, avatar, addresses } = payload;
-
-  if (name !== undefined) {
-    user.name = name;
-  }
-
-  if (phone !== undefined) {
-    user.phone = phone;
-  }
-
-  if (avatar !== undefined) {
-    user.avatar = avatar;
-  }
+  const { name, phone, avatar, addresses, ...unexpectedFields } = payload || {};
 
   if (addresses !== undefined) {
-    user.addresses = validateAddresses(addresses);
+    throw new Error(ADDRESS_ROUTE_MESSAGE);
   }
 
+  if (Object.keys(unexpectedFields).length > 0) {
+    throw new Error("Only name, phone and avatar can be updated in profile");
+  }
+
+  const normalizedName = validateAndNormalizeName(name);
+  const normalizedPhone = validateAndNormalizePhone(phone);
+  const normalizedAvatar = validateAndNormalizeAvatar(avatar);
+
+  if (normalizedName !== undefined) {
+    user.name = normalizedName;
+  }
+
+  if (normalizedPhone !== undefined) {
+    user.phone = normalizedPhone === null ? undefined : normalizedPhone;
+  }
+
+  if (normalizedAvatar !== undefined) {
+    user.avatar = normalizedAvatar;
+  }
+
+  await user.save();
+
+  return buildSafeUser(user);
+};
+
+const updateUserAddresses = async (currentUser, targetUserId, payload) => {
+  ensureValidObjectId(targetUserId, "user ID");
+  ensureCanManageUser(currentUser, targetUserId);
+
+  const user = await getUserOrThrow(targetUserId);
+  const rawAddresses = Array.isArray(payload) ? payload : payload?.addresses;
+
+  if (rawAddresses === undefined) {
+    throw new Error("Addresses are required");
+  }
+
+  user.addresses = validateAndNormalizeAddresses(rawAddresses);
   await user.save();
 
   return buildSafeUser(user);
@@ -73,5 +96,6 @@ const updateUserProfile = async (userId, payload) => {
 module.exports = {
   getUserProfile,
   updateUserProfile,
+  updateUserAddresses,
   buildSafeUser,
 };

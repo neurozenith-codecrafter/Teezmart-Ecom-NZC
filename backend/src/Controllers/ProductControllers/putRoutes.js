@@ -1,9 +1,41 @@
 const Product = require("../../Models/ProductSchema");
 const cloudinary = require("../../Config/Cloudinary");
-const slugify = require("slugify");
 const mongoose = require("mongoose");
+const streamifier = require("streamifier");
+const {
+  validateCategory,
+  validateDescription,
+  validateTitle,
+  parsePrice,
+  parseOptionalDiscountPrice,
+  normalizeSizes,
+  normalizeRemoveImages,
+  createSlugFromTitle,
+} = require("../../Utils/productValidation");
+
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "products" },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+
+        resolve({
+          url: result.secure_url,
+          public_id: result.public_id,
+        });
+      },
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
 
 const updateProduct = async (req, res) => {
+  let uploadedImagePublicIds = [];
+
   try {
     const { id } = req.params;
 
@@ -32,7 +64,6 @@ const updateProduct = async (req, res) => {
       price,
       discountPrice,
       category,
-      stock,
       sizes,
       removeImages, // array of public_ids
     } = req.body;
@@ -43,7 +74,6 @@ const updateProduct = async (req, res) => {
       price === undefined &&
       discountPrice === undefined &&
       category === undefined &&
-      stock === undefined &&
       sizes === undefined &&
       removeImages === undefined &&
       (!req.files || req.files.length === 0)
@@ -54,120 +84,124 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    // BASIC FIELD UPDATES (partial)
-
-    if (title !== undefined) {
-      if (!title.trim()) {
-        return res.status(400).json({
-          success: false,
-          message: "Title cannot be empty",
-        });
-      }
-
-      product.title = title;
-      product.slug = slugify(title, { lower: true });
-    }
-
-    if (description !== undefined) product.description = description;
-    if (price !== undefined) product.price = price;
-
-    const finalPrice = price !== undefined ? price : product.price;
-    const finalDiscount = discountPrice !== undefined ? discountPrice : product.discountPrice;
-
-    if (finalDiscount > finalPrice) {
+    if (Object.prototype.hasOwnProperty.call(req.body, "stock")) {
       return res.status(400).json({
         success: false,
-        message: "Discount price cannot exceed price",
+        message: "Stock is not a supported product field",
       });
     }
 
-    if (discountPrice !== undefined) product.discountPrice = discountPrice;
-    if (category !== undefined) product.category = category;
-    if (sizes !== undefined) product.sizes = Array.isArray(sizes) ? sizes : [sizes];
+    let nextTitle = product.title;
+    let nextSlug = product.slug;
+    let nextDescription = product.description;
+    let nextPrice = product.price;
+    let nextDiscountPrice = product.discountPrice;
+    let nextCategory = product.category;
+    let nextSizes = product.sizes;
 
-    // REMOVE SELECTED IMAGES
-    let safeRemoveList = [];
+    if (title !== undefined) {
+      nextTitle = validateTitle(title);
+      nextSlug = createSlugFromTitle(nextTitle);
+    }
 
-    if (removeImages !== undefined) {
-      // 1. Normalize to array
-      let imagesToRemove = Array.isArray(removeImages)
-        ? removeImages
-        : [removeImages];
+    if (description !== undefined) {
+      nextDescription = validateDescription(description);
+    }
 
-      // 2. Sanitize (remove invalid values)
-      imagesToRemove = imagesToRemove.filter(
-        (id) => typeof id === "string" && id.trim() !== ""
-      );
+    if (price !== undefined) {
+      nextPrice = parsePrice(price);
+    }
 
-      // 3. Validate against existing images
-      const validPublicIds = new Set(
-        product.images.map((img) => img.public_id)
-      );
+    if (discountPrice !== undefined) {
+      nextDiscountPrice =
+        discountPrice === "" || discountPrice === null
+          ? undefined
+          : parseOptionalDiscountPrice(discountPrice, nextPrice);
+    }
 
-      safeRemoveList = imagesToRemove.filter((id) =>
-        validPublicIds.has(id)
-      );
+    if (nextDiscountPrice !== undefined && nextDiscountPrice >= nextPrice) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount price must be less than price",
+      });
+    }
 
-      // 4. Only proceed if there's something valid
-      if (safeRemoveList.length > 0) {
-        // Delete from Cloudinary
-        await Promise.all(
-          safeRemoveList.map((public_id) =>
-            cloudinary.uploader.destroy(public_id)
-          )
-        );
+    if (category !== undefined) {
+      nextCategory = validateCategory(category);
+    }
 
-        // Remove from DB
-        product.images = product.images.filter(
-          (img) => !safeRemoveList.includes(img.public_id)
-        );
+    if (sizes !== undefined) {
+      nextSizes = normalizeSizes(sizes);
+    }
+
+    if (nextSlug !== product.slug) {
+      const conflictingProduct = await Product.findOne({
+        slug: nextSlug,
+        _id: { $ne: product._id },
+      });
+
+      if (conflictingProduct) {
+        return res.status(409).json({
+          success: false,
+          message: "Another product with this title already exists",
+        });
       }
     }
 
-    // CHECK IMAGE COUNT LIMIT
+    // REMOVE SELECTED IMAGES
+    const normalizedRemoveImages = normalizeRemoveImages(removeImages);
+    const validPublicIds = new Set(product.images.map((img) => img.public_id));
+    const safeRemoveList = normalizedRemoveImages.filter((publicId) =>
+      validPublicIds.has(publicId),
+    );
     const currentImageCount = product.images.length;
     const newImageCount = req.files ? req.files.length : 0;
+    const finalImageCount = currentImageCount - safeRemoveList.length + newImageCount;
 
-    if (currentImageCount + newImageCount > 5) {
+    if (finalImageCount > 5) {
       return res.status(400).json({
         success: false,
         message: "Total images cannot exceed 5",
       });
     }
 
-    // ADD NEW IMAGES
-    if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map((file) =>
-        new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: "products" },
-            (error, result) => {
-              if (error) return reject(error);
-              resolve({
-                url: result.secure_url,
-                public_id: result.public_id,
-              });
-            }
-          );
-          stream.end(file.buffer);
-        })
-      );
-
-      const newImages = await Promise.all(uploadPromises);
-
-      product.images.push(...newImages);
-    }
-
-    // VALIDATION (IMPORTANT)
-    if (product.discountPrice > product.price) {
+    if (finalImageCount < 1) {
       return res.status(400).json({
         success: false,
-        message: "Discount price cannot exceed price",
+        message: "Product must have at least one image",
       });
     }
 
+    // ADD NEW IMAGES
+    let newImages = [];
+
+    if (req.files && req.files.length > 0) {
+      newImages = await Promise.all(
+        req.files.map((file) => uploadToCloudinary(file.buffer)),
+      );
+      uploadedImagePublicIds = newImages.map((image) => image.public_id);
+    }
+
+    product.title = nextTitle;
+    product.slug = nextSlug;
+    product.description = nextDescription;
+    product.price = nextPrice;
+    product.discountPrice = nextDiscountPrice;
+    product.category = nextCategory;
+    product.sizes = nextSizes;
+    product.images = [
+      ...product.images.filter((img) => !safeRemoveList.includes(img.public_id)),
+      ...newImages,
+    ];
+
     // SAVE
     await product.save();
+
+    if (safeRemoveList.length > 0) {
+      await Promise.all(
+        safeRemoveList.map((publicId) => cloudinary.uploader.destroy(publicId)),
+      );
+    }
 
     return res.status(200).json({
       success: true,
@@ -176,7 +210,31 @@ const updateProduct = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
+    if (uploadedImagePublicIds.length > 0) {
+      await Promise.allSettled(
+        uploadedImagePublicIds.map((publicId) => cloudinary.uploader.destroy(publicId)),
+      );
+    }
+
+    const statusCode =
+      error.message === "Invalid product ID" ||
+      error.message === "Stock is not a supported product field" ||
+      error.message === "Title is required and must be less than 120 characters" ||
+      error.message === "Description is required and must be less than 2000 characters" ||
+      error.message === "Invalid category" ||
+      error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Discount price must be a valid non-negative number" ||
+      error.message === "Discount price must be less than price" ||
+      error.message === "Total images cannot exceed 5" ||
+      error.message === "Product must have at least one image" ||
+      error.message === "Sizes must contain only strings" ||
+      error.message.startsWith("Sizes must be one of:")
+        ? 400
+        : error.code === 11000
+          ? 409
+          : 500;
+
+    return res.status(statusCode).json({
       success: false,
       message: "Failed to update product",
       error: error.message,

@@ -3,8 +3,15 @@
 const Product = require("../../Models/ProductSchema");
 const cloudinary = require("../../Config/Cloudinary");
 const streamifier = require("streamifier");
-const slugify = require("slugify");
-const { CATEGORIES } = require("../../Constants/constant.js");
+const {
+  validateCategory,
+  validateDescription,
+  validateTitle,
+  parsePrice,
+  parseOptionalDiscountPrice,
+  normalizeSizes,
+  createSlugFromTitle,
+} = require("../../Utils/productValidation");
 
 const uploadToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
@@ -22,59 +29,18 @@ const uploadToCloudinary = (buffer) => {
   });
 };
 
-const normalizeCategory = (value) =>
-  value.toLowerCase().replace(/[^a-z0-9]/g, "");
-
 const createProduct = async (req, res) => {
+  let uploadedImagePublicIds = [];
+
   try {
     let { title, description, price, discountPrice, category, sizes } = req.body;
-
-    // Validate title
-    if (!title || title.trim().length === 0 || title.length > 120) {
-      return res.status(400).json({
-        success: false,
-        message: "Title is required and must be < 120 chars",
-      });
-    }
-
-    // Generate slug
-    const slug = slugify(title, { lower: true });
-
-    // Validate description
-    if (!description || description.trim().length === 0 || description.length > 2000) {
-      return res.status(400).json({
-        success: false,
-        message: "Description must be < 2000 chars",
-      });
-    }
-
-    // Parse numbers
-    price = Number(price);
-    discountPrice = discountPrice ? Number(discountPrice) : undefined;
-
-    if (isNaN(price) || price <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid price",
-      });
-    }
-
-    if (discountPrice && (isNaN(discountPrice) || discountPrice >= price)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid discount price",
-      });
-    }
-
-    // Normalize category
-    const normalizedCategory = normalizeCategory(category);
-
-    if (!CATEGORIES.includes(normalizedCategory)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category",
-      });
-    }
+    title = validateTitle(title);
+    description = validateDescription(description);
+    price = parsePrice(price);
+    discountPrice = parseOptionalDiscountPrice(discountPrice, price);
+    const normalizedCategory = validateCategory(category);
+    sizes = normalizeSizes(sizes);
+    const slug = createSlugFromTitle(title);
 
     // Validate images
     if (!req.files || req.files.length === 0) {
@@ -84,12 +50,22 @@ const createProduct = async (req, res) => {
       });
     }
 
+    const existingProduct = await Product.findOne({ slug });
+
+    if (existingProduct) {
+      return res.status(409).json({
+        success: false,
+        message: "A product with this title already exists",
+      });
+    }
+
     // Upload images
     const uploadPromises = req.files.map((file) =>
       uploadToCloudinary(file.buffer)
     );
 
     const results = await Promise.all(uploadPromises);
+    uploadedImagePublicIds = results.map((img) => img.public_id);
 
     const images = results.map((img) => ({
       url: img.secure_url,
@@ -97,13 +73,13 @@ const createProduct = async (req, res) => {
     }));
 
     const product = await Product.create({
-      title: title.trim(),
+      title,
       slug,
-      description: description.trim(),
+      description,
       price,
       discountPrice,
       category: normalizedCategory,
-      sizes: sizes ? (Array.isArray(sizes) ? sizes : [sizes]) : undefined,
+      sizes,
       images,
     });
 
@@ -113,7 +89,27 @@ const createProduct = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
+    if (uploadedImagePublicIds.length > 0) {
+      await Promise.allSettled(
+        uploadedImagePublicIds.map((publicId) => cloudinary.uploader.destroy(publicId)),
+      );
+    }
+
+    const statusCode =
+      error.message === "Title is required and must be less than 120 characters" ||
+      error.message === "Description is required and must be less than 2000 characters" ||
+      error.message === "Invalid category" ||
+      error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Discount price must be a valid non-negative number" ||
+      error.message === "Discount price must be less than price" ||
+      error.message === "Sizes must contain only strings" ||
+      error.message.startsWith("Sizes must be one of:")
+        ? 400
+        : error.code === 11000
+          ? 409
+          : 500;
+
+    res.status(statusCode).json({
       success: false,
       message: error.message,
     });

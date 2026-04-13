@@ -1,4 +1,6 @@
 const Product = require("../../Models/ProductSchema");
+const mongoose = require("mongoose");
+const { validateCategory } = require("../../Utils/productValidation");
 
 // `GET /api/products` - Fetch all products with new and top-rated sections
 const getAllProducts = async (req, res) => {
@@ -49,8 +51,16 @@ const getAllProducts = async (req, res) => {
 const getProductBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    const normalizedSlug = typeof slug === "string" ? slug.trim().toLowerCase() : "";
 
-    const product = await Product.findOne({ slug });
+    if (!normalizedSlug) {
+      return res.status(400).json({
+        success: false,
+        message: "Product slug is required",
+      });
+    }
+
+    const product = await Product.findOne({ slug: normalizedSlug });
 
     // Not found
     if (!product) {
@@ -136,16 +146,18 @@ const getProductsByCategory = async (req, res) => {
       });
     }
 
-    // Getting products that match the category (case-insensitive)
+    const normalizedCategory = validateCategory(category);
+
+    // Getting products that match the category safely
     const products = await Product.find({
-      category: new RegExp(`^${category}$`, "i"),
+      category: normalizedCategory,
     }).sort({ createdAt: -1, rating: -1 });
 
     // Response if no products found for the category
     if (products.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `No products found in category '${category}'`,
+        message: `No products found in category '${normalizedCategory}'`,
       });
     }
 
@@ -158,7 +170,9 @@ const getProductsByCategory = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
+    const statusCode = error.message === "Invalid category" ? 400 : 500;
+
+    return res.status(statusCode).json({
       success: false,
       message: "Failed to fetch products by category",
       error: error.message,
@@ -203,6 +217,13 @@ const shuffleArray = (array) => {
 const getProductSuggestions = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
+    }
 
     // 1. Get current product
     const currentProduct = await Product.findById(id);
