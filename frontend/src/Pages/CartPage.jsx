@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../Hooks/useAuth";
 import axios from "axios";
 import {
   Plus,
@@ -15,21 +14,21 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
+import { useAuth } from "../Hooks/useAuth";
 import Loader from "../components/Loader";
 
-const CartItem = ({ item, onDelete }) => {
+const CartItem = ({ item, onDelete, onUpdateQuantity }) => {
   const x = useMotionValue(0);
-
-  // Dynamic transformations for a tactile mobile swipe feel
   const iconScale = useTransform(x, [-100, -50], [1.2, 0.5]);
   const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
 
   return (
-    <div className="relative overflow-hidden mb-1 rounded-[1.5rem] md:rounded-0 md:mb-0">
+    /* Container with a subtle bottom divider that doesn't feel "heavy" */
+    <div className="relative group/item border-b border-zinc-100 last:border-0 mx-4 md:mx-0">
       {/* 🗑️ MOBILE SWIPE LAYER */}
       <Motion.div
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden"
+        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden rounded-[1.5rem]"
       >
         <Motion.div style={{ scale: iconScale }}>
           <Trash2 className="text-rose-500" size={24} />
@@ -40,7 +39,6 @@ const CartItem = ({ item, onDelete }) => {
       <Motion.div
         drag="x"
         dragDirectionLock
-        // Only allow swiping on mobile devices
         dragConstraints={{
           left:
             typeof window !== "undefined" && window.innerWidth < 768 ? -100 : 0,
@@ -51,11 +49,14 @@ const CartItem = ({ item, onDelete }) => {
         onDragEnd={(_, info) => {
           if (info.offset.x < -80) onDelete(`${item.product._id}-${item.size}`);
         }}
-        className="relative bg-white md:bg-transparent flex gap-4 md:gap-6 py-6 border-b border-zinc-50 items-center group last:border-0 px-4 md:px-0"
+        whileHover={{ x: 5 }} // Slight nudge on hover feels very "flowy"
+        className="relative bg-white md:bg-transparent flex gap-4 md:gap-8 py-8 items-center transition-colors duration-300"
       >
         {/* Editorial Aspect Ratio Image */}
-        <div className="relative aspect-square w-20 md:w-32 bg-zinc-100 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shrink-0 shadow-sm border border-zinc-50">
-          <img
+        <div className="relative aspect-[4/5] w-24 md:w-32 bg-zinc-50 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-zinc-100/50">
+          <Motion.img
+            whileHover={{ scale: 1.08 }}
+            transition={{ duration: 0.6 }}
             src={item.image}
             className="w-full h-full object-cover"
             alt={item.name}
@@ -63,42 +64,85 @@ const CartItem = ({ item, onDelete }) => {
         </div>
 
         {/* Content Block */}
-        <div className="flex flex-col flex-grow min-w-0 justify-between h-full py-1">
-          <div className="flex justify-between items-start gap-2">
+        <div className="flex flex-col flex-grow min-w-0 justify-between self-stretch py-1">
+          <div className="flex justify-between items-start gap-4">
             <div className="min-w-0">
-              <h3 className="text-sm md:text-lg font-bold text-slate-800 tracking-tight truncate">
+              <h3 className="text-sm md:text-lg font-bold text-zinc-900 tracking-tight truncate">
                 {item.name}
               </h3>
-              <p className="text-[11px] md:text-sm text-slate-400 font-medium mt-0.5">
-                size: {item.size}
+              <p className="text-[10px] md:text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-bold mt-1">
+                Size: <span className="text-zinc-600">{item.size}</span>
               </p>
             </div>
-            <span className="text-sm md:text-lg font-black text-slate-900 tracking-tight whitespace-nowrap">
+            <span className="text-sm md:text-xl font-black text-zinc-900 tracking-tighter">
               ₹{item.price.toFixed(2)}
             </span>
           </div>
 
-          <div className="flex justify-between items-center mt-3 md:mt-6">
-            {/* Quantity Pill */}
-            <div className="flex items-center gap-3 bg-white border border-zinc-100 p-1 rounded-full shadow-sm shrink-0">
-              <button className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-black border border-zinc-100 rounded-full transition-colors active:scale-90">
-                <Minus size={12} md:size={14} strokeWidth={3} />
-              </button>
-              <span className="text-xs md:text-sm font-black text-slate-800 px-1">
-                {item.quantity}
+          <div className="flex justify-between items-end mt-4">
+            {/* Quantity Section with Label */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                Quantity
               </span>
-              <button className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center bg-[#18181B] text-white rounded-full transition-transform active:scale-90">
-                <Plus size={12} md:size={14} strokeWidth={3} />
-              </button>
+              <div className="flex items-center gap-4 bg-zinc-50 px-3 py-2 rounded-xl border border-zinc-100">
+                <Motion.button
+                  whileTap={{ scale: 0.8 }}
+                  onClick={() =>
+                    onUpdateQuantity(
+                      item.product._id,
+                      item.size,
+                      item.quantity - 1,
+                    )
+                  }
+                  className="text-zinc-400 hover:text-rose-500 transition-colors"
+                >
+                  <Minus size={14} strokeWidth={3} />
+                </Motion.button>
+
+                <div className="relative w-4 h-5 overflow-hidden flex items-center justify-center">
+                  <AnimatePresence mode="popLayout" custom={item.quantity}>
+                    <Motion.span
+                      key={item.quantity}
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -10, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute text-sm font-black text-zinc-900"
+                    >
+                      {item.quantity}
+                    </Motion.span>
+                  </AnimatePresence>
+                </div>
+
+                <Motion.button
+                  whileTap={{ scale: 0.8 }}
+                  onClick={() =>
+                    onUpdateQuantity(
+                      item.product._id,
+                      item.size,
+                      item.quantity + 1,
+                    )
+                  }
+                  className="text-zinc-400 hover:text-zinc-900 transition-colors"
+                >
+                  <Plus size={14} strokeWidth={3} />
+                </Motion.button>
+              </div>
             </div>
 
-            {/* Desktop-Only Remove Link */}
-            <button
+            {/* Desktop-Only Remove Button */}
+            <Motion.button
+              whileHover={{ opacity: 0.7 }}
               onClick={() => onDelete(`${item.product._id}-${item.size}`)}
-              className="hidden md:block text-[10px] md:text-xs font-bold text-rose-500 uppercase tracking-widest hover:underline transition-all"
+              className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 group/btn"
             >
-              Remove
-            </button>
+              <Trash2 size={12} className="mb-0.5" />
+              <span className="relative">
+                Remove
+                <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-rose-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left" />
+              </span>
+            </Motion.button>
           </div>
         </div>
       </Motion.div>
