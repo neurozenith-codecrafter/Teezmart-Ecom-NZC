@@ -1,10 +1,12 @@
-import { addToCartAPI } from "../Services/CartServices";
 import { useAuth } from "./useAuth";
 import { useNavigate } from "react-router-dom";
+import { useCommerce } from "./useCommerce";
 
 export const useCart = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const { addToCart, updateCartItem, removeCartItem, refreshCart, cart, cartItems } =
+    useCommerce();
 
   const handleAddToCart = async ({ productId, quantity = 1, size }) => {
     // 1. Auth check
@@ -20,23 +22,19 @@ export const useCart = () => {
     }
 
     try {
-      const data = await addToCartAPI({
-        productId,
-        quantity,
-        size,
-        token,
-      });
-
-      console.log("Cart updated:", data);
-
-      // Optional UX
-      alert("Added to cart");
-
+      await addToCart({ productId, quantity, size });
     } catch (error) {
       console.error("Add to cart failed:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Something went wrong");
     }
   };
 
-  return { handleAddToCart };
+  return {
+    handleAddToCart,
+    updateCartItem,
+    removeCartItem,
+    refreshCart,
+    cart,
+    cartItems,
+  };
 };

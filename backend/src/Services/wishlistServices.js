@@ -99,8 +99,40 @@ const toggleWishlist = async (userId, productId) => {
   };
 };
 
+const addToWishlist = async (userId, productId) => {
+  await ensureUserExists(userId);
+  await ensureProductExists(productId);
+
+  await User.updateOne(
+    { _id: userId },
+    { $addToSet: { wishlist: productId } },
+  );
+
+  return {
+    productId,
+    isWishlisted: true,
+  };
+};
+
+const removeFromWishlist = async (userId, productId) => {
+  await ensureUserExists(userId);
+  ensureValidObjectId(productId, "product ID");
+
+  await User.updateOne(
+    { _id: userId },
+    { $pull: { wishlist: productId } },
+  );
+
+  return {
+    productId,
+    isWishlisted: false,
+  };
+};
+
 module.exports = {
   toggleWishlist,
   getWishlist,
   isWishlisted,
+  addToWishlist,
+  removeFromWishlist,
 };

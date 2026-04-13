@@ -10,6 +10,8 @@ const { deleteUserAccount } = require("../Controllers/UserControllers/deleteRout
 const {
   toggleWishlist,
   getWishlist,
+  addWishlistItem,
+  removeWishlistItem,
 } = require("../Controllers/UserControllers/WishlistController.js");
 
 
@@ -18,6 +20,8 @@ router.put("/profile", protect, updateUserProfile);
 router.delete("/profile", protect, deleteUserAccount);
 router.get("/wishlist", protect, getWishlist);
 router.post("/wishlist", protect, toggleWishlist);
+router.post("/wishlist/:productId", protect, addWishlistItem);
+router.delete("/wishlist/:productId", protect, removeWishlistItem);
 router.put("/profile/:id/address", protect, updateUserAddresses);
 
 

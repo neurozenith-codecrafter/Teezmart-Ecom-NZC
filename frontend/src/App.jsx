@@ -12,6 +12,7 @@ import { Products } from "./Pages/admin/Products";
 import { Orders } from "./Pages/admin/Orders";
 import { Users } from "./Pages/admin/Users";
 import CartPage from "./Pages/CartPage";
+import WishlistPage from "./Pages/WishlistPage";
 import { useAuth } from "./Hooks/useAuth";
 import "./App.css";
 
@@ -62,6 +63,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Auth />} />
             <Route path="/product/:slug" element={<ProductPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
           </Route>
           <Route path="/cart" element={<CartPage />} />
 

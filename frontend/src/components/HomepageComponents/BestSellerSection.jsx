@@ -4,19 +4,18 @@ import { motion } from "framer-motion";
 import { Heart, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
+import { useCart } from "../../Hooks/useCart";
+import { useWishlist } from "../../Hooks/useWishlist";
 
 export const BestSellerSection = () => {
-  motion;
   const [bestSellers, setBestSellers] = useState([]);
-  // State to track liked products locally
-  const [likedProducts, setLikedProducts] = useState({});
+  const { handleAddToCart } = useCart();
+  const { wishlistIds, handleToggleWishlist } = useWishlist();
 
   useEffect(() => {
     const fetchBestSellers = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/products/recommended",
-        );
+        const response = await axios.get("/api/products/recommended");
         setBestSellers(response.data.data);
       } catch (error) {
         console.error("Error fetching best sellers:", error);
@@ -25,15 +24,11 @@ export const BestSellerSection = () => {
     fetchBestSellers();
   }, []);
 
-  const toggleLike = (e, productId) => {
+  const toggleLike = async (e, product) => {
     // IMPORTANT: Prevents the click from bubbling up to the Link component
     e.preventDefault();
     e.stopPropagation();
-
-    setLikedProducts((prev) => ({
-      ...prev,
-      [productId]: !prev[productId],
-    }));
+    await handleToggleWishlist(product);
   };
 
   return (
@@ -50,7 +45,7 @@ export const BestSellerSection = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-10 md:gap-y-16 mb-0">
           {bestSellers.map((item) => {
-            const isLiked = likedProducts[item._id];
+            const isLiked = wishlistIds.has(String(item._id));
 
             return (
               <Link
@@ -68,7 +63,7 @@ export const BestSellerSection = () => {
 
                   {/* WISHLIST BUTTON */}
                   <motion.button
-                    onClick={(e) => toggleLike(e, item._id)}
+                    onClick={(e) => toggleLike(e, item)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -108,9 +103,13 @@ export const BestSellerSection = () => {
                       ₹{item.price}
                     </span>
                     <button
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.preventDefault(); // Prevents nav if you just want to add to cart
-                        console.log("Added to cart");
+                        await handleAddToCart({
+                          productId: item._id,
+                          quantity: 1,
+                          size: item?.sizes?.[0],
+                        });
                       }}
                       className="w-full sm:w-auto flex items-center justify-center gap-1 bg-gradient-to-r from-[#32F18F] to-[#3AF6C9] text-slate-900 px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[10px] md:text-[12px] shadow-sm active:scale-95 transition-all"
                     >

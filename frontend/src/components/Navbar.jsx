@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
+import { useCommerce } from "../Hooks/useCommerce";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,6 +29,7 @@ const Navbar = () => {
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
 
   const { isLoggedIn, user, logout } = useAuth();
+  const { cartCount, wishlistCount } = useCommerce();
 
   const lastScrollY = useRef(0);
   const profileMenuRef = useRef(null);
@@ -197,11 +199,23 @@ const Navbar = () => {
                 {isLoggedIn ? (
                   <div className="flex items-center space-x-3 md:space-x-5">
                     {/* 1. Wishlist Icon - Hidden on Mobile */}
-                    <Heart className="hidden md:block w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:text-rose-500 transition-colors" />
+                    <Link to="/wishlist" className="hidden md:block relative">
+                      <Heart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:text-rose-500 transition-colors" />
+                      {wishlistCount > 0 ? (
+                        <span className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center">
+                          {wishlistCount > 99 ? "99+" : wishlistCount}
+                        </span>
+                      ) : null}
+                    </Link>
 
                     {/* 2. Cart Icon */}
-                    <Link to="/cart">
+                    <Link to="/cart" className="relative">
                       <ShoppingCart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:opacity-60 transition-opacity" />
+                      {cartCount > 0 ? (
+                        <span className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-zinc-900 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center">
+                          {cartCount > 99 ? "99+" : cartCount}
+                        </span>
+                      ) : null}
                     </Link>
 
                     <div className="relative ml-2 md:ml-0" ref={profileMenuRef}>
@@ -352,6 +366,9 @@ const Navbar = () => {
                         setActiveItem(item.name);
                         if (item.isContact) {
                           scrollToContact();
+                        } else if (item.name === "Wishlist") {
+                          navigate("/wishlist");
+                          setIsMenuOpen(false);
                         } else {
                           setIsMenuOpen(false);
                         }

@@ -7,19 +7,20 @@ import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
 import { useCart } from "../Hooks/useCart";
+import { useWishlist } from "../Hooks/useWishlist";
 import useAnimations from "../Hooks/useAnimation";
 
 const ProductPage = () => {
   const { slug } = useParams();
   const { handleAddToCart } = useCart();
+  const { wishlistIds, handleToggleWishlist } = useWishlist();
   const { containerVariants, fadeInUp, subtleReveal } = useAnimations();
 
   const [product, setProduct] = useState(null);
   const [productImages, setProductImages] = useState([]);
 
-  const [selectedSize, setSelectedSize] = useState("S");
+  const [selectedSize, setSelectedSize] = useState("");
   const [selectedImg, setSelectedImg] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     // Fetch product details using the slug from the URL
@@ -30,6 +31,7 @@ const ProductPage = () => {
         setProduct(response.data.data);
         setProductImages(response.data.data.images);
         setSelectedImg(0);
+        setSelectedSize(response.data.data?.sizes?.[0] || "");
 
         console.log("Response message ->", response.data.message);
         console.log("Product data ->", response.data.data);
@@ -57,6 +59,8 @@ const ProductPage = () => {
 
     return `${startStr} - ${endStr}`;
   };
+
+  const isLiked = product?._id ? wishlistIds.has(String(product._id)) : false;
 
   return (
     <Motion.div
@@ -147,7 +151,7 @@ const ProductPage = () => {
                   Select Size
                 </h4>
                 <div className="flex flex-wrap gap-2.5">
-                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                  {(product?.sizes || []).map((size) => (
                     <Motion.button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -217,7 +221,7 @@ const ProductPage = () => {
                 </Motion.button>
 
                 <Motion.button
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={() => handleToggleWishlist(product)}
                   // Bouncy hover and tap
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
