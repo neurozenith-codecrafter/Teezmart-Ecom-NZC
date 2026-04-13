@@ -98,7 +98,7 @@ exports.getCart = async (userId) => {
 
   const cart = await Cart.findOne({ user: userId }).populate(
     "items.product",
-    "title price images",
+    "title price images slug",
   );
 
   if (!cart) {
