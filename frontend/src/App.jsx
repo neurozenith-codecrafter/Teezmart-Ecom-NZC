@@ -6,10 +6,12 @@ import ScrollToTop from "./constants/ScrollToTop";
 import { AdminProvider } from "./context/AdminProvider";
 import { useAdmin } from "./context/useAdmin";
 import { AdminLayout } from "./components/admin/AdminLayout";
+import PublicLayout from "./components/PublicLayout";
 import { Dashboard } from "./Pages/admin/Dashboard";
 import { Products } from "./Pages/admin/Products";
 import { Orders } from "./Pages/admin/Orders";
 import { Users } from "./Pages/admin/Users";
+import CartPage from "./Pages/CartPage";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -26,9 +28,12 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/product/:slug" element={<ProductPage />} />
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/product/:slug" element={<ProductPage />} />
+          </Route>
+          <Route path="/cart" element={<CartPage />} />
 
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
