@@ -15,10 +15,10 @@ const {
 
 router.get("/profile", protect, getUserProfile);
 router.put("/profile", protect, updateUserProfile);
-router.put("/profile/:id/address", protect, updateUserAddresses);
 router.delete("/profile", protect, deleteUserAccount);
 router.get("/wishlist", protect, getWishlist);
 router.post("/wishlist", protect, toggleWishlist);
+router.put("/profile/:id/address", protect, updateUserAddresses);
 
 
 module.exports = router;

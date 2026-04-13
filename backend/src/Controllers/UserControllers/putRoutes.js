@@ -164,30 +164,30 @@ const updateUserProfileShared = async (req, res) => {
   }
 };
 
-const updateUserAddresses = async (req, res) => {
-  try {
-    const safeUser = await userService.updateUserAddresses(
-      req.user,
-      req.params.id,
-      req.body,
-    );
+// const updateUserAddresses = async (req, res) => {
+//   try {
+//     const safeUser = await userService.updateUserAddresses(
+//       req.user,
+//       req.params.id,
+//       req.body,
+//     );
 
-    res.status(200).json({
-      success: true,
-      message: "Addresses updated successfully",
-      data: safeUser,
-      user: safeUser,
-    });
-  } catch (error) {
-    console.error("Update Address Error:", error);
+//     res.status(200).json({
+//       success: true,
+//       message: "Addresses updated successfully",
+//       data: safeUser,
+//       user: safeUser,
+//     });
+//   } catch (error) {
+//     console.error("Update Address Error:", error);
 
-    res.status(resolveStatusCode(error)).json({
-      success: false,
-      message: error.message || "Failed to update addresses",
-      data: null,
-    });
-  }
-};
+//     res.status(resolveStatusCode(error)).json({
+//       success: false,
+//       message: error.message || "Failed to update addresses",
+//       data: null,
+//     });
+//   }
+// };
 
 module.exports = {
   updateUserProfile: updateUserProfileShared,

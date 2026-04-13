@@ -3,6 +3,7 @@ const {
   ensureValidObjectId,
   ADDRESS_ROUTE_MESSAGE,
   validateAndNormalizeAddresses,
+  validateAndNormalizeAddress,
   validateAndNormalizeAvatar,
   validateAndNormalizeName,
   validateAndNormalizePhone,
@@ -81,13 +82,30 @@ const updateUserAddresses = async (currentUser, targetUserId, payload) => {
   ensureCanManageUser(currentUser, targetUserId);
 
   const user = await getUserOrThrow(targetUserId);
-  const rawAddresses = Array.isArray(payload) ? payload : payload?.addresses;
 
-  if (rawAddresses === undefined) {
-    throw new Error("Addresses are required");
+  const rawAddresses = Array.isArray(payload)
+    ? payload
+    : payload?.addresses;
+
+  if (!rawAddresses || (Array.isArray(rawAddresses) && rawAddresses.length === 0)) {
+    throw new Error("At least one address is required");
   }
 
-  user.addresses = validateAndNormalizeAddresses(rawAddresses);
+  // Step 1: Normalize ONLY incoming addresses (without limit logic conflict)
+  const incomingAddresses = rawAddresses.map((addr, index) =>
+    validateAndNormalizeAddress(addr, index)
+  );
+
+  const existingAddresses = user.addresses || [];
+
+  // Step 2: Merge
+  const combinedAddresses = [...existingAddresses, ...incomingAddresses];
+
+  // Step 3: Validate FINAL state (this enforces max 5 + default rules)
+  const finalAddresses = validateAndNormalizeAddresses(combinedAddresses);
+
+  // Step 4: Save
+  user.addresses = finalAddresses;
   await user.save();
 
   return buildSafeUser(user);

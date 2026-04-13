@@ -195,4 +195,5 @@ module.exports = {
   validateAndNormalizeAvatar,
   validateAndNormalizePhone,
   validateAndNormalizeAddresses,
+  validateAndNormalizeAddress
 };
