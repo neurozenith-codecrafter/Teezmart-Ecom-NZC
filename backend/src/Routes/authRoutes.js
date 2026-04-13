@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { googleAuth } = require("../Controllers/authController");
-const { protect, getMe, isAdmin } = require("../Middleware/authMiddleware");
+const {
+  protect,
+  getMe,
+  authorizeRoles,
+} = require("../Middleware/authMiddleware");
 
 router.post("/google", googleAuth);
 

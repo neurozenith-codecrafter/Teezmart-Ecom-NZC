@@ -1,15 +1,20 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { AdminContext } from "./adminContext";
+import { useAuth } from "../Hooks/useAuth";
 
 export const AdminProvider = ({ children }) => {
-  const [admin, setAdmin] = useState({
-    name: "Arjun Sharma",
-    role: "DEV_ADMIN",
-    email: "admin@teezmart.com",
-  });
+  const { user } = useAuth();
+  const admin = useMemo(
+    () => ({
+      name: user?.name || "",
+      role: user?.role || "user",
+      email: user?.email || "",
+    }),
+    [user],
+  );
 
   return (
-    <AdminContext.Provider value={{ admin, setAdmin }}>
+    <AdminContext.Provider value={{ admin }}>
       {children}
     </AdminContext.Provider>
   );
