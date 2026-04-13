@@ -23,7 +23,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(true);
   const lastScrollY = useRef(0);
-
+  motion;
   useEffect(() => {
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
@@ -88,17 +88,11 @@ const Navbar = () => {
               </a>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
-<<<<<<< HEAD
-              <Bell className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-              <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-              <User className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-=======
               <Bell className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
               <Link to={"/cart"}>
                 <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
               </Link>
               <User className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
->>>>>>> d45ced7d4e6a39468bf83d27fb3238a1249e11cd
             </div>
           </div>
         </div>
