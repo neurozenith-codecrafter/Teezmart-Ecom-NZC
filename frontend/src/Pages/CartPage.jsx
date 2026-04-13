@@ -48,7 +48,7 @@ const CartItem = ({ item, onDelete }) => {
         dragElastic={0.1}
         style={{ x }}
         onDragEnd={(_, info) => {
-          if (info.offset.x < -80) onDelete(item.id);
+          if (info.offset.x < -80) onDelete(`${item.product._id}-${item.size}`);
         }}
         className="relative bg-white md:bg-transparent flex gap-4 md:gap-6 py-6 border-b border-zinc-50 items-center group last:border-0 px-4 md:px-0"
       >
@@ -69,7 +69,7 @@ const CartItem = ({ item, onDelete }) => {
                 {item.name}
               </h3>
               <p className="text-[11px] md:text-sm text-slate-400 font-medium mt-0.5">
-                Ref: {item.stockInfo}
+                size: {item.size}
               </p>
             </div>
             <span className="text-sm md:text-lg font-black text-slate-900 tracking-tight whitespace-nowrap">
@@ -84,7 +84,7 @@ const CartItem = ({ item, onDelete }) => {
                 <Minus size={12} md:size={14} strokeWidth={3} />
               </button>
               <span className="text-xs md:text-sm font-black text-slate-800 px-1">
-                {item.qty}
+                {item.quantity}
               </span>
               <button className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center bg-[#18181B] text-white rounded-full transition-transform active:scale-90">
                 <Plus size={12} md:size={14} strokeWidth={3} />
@@ -93,7 +93,7 @@ const CartItem = ({ item, onDelete }) => {
 
             {/* Desktop-Only Remove Link */}
             <button
-              onClick={() => onDelete(item.id)}
+              onClick={() => onDelete(`${item.product._id}-${item.size}`)}
               className="hidden md:block text-[10px] md:text-xs font-bold text-rose-500 uppercase tracking-widest hover:underline transition-all"
             >
               Remove
@@ -134,35 +134,8 @@ const EmptyCart = () => {
 export const CartPage = () => {
   const { token } = useAuth();
 
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Drawstring Hoodie",
-      stockInfo: "25/43",
-      qty: "01",
-      price: 1499.0,
-      image:
-        "https://i.pinimg.com/1200x/f2/cc/b7/f2ccb7ab73dda6947619291522e01e77.jpg",
-    },
-    {
-      id: 2,
-      name: "Fashion Hoodie",
-      stockInfo: "20/14",
-      qty: "01",
-      price: 1299.0,
-      image:
-        "https://i.pinimg.com/736x/a7/e9/0d/a7e90dd949514229dc04291d21ad2d40.jpg",
-    },
-    {
-      id: 3,
-      name: "Reebok Hoodie",
-      stockInfo: "26/45",
-      qty: "01",
-      price: 999.0,
-      image:
-        "https://i.pinimg.com/736x/62/2c/30/622c3034337829762cc0fabdd7a35b00.jpg",
-    },
-  ]);
+  const [cart, setCart] = useState({});
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -172,15 +145,16 @@ export const CartPage = () => {
         }
       });
 
-      // setItems(response.data.data);
+      setCart(response.data.data);
+      setItems(response.data.data.items);
       console.log(response.data.data);
 
     };
     fetchItems();
-  }, [items, token]);
+  }, [token]);
 
   const handleDelete = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => `${item.product._id}-${item.size}` !== id));
   };
 
   if (!items.length) {
@@ -209,7 +183,7 @@ export const CartPage = () => {
             <AnimatePresence mode="popLayout">
               {items.map((item) => (
                 <Motion.div
-                  key={item.id}
+                  key={`${item.product._id}-${item.size}`}
                   layout
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -240,8 +214,8 @@ export const CartPage = () => {
               </div>
               <div className="space-y-5 px-1 mb-10">
                 <div className="flex justify-between items-center text-sm md:text-base">
-                  <span className="font-bold text-slate-500">Sub Total</span>
-                  <span className="font-black text-slate-900">₹3797.00</span>
+                  <span className="font-bold text-slate-500">cart</span>
+                  <span className="font-black text-slate-900">₹{cart.subtotal}</span>
                 </div>
                 <div className="border-t border-dashed border-zinc-200 w-full" />
                 <div className="flex justify-between items-center pt-2">
@@ -250,7 +224,7 @@ export const CartPage = () => {
                   </span>
                   <div className="text-right">
                     <span className="text-[24px] md:text-[32px] font-black text-slate-900 tracking-tighter leading-none block">
-                      ₹3917.00
+                      ₹{cart.totalPrice}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 block">
                       (Inc. all taxes)
