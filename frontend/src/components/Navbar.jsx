@@ -14,6 +14,7 @@ import {
   Package,
   Database,
   MessageSquare,
+  ShieldAlert,
   Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +23,10 @@ import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(true);
+
+  // Track active item by name for the fluid transition
+  const [activeItem, setActiveItem] = useState("Order History");
+
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -38,7 +43,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", controlNavbar);
   }, []);
 
-  // Snappier, richer sidebar animation
   const sidebarVariants = {
     closed: {
       x: "-100%",
@@ -49,13 +53,25 @@ const Navbar = () => {
 
   const menuItems = [
     { name: "Live Orders", icon: LayoutGrid },
-    { name: "Order History", icon: ShoppingBag, active: true },
+    { name: "Order History", icon: ShoppingBag },
     { name: "Offers", icon: Percent },
     { name: "Products", icon: Package },
-    { name: "Stock", icon: Database },
-    { name: "Message", icon: MessageSquare },
-    { name: "Settings", icon: Settings },
+    { name: "Message", icon: MessageSquare, isContact: true },
+    { name: "Report", icon: ShieldAlert, isContact: true },
   ];
+
+  const scrollToContact = () => {
+    setIsMenuOpen(false);
+    setTimeout(() => {
+      const element = document.getElementById("footer-contact");
+      if (element) {
+        // Smooth scroll to the section
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Trigger the premium "ping"
+        window.dispatchEvent(new CustomEvent("highlight-contact"));
+      }
+    }, 350);
+  };
 
   return (
     <>
@@ -69,7 +85,6 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(true)}
               className="p-2 -ml-2 cursor-pointer hover:bg-zinc-50 rounded-full transition-all"
             >
-              {/* REMOVED ROTATION - Clean and straight */}
               <Menu className="w-[22px] h-[22px] md:w-[24px] md:h-[24px] text-black stroke-[1.5]" />
             </button>
           </div>
@@ -88,17 +103,11 @@ const Navbar = () => {
               </a>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
-<<<<<<< HEAD
-              <Bell className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-              <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-              <User className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
-=======
               <Bell className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
               <Link to={"/cart"}>
                 <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
               </Link>
               <User className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
->>>>>>> d45ced7d4e6a39468bf83d27fb3238a1249e11cd
             </div>
           </div>
         </div>
@@ -139,7 +148,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {}
+      {/* 3. SIDEBAR WITH FLUID TRANSITION */}
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -159,7 +168,7 @@ const Navbar = () => {
               className="fixed top-0 left-0 h-full w-[280px] bg-white z-[101] shadow-[20px_0_60px_-15px_rgba(0,0,0,0.05)] flex flex-col"
             >
               <div className="p-8 pb-4 flex justify-between items-center">
-                <span className="text-[18px] font-black tracking-tighter uppercase text-zinc-900">
+                <span className="text-[20px] font-semibold tracking-tight text-zinc-900">
                   TeezMart
                 </span>
                 <X
@@ -169,32 +178,61 @@ const Navbar = () => {
                 />
               </div>
 
-              {/* LIST EXTRACTION: Extracted directly from reference img */}
-              <div className="flex-1 px-4 py-6 space-y-1">
-                {menuItems.map((item, i) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05, duration: 0.3 }}
-                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all cursor-pointer group
-                      ${
-                        item.active
-                          ? "bg-rose-50 text-rose-500 font-semibold"
-                          : "text-zinc-500 hover:bg-zinc-50"
-                      }`}
-                  >
-                    <item.icon
-                      className={`w-5 h-5 ${item.active ? "text-rose-500" : "text-zinc-400 group-hover:text-zinc-900"}`}
-                      strokeWidth={1.5}
-                    />
-                    <span className="text-[15px]">{item.name}</span>
-                  </motion.div>
-                ))}
+              <div className="flex-1 px-4 py-6 space-y-1 relative">
+                {menuItems.map((item) => {
+                  const isActive = activeItem === item.name;
+                  return (
+                    <div
+                      key={item.name}
+                      onClick={() => {
+                        setActiveItem(item.name);
+                        if (item.isContact) {
+                          scrollToContact();
+                        } else {
+                          setIsMenuOpen(false);
+                        }
+                      }}
+                      className="relative px-4 py-3.5 rounded-2xl transition-all cursor-pointer group"
+                    >
+                      {/* SHARED LAYOUT BACKGROUND (The Premium "Pill" Effect) */}
+                      {isActive && (
+                        <motion.div
+                          layoutId="activePill"
+                          className="absolute inset-0 bg-rose-50 rounded-2xl z-0"
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
+                        />
+                      )}
+
+                      <div className="relative z-10 flex items-center gap-4">
+                        <item.icon
+                          className={`w-5 h-5 transition-colors duration-300 ${
+                            isActive
+                              ? "text-rose-500"
+                              : "text-zinc-400 group-hover:text-zinc-900"
+                          }`}
+                          strokeWidth={1.5}
+                        />
+                        <span
+                          className={`text-[15px] transition-colors duration-300 ${
+                            isActive
+                              ? "text-rose-500 font-semibold"
+                              : "text-zinc-500"
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="p-8 border-t border-zinc-100">
-                <div className="flex items-center gap-3 text-zinc-400 text-[12px] font-bold tracking-[0.2em] uppercase">
+                <div className="flex items-center gap-3 text-zinc-400 text-[10px] font-bold tracking-[0.3em] uppercase">
                   © NeuroZenith 2026
                 </div>
               </div>

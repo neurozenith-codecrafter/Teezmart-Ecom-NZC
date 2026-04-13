@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Mail, MapPin, PhoneCall } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 
 const FooterBrandBlock = () => (
   <div className="space-y-4">
-    <h2 className="text-3xl font-bold tracking-tighter text-slate-950">
+    <h2 className="text-3xl font-semibold tracking-tighter text-slate-950">
       TeezMart<span className="text-[#32F18F]">.</span>
     </h2>
     <p className="text-slate-500 text-sm leading-relaxed max-w-sm font-medium">
-      At TeezMart, we don&apos;t just make t-shirts — we craft oversized comfort
+      At TeezMart, we don&apos;t just make T-shirts — We craft oversized comfort
       with attitude. Premium fabrics, unique vibes.
     </p>
 
@@ -62,6 +63,26 @@ const FooterBrandBlock = () => (
 );
 
 const FooterSection = ({ compactMobile = false }) => {
+  const [isPinging, setIsPinging] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    const handleHighlight = () => {
+      setIsPinging(true);
+      timer = window.setTimeout(() => {
+        setIsPinging(false);
+      }, 1500);
+    };
+
+    window.addEventListener("highlight-contact", handleHighlight);
+    return () => {
+      window.removeEventListener("highlight-contact", handleHighlight);
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, []);
+
   return (
     <footer
       className={`relative bg-gradient-to-b from-white via-zinc-50 to-slate-100 pt-24 pb-20 text-slate-900 font-sans w-full border-t border-slate-200/50 ${compactMobile ? "hidden md:block" : ""}`}
@@ -83,20 +104,16 @@ const FooterSection = ({ compactMobile = false }) => {
               Navigation
             </h4>
             <ul className="text-sm text-slate-600 space-y-4 font-semibold">
-              {[
-                "About Us",
-                "New Arrivals",
-                "Best Sellers",
-                "Our Story",
-                "Careers",
-              ].map((link) => (
-                <li
-                  key={link}
-                  className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
-                >
-                  {link}
-                </li>
-              ))}
+              {["Why Us?", "New Arrivals", "Best Sellers", "Products"].map(
+                (link) => (
+                  <li
+                    key={link}
+                    className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
+                  >
+                    {link}
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 
@@ -122,37 +139,43 @@ const FooterSection = ({ compactMobile = false }) => {
             </ul>
           </div>
 
-          <div className="space-y-6">
-            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
-              Contact Us
-            </h4>
-            <div className="space-y-5 pt-1">
-              <div className="flex items-start gap-4 group">
-                <MapPin
-                  size={18}
-                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
+          <div className="relative group">
+            <AnimatePresence>
+              {isPinging && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute -inset-4 rounded-3xl z-0 pointer-events-none bg-[#32F18F]/5"
+                  style={{ border: "1px solid rgba(50, 241, 143, 0.1)" }}
                 />
-                <span className="text-sm text-slate-600 font-medium">
-                  75 TeezMart Blvd, <br /> New York, NY 10001
-                </span>
-              </div>
-              <div className="flex items-center gap-4 group">
-                <Mail
-                  size={18}
-                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
-                />
-                <span className="text-sm text-slate-600 font-medium">
-                  care@teezmart.com
-                </span>
-              </div>
-              <div className="flex items-center gap-4 group">
-                <PhoneCall
-                  size={18}
-                  className="text-slate-400 group-hover:text-slate-900 transition-colors"
-                />
-                <span className="text-sm text-slate-600 font-medium">
-                  +1 (555) 123-4567
-                </span>
+              )}
+            </AnimatePresence>
+
+            <div className="relative z-10 space-y-6">
+              <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
+                Contact Us
+              </h4>
+              <div id="footer-contact" className="space-y-5 pt-1">
+                <div className="flex items-start gap-4">
+                  <MapPin size={18} className="text-slate-400" />
+                  <span className="text-sm text-slate-600 font-medium">
+                    75 TeezMart Blvd, <br /> NY 10001
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Mail size={18} className="text-slate-400" />
+                  <span className="text-sm text-slate-600 font-medium">
+                    care@teezmart.com
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <PhoneCall size={18} className="text-slate-400" />
+                  <span className="text-sm text-slate-600 font-medium">
+                    +1 (555) 123-4567
+                  </span>
+                </div>
               </div>
             </div>
           </div>
