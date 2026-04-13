@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../Hooks/useAuth";
+import axios from "axios";
 import {
   Plus,
   Minus,
@@ -129,7 +131,9 @@ const EmptyCart = () => {
   );
 };
 
-const CartPage = () => {
+export const CartPage = () => {
+  const { token } = useAuth();
+
   const [items, setItems] = useState([
     {
       id: 1,
@@ -159,6 +163,21 @@ const CartPage = () => {
         "https://i.pinimg.com/736x/62/2c/30/622c3034337829762cc0fabdd7a35b00.jpg",
     },
   ]);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      const response = await axios.get("/api/cart", {
+        headers: {
+          Authorization: `Bearer ${ token }`
+        }
+      });
+
+      // setItems(response.data.data);
+      console.log(response.data.data);
+
+    };
+    fetchItems();
+  }, [items, token]);
 
   const handleDelete = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
