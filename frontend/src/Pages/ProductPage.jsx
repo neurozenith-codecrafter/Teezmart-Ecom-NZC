@@ -2,43 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { Heart, Percent, Box, Truck, Calendar, Star } from "lucide-react";
+import { Heart, Percent, Box, Truck, Calendar } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import Navbar from "../components/Navbar";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
 import { useCart } from "../Hooks/useCart";
-
-// Animation settings
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.3 },
-  },
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
-
-const subtleReveal = {
-  hidden: { opacity: 0, scale: 0.98 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94], // smooth cubic bezier
-    },
-  },
-};
+import useAnimations from "../Hooks/useAnimation";
 
 const ProductPage = () => {
   const { slug } = useParams();
-
   const { handleAddToCart } = useCart();
+  const { containerVariants, fadeInUp, subtleReveal } = useAnimations();
 
   const [product, setProduct] = useState(null);
   const [productImages, setProductImages] = useState([]);

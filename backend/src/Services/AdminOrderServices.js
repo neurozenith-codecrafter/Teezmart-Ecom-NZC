@@ -5,17 +5,16 @@ exports.getAllOrders = async (query) => {
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const filter = {};
 
   // Query execution
-  const orders = await Order.find(filter)
+  const orders = await Order.find({})
     .sort({ createdAt: -1 })
     .populate("user", "name email")
-    .populate("items.product", "name price image") // latest first
+    .populate("items.product", "title price images category") // latest first
     .skip(skip)
     .limit(limit);
 
-  const totalOrders = await Order.countDocuments(filter);
+  const totalOrders = await Order.countDocuments();
 
   return {
     orders,
