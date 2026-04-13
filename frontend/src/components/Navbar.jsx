@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import {
   Menu,
   Search,
@@ -12,23 +12,20 @@ import {
   ShoppingBag,
   Percent,
   Package,
-  Database,
   MessageSquare,
   ShieldAlert,
-  Settings,
+  Heart,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(true);
-
-  // Track active item by name for the fluid transition
   const [activeItem, setActiveItem] = useState("Order History");
-
   const lastScrollY = useRef(0);
-  motion;
+  const navigate = useNavigate();
+
   useEffect(() => {
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
@@ -60,14 +57,45 @@ const Navbar = () => {
     { name: "Report", icon: ShieldAlert, isContact: true },
   ];
 
+  // Logic to scroll to Why Us section
+  const scrollToWhyUs = (e) => {
+    e.preventDefault();
+    const element = document.getElementById("why-us");
+    if (element) {
+      // Offset added to account for the fixed navbar height
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        const el = document.getElementById("why-us");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  };
+
+  const scrollToTop = (e) => {
+    e.preventDefault();
+    // Navigate home first
+    navigate("/");
+    // Scroll to the very top smoothly
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const scrollToContact = () => {
     setIsMenuOpen(false);
     setTimeout(() => {
       const element = document.getElementById("footer-contact");
       if (element) {
-        // Smooth scroll to the section
         element.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Trigger the premium "ping"
         window.dispatchEvent(new CustomEvent("highlight-contact"));
       }
     }, 350);
@@ -89,21 +117,35 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2 text-[19px] md:text-[23px] font-bold tracking-tight text-black whitespace-nowrap">
+          <Link
+            to="/"
+            onClick={scrollToTop}
+            className="absolute left-1/2 -translate-x-1/2 text-[19px] md:text-[23px] font-bold tracking-tight text-black whitespace-nowrap"
+          >
             TeezMart
-          </div>
+          </Link>
 
           <div className="flex-1 flex items-center justify-end space-x-4 md:space-x-8">
             <div className="hidden lg:flex items-center space-x-7 text-[12px] font-semibold text-black uppercase tracking-wider">
-              <a href="#" className="hover:opacity-50 transition">
+              <a
+                href="#why-us"
+                onClick={scrollToWhyUs}
+                className="hover:opacity-80 transition-opacity duration-200"
+              >
                 Blogs
               </a>
-              <a href="#" className="hover:opacity-50 transition">
+              <a
+                href="#why-us"
+                onClick={scrollToWhyUs}
+                className="hover:opacity-80 transition-opacity duration-200"
+              >
                 FAQs
               </a>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
-              <Bell className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
+              {/* REPLACED BELL WITH HEART */}
+              <Heart className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer hover:text-rose-500 transition-colors" />
+
               <Link to={"/cart"}>
                 <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
               </Link>
@@ -113,7 +155,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* 2. BOTTOM NAVBAR (LG Only) */}
+      {/* 2. BOTTOM NAVBAR ... remains same */}
       <div
         className={`hidden lg:block fixed left-0 w-full bg-white z-[55] transition-all duration-500 ease-in-out border-b border-[#f9f9f9]/50
         ${showBottomNav ? "top-[68px] opacity-100 translate-y-0" : "top-[10px] opacity-0 -translate-y-full pointer-events-none"}`}
@@ -121,6 +163,7 @@ const Navbar = () => {
         <div
           className={`${PAGE_CONTAINER_CLASS} flex items-center justify-between h-[58px] gap-x-6`}
         >
+          {/* ... Bottom nav items ... */}
           <div className="flex items-center gap-x-3 shrink-0">
             <button className="flex items-center justify-between min-w-[145px] bg-[#f9f9f9] border border-[#f0f0f0] px-5 py-2.5 rounded-xl hover:bg-white transition-all cursor-pointer group">
               <span className="text-[14px] font-normal text-black">
@@ -148,11 +191,11 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* 3. SIDEBAR WITH FLUID TRANSITION */}
+      {/* 3. SIDEBAR ... remains same */}
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -160,7 +203,7 @@ const Navbar = () => {
               className="fixed inset-0 bg-zinc-900/20 backdrop-blur-[2px] z-[100]"
             />
 
-            <motion.div
+            <Motion.div
               variants={sidebarVariants}
               initial="closed"
               animate="open"
@@ -194,9 +237,8 @@ const Navbar = () => {
                       }}
                       className="relative px-4 py-3.5 rounded-2xl transition-all cursor-pointer group"
                     >
-                      {/* SHARED LAYOUT BACKGROUND (The Premium "Pill" Effect) */}
                       {isActive && (
-                        <motion.div
+                        <Motion.div
                           layoutId="activePill"
                           className="absolute inset-0 bg-rose-50 rounded-2xl z-0"
                           transition={{
@@ -206,22 +248,13 @@ const Navbar = () => {
                           }}
                         />
                       )}
-
                       <div className="relative z-10 flex items-center gap-4">
                         <item.icon
-                          className={`w-5 h-5 transition-colors duration-300 ${
-                            isActive
-                              ? "text-rose-500"
-                              : "text-zinc-400 group-hover:text-zinc-900"
-                          }`}
+                          className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-rose-500" : "text-zinc-400 group-hover:text-zinc-900"}`}
                           strokeWidth={1.5}
                         />
                         <span
-                          className={`text-[15px] transition-colors duration-300 ${
-                            isActive
-                              ? "text-rose-500 font-semibold"
-                              : "text-zinc-500"
-                          }`}
+                          className={`text-[15px] transition-colors duration-300 ${isActive ? "text-rose-500 font-semibold" : "text-zinc-500"}`}
                         >
                           {item.name}
                         </span>
@@ -236,7 +269,7 @@ const Navbar = () => {
                   © NeuroZenith 2026
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </>
         )}
       </AnimatePresence>
