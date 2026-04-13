@@ -15,6 +15,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion";
+import Loader from "../components/Loader";
 
 const CartItem = ({ item, onDelete }) => {
   const x = useMotionValue(0);
@@ -137,29 +138,38 @@ export const CartPage = () => {
   const [cart, setCart] = useState({});
   const [items, setItems] = useState([]);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const fetchItems = async () => {
+      try {
       const response = await axios.get("/api/cart", {
         headers: {
-          Authorization: `Bearer ${ token }`
-        }
+            Authorization: `Bearer ${token}`,
+          },
       });
 
       setCart(response.data.data);
       setItems(response.data.data.items);
       console.log(response.data.data);
-
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchItems();
   }, [token]);
 
   const handleDelete = (id) => {
-    setItems((prev) => prev.filter((item) => `${item.product._id}-${item.size}` !== id));
+    setItems((prev) =>
+      prev.filter((item) => `${item.product._id}-${item.size}` !== id),
+    );
   };
 
-  if (!items.length) {
-    return <EmptyCart />;
-  }
+  // if (!items.length) {
+  //   return <EmptyCart />;
+  // }
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] selection:bg-black selection:text-white md:flex md:items-center md:justify-center lg:items-start lg:pt-20">
