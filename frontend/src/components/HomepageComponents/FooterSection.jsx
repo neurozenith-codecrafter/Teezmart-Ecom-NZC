@@ -16,14 +16,14 @@ const FooterBrandBlock = () => (
     <div className="flex gap-6 text-slate-400">
       {[
         {
-          path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z",
-          size: 20,
+          d: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z",
+          s: 20,
         },
-        { isInsta: true },
-        { isX: true },
+        { insta: true, s: 20 },
+        { x: true, s: 18 },
         {
-          path: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.9.9L22 4z",
-          size: 20,
+          d: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.9.9L22 4z",
+          s: 20,
         },
       ].map((icon, idx) => (
         <a
@@ -32,8 +32,8 @@ const FooterBrandBlock = () => (
           className="hover:text-slate-950 hover:scale-110 transition-all duration-300"
         >
           <svg
-            width={icon.size || 20}
-            height={icon.size || 20}
+            width={icon.s}
+            height={icon.s}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -41,15 +41,15 @@ const FooterBrandBlock = () => (
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            {icon.path && <path d={icon.path} />}
-            {icon.isInsta && (
+            {icon.d && <path d={icon.d} />}
+            {icon.insta && (
               <>
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
               </>
             )}
-            {icon.isX && (
+            {icon.x && (
               <>
                 <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
                 <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
@@ -69,69 +69,44 @@ const FooterSection = ({ compactMobile = false }) => {
     let timer;
     const handleHighlight = () => {
       setIsPinging(true);
-      timer = window.setTimeout(() => {
-        setIsPinging(false);
-      }, 1500);
+      timer = window.setTimeout(() => setIsPinging(false), 2000);
     };
-
     window.addEventListener("highlight-contact", handleHighlight);
     return () => {
       window.removeEventListener("highlight-contact", handleHighlight);
-      if (timer) {
-        clearTimeout(timer);
-      }
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
   return (
     <footer
-      className={`relative bg-gradient-to-b from-white via-zinc-50 to-slate-100 pt-24 pb-20 text-slate-900 font-sans w-full border-t border-slate-200/50 ${compactMobile ? "hidden md:block" : ""}`}
+      className={`relative bg-white pt-20 pb-8 text-slate-900 w-full border-t border-slate-100 ${compactMobile ? "hidden md:block" : ""}`}
     >
-      {/* Top Accent Line */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#32F18F]/20 to-transparent" />
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
 
       <div className={PAGE_CONTAINER_CLASS}>
-        {/* Main Grid Layout */}
-        <div
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 pb-16 relative ${compactMobile ? "hidden md:grid" : ""}`}
-        >
-          <div className="space-y-8 flex flex-col items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-y-12 pb-10 relative">
+          {/* 1. Brand Block - Left Anchored */}
+          <div className="md:col-span-4 space-y-10">
             <FooterBrandBlock />
           </div>
 
-          <div className="space-y-6">
-            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
+          {/* 2. Navigation - Now next to Brand */}
+          <div className="md:col-span-2 space-y-6">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">
               Navigation
             </h4>
-            <ul className="text-sm text-slate-600 space-y-4 font-semibold">
-              {["Why Us?", "New Arrivals", "Best Sellers", "Products"].map(
-                (link) => (
-                  <li
-                    key={link}
-                    className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
-                  >
-                    {link}
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-
-          <div className="space-y-6">
-            <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
-              Collections
-            </h4>
-            <ul className="text-sm text-slate-600 space-y-4 font-semibold">
+            <ul className="text-[13px] text-slate-500 space-y-4 font-semibold">
               {[
-                "Streetwear Drop",
-                "Minimalist Tech",
-                "Abstract Graphics",
-                "Essentials",
-                "Vintage Wash",
+                "Why Us?",
+                "New Arrivals",
+                "Best Sellers",
+                "Products",
+                "Our Story",
               ].map((link) => (
                 <li
                   key={link}
-                  className="hover:text-slate-950 hover:translate-x-1 cursor-pointer transition-all duration-200"
+                  className="hover:text-slate-950 cursor-pointer transition-all hover:translate-x-1 w-fit whitespace-nowrap"
                 >
                   {link}
                 </li>
@@ -139,51 +114,90 @@ const FooterSection = ({ compactMobile = false }) => {
             </ul>
           </div>
 
-          <div className="relative group">
-            <AnimatePresence>
-              {isPinging && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="absolute -inset-4 rounded-3xl z-0 pointer-events-none bg-[#32F18F]/5"
-                  style={{ border: "1px solid rgba(50, 241, 143, 0.1)" }}
-                />
-              )}
-            </AnimatePresence>
+          {/* 3. Collections - Shifted towards the center-right */}
+          <div className="md:col-span-2 md:col-start-7 space-y-6">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">
+              Collections
+            </h4>
+            <ul className="text-[13px] text-slate-500 space-y-4 font-semibold">
+              {[
+                "Streetwear Drop",
+                "Minimalist Tech",
+                "Abstract",
+                "Essentials",
+                "Vintage Wash",
+              ].map((link) => (
+                <li
+                  key={link}
+                  className="hover:text-slate-950 cursor-pointer transition-all hover:translate-x-1 w-fit whitespace-nowrap"
+                >
+                  {link}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            <div className="relative z-10 space-y-6">
-              <h4 className="text-xs font-bold text-slate-400 tracking-[0.3em] uppercase">
-                Contact Us
-              </h4>
-              <div id="footer-contact" className="space-y-5 pt-1">
-                <div className="flex items-start gap-4">
-                  <MapPin size={18} className="text-slate-400" />
-                  <span className="text-sm text-slate-600 font-medium">
-                    75 TeezMart Blvd, <br /> NY 10001
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Mail size={18} className="text-slate-400" />
-                  <span className="text-sm text-slate-600 font-medium">
-                    care@teezmart.com
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <PhoneCall size={18} className="text-slate-400" />
-                  <span className="text-sm text-slate-600 font-medium">
-                    +1 (555) 123-4567
-                  </span>
+          {/* 4. Contact Us - Moved inward (spans 4 cols, ends at 12) */}
+          <div className="md:col-start-9 md:col-span-4 relative group flex flex-col md:justify-self-end md:min-w-[320px]">
+            <div className="relative w-full px-6 py-2">
+              {" "}
+              {/* Increased padding for better internal rhythm */}
+              <AnimatePresence>
+                {isPinging && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute -inset-4 z-0 pointer-events-none rounded-[2rem] 
+                     bg-[#32F18F]/10 shadow-[0_0_40px_-10px_rgba(50,241,143,0.2)] 
+                     border border-[#32F18F]/20 backdrop-blur-[2px]"
+                  />
+                )}
+              </AnimatePresence>
+              <div className="relative z-10 space-y-7">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">
+                  Contact Us
+                </h4>
+                <div id="footer-contact" className="space-y-5">
+                  {/* Contact Row 1 */}
+                  <div className="flex items-start gap-4 group cursor-pointer w-full">
+                    <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
+                      <MapPin size={16} strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px] text-slate-500 group-hover:text-slate-950 font-medium leading-relaxed pt-1">
+                      75 TeezMart Blvd, <br /> New York, NY 10001
+                    </span>
+                  </div>
+
+                  {/* Contact Row 2 */}
+                  <div className="flex items-center gap-4 group cursor-pointer w-full">
+                    <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
+                      <Mail size={16} strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px] text-slate-500 group-hover:text-slate-950 font-medium transition-colors">
+                      care@teezmart.com
+                    </span>
+                  </div>
+
+                  {/* Contact Row 3 */}
+                  <div className="flex items-center gap-4 group cursor-pointer w-full">
+                    <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
+                      <PhoneCall size={16} strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[13px] text-slate-500 group-hover:text-slate-950 font-medium transition-colors">
+                      +1 (555) 123-4567
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* CENTERED COPYRIGHT BORDER EFFECT */}
-          <div className="absolute bottom-0 left-0 w-full h-px bg-slate-200/60 flex items-center justify-center">
-            <div className="bg-slate-50 px-6 py-2">
-              <p className="text-[10px] text-slate-400 font-bold tracking-[0.5em] uppercase whitespace-nowrap">
+          {/* THE COPYRIGHT */}
+          <div className="md:col-span-12 relative flex items-center justify-center h-px mt-12 bg-slate-100">
+            <div className="absolute bg-white px-8">
+              <p className="text-[9px] text-slate-500 font-bold tracking-[0.7em] uppercase whitespace-nowrap">
                 © NeuroZenith 2026
               </p>
             </div>
@@ -194,16 +208,16 @@ const FooterSection = ({ compactMobile = false }) => {
   );
 };
 
-export default FooterSection;
-
 export const MobileCopyright = ({ className = "" }) => {
   return (
     <div
-      className={`md:hidden border-t border-slate-200/70 bg-white px-4 py-4 text-center ${className}`}
+      className={`md:hidden border-t border-slate-200/70 bg-white px-4 py-3 text-center ${className}`}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-slate-400">
+      <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-slate-500">
         @neurozenith2026
       </p>
     </div>
   );
 };
+
+export default FooterSection;
