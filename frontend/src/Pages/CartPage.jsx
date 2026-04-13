@@ -256,7 +256,8 @@ export const CartPage = () => {
                 <h2 className="text-xl font-black text-slate-800 mb-8 tracking-tight">
                   Order Summary
                 </h2>
-                {/* Summary content continues... */}
+
+                {/* Promo Code Input Section */}
                 <div className="bg-[#FBFBFB] p-1.5 rounded-[2rem] border border-zinc-100 flex items-center mb-8">
                   <input
                     type="text"
@@ -267,31 +268,81 @@ export const CartPage = () => {
                     Apply
                   </button>
                 </div>
-                <div className="space-y-5 px-1 mb-10">
-                  <div className="flex justify-between items-center text-sm md:text-base">
-                    <span className="font-bold text-slate-500">cart</span>
+
+                {/* Price Breakdown Details */}
+                <div className="space-y-4 px-1 mb-8">
+                  {/* 1. Subtotal & Item Count */}
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-bold text-slate-500">
+                      Subtotal (
+                      {items.reduce((acc, curr) => acc + curr.quantity, 0)}{" "}
+                      items)
+                    </span>
                     <span className="font-black text-slate-900">
-                      ₹{cart.subtotal}
+                      ₹{cart.subtotal.toLocaleString()}
                     </span>
                   </div>
-                  <div className="border-t border-dashed border-zinc-200 w-full" />
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                      Total
+
+                  {/* 2. Offer Price / Discount (Visual Detail) */}
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-bold text-slate-500">
+                      Discount / Offer
                     </span>
+                    <span className="font-black text-emerald-600">
+                      - ₹{(cart.discount || 0).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* 3. Delivery with Strike-out */}
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-bold text-slate-500">
+                      Delivery Fee
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-300 line-through decoration-1">
+                        ₹50.00
+                      </span>
+                      <span className="font-black text-emerald-600 uppercase text-[10px] tracking-wider">
+                        Free
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-dashed border-zinc-200 w-full my-6" />
+
+                  {/* 4. Grand Total */}
+                  <div className="flex justify-between items-start pt-2">
+                    <div className="flex flex-col">
+                      <span className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                        Total
+                      </span>
+                      {/* Total Quantity Label */}
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        {items.reduce((acc, curr) => acc + curr.quantity, 0)}{" "}
+                        Units
+                      </span>
+                    </div>
+
                     <div className="text-right">
-                      <span className="text-[24px] md:text-[32px] font-black text-slate-900 tracking-tighter leading-none block">
-                        ₹{cart.totalPrice}
+                      <span className="text-[28px] md:text-[36px] font-black text-slate-900 tracking-tighter leading-none block">
+                        ₹{cart.totalPrice.toLocaleString()}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 block">
-                        (Inc. all taxes)
+                        (GST Included)
                       </span>
                     </div>
                   </div>
                 </div>
-                <button className="w-full bg-[#18181B] text-white py-5 rounded-[2.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+
+                {/* Checkout Button */}
+                <button className="w-full bg-[#18181B] text-white py-5 rounded-[2.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] hover:bg-black transition-all">
                   Checkout Now <ArrowRight size={18} />
                 </button>
+
+                {/* Trust Badge */}
+                <p className="text-center text-[11px] text-zinc-400 font-medium mt-6">
+                  Secure checkout powered by Razorpay
+                </p>
               </div>
             </aside>
           </div>
