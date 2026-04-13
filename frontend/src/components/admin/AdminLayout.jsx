@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/useAdmin";
+import { MobileCopyright } from "../HomepageComponents/FooterSection";
 
 // Optimized NavLink styling
 const navClass = (isActive) =>
@@ -163,6 +164,7 @@ export const AdminLayout = () => {
         <main className="px-8 pb-8 lg:px-12 overflow-y-auto no-scrollbar">
           <Outlet />
         </main>
+        <MobileCopyright />
       </div>
     </div>
   );
