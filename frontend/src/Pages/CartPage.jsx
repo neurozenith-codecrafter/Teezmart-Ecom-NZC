@@ -143,15 +143,15 @@ export const CartPage = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-      const response = await axios.get("/api/cart", {
-        headers: {
+        const response = await axios.get("/api/cart", {
+          headers: {
             Authorization: `Bearer ${token}`,
           },
-      });
+        });
 
-      setCart(response.data.data);
-      setItems(response.data.data.items);
-      console.log(response.data.data);
+        setCart(response.data.data);
+        setItems(response.data.data.items);
+        console.log(response.data.data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -167,88 +167,92 @@ export const CartPage = () => {
     );
   };
 
-  // if (!items.length) {
-  //   return <EmptyCart />;
-  // }
-
   return (
     <div className="min-h-screen bg-[#FBFBFB] selection:bg-black selection:text-white md:flex md:items-center md:justify-center lg:items-start lg:pt-20">
-      <div className="max-w-[1400px] w-full mx-auto px-4 md:px-10 lg:px-20 py-10 md:py-12 lg:py-0">
-        {/* PRECISE HEADER EXTRACTION FROM IMAGE */}
-        <header className="relative flex items-center justify-center mb-10 md:mb-16 py-2">
-          {/* Back Button positioned absolutely to the left to allow true centering of title */}
-          <button className="absolute left-0 p-2 text-zinc-900 hover:opacity-60 transition-opacity active:scale-90">
-            <ChevronLeft size={24} strokeWidth={2.5} />
-          </button>
+      {isLoading ? (
+        <Loader />
+      ) : !items.length ? (
+        <EmptyCart />
+      ) : (
+        <div className="max-w-[1400px] w-full mx-auto px-4 md:px-10 lg:px-20 py-10 md:py-12 lg:py-0">
+          {/* PRECISE HEADER EXTRACTION FROM IMAGE */}
+          <header className="relative flex items-center justify-center mb-10 md:mb-16 py-2">
+            {/* Back Button positioned absolutely to the left to allow true centering of title */}
+            <button className="absolute left-0 p-2 text-zinc-900 hover:opacity-60 transition-opacity active:scale-90">
+              <ChevronLeft size={24} strokeWidth={2.5} />
+            </button>
 
-          {/* Centered Title matching the image typography */}
-          <h1 className="text-[20px] md:text-2xl font-bold text-zinc-800 tracking-tight">
-            Cart
-          </h1>
-        </header>
+            {/* Centered Title matching the image typography */}
+            <h1 className="text-[20px] md:text-2xl font-bold text-zinc-800 tracking-tight">
+              Cart
+            </h1>
+          </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-          {/* ... rest of the code remains exactly the same */}
-          <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-            <AnimatePresence mode="popLayout">
-              {items.map((item) => (
-                <Motion.div
-                  key={`${item.product._id}-${item.size}`}
-                  layout
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, x: -100, height: 0 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                >
-                  <CartItem item={item} onDelete={handleDelete} />
-                </Motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+            {/* ... rest of the code remains exactly the same */}
+            <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
+              <AnimatePresence mode="popLayout">
+                {items.map((item) => (
+                  <Motion.div
+                    key={`${item.product._id}-${item.size}`}
+                    layout
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, x: -100, height: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  >
+                    <CartItem item={item} onDelete={handleDelete} />
+                  </Motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
 
-          <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-10">
-            <div className="bg-white rounded-[2.5rem] border border-zinc-100 p-8 md:p-10 shadow-xl shadow-zinc-200/40">
-              <h2 className="text-xl font-black text-slate-800 mb-8 tracking-tight">
-                Order Summary
-              </h2>
-              {/* Summary content continues... */}
-              <div className="bg-[#FBFBFB] p-1.5 rounded-[2rem] border border-zinc-100 flex items-center mb-8">
-                <input
-                  type="text"
-                  placeholder="Promo Code"
-                  className="flex-grow bg-transparent pl-5 pr-2 py-3 text-sm font-medium text-slate-600 outline-none"
-                />
-                <button className="bg-[#18181B] text-white px-6 py-3 rounded-[1.6rem] text-xs font-bold tracking-widest uppercase">
-                  Apply
-                </button>
-              </div>
-              <div className="space-y-5 px-1 mb-10">
-                <div className="flex justify-between items-center text-sm md:text-base">
-                  <span className="font-bold text-slate-500">cart</span>
-                  <span className="font-black text-slate-900">₹{cart.subtotal}</span>
+            <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-10">
+              <div className="bg-white rounded-[2.5rem] border border-zinc-100 p-8 md:p-10 shadow-xl shadow-zinc-200/40">
+                <h2 className="text-xl font-black text-slate-800 mb-8 tracking-tight">
+                  Order Summary
+                </h2>
+                {/* Summary content continues... */}
+                <div className="bg-[#FBFBFB] p-1.5 rounded-[2rem] border border-zinc-100 flex items-center mb-8">
+                  <input
+                    type="text"
+                    placeholder="Promo Code"
+                    className="flex-grow bg-transparent pl-5 pr-2 py-3 text-sm font-medium text-slate-600 outline-none"
+                  />
+                  <button className="bg-[#18181B] text-white px-6 py-3 rounded-[1.6rem] text-xs font-bold tracking-widest uppercase">
+                    Apply
+                  </button>
                 </div>
-                <div className="border-t border-dashed border-zinc-200 w-full" />
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                    Total
-                  </span>
-                  <div className="text-right">
-                    <span className="text-[24px] md:text-[32px] font-black text-slate-900 tracking-tighter leading-none block">
-                      ₹{cart.totalPrice}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 block">
-                      (Inc. all taxes)
+                <div className="space-y-5 px-1 mb-10">
+                  <div className="flex justify-between items-center text-sm md:text-base">
+                    <span className="font-bold text-slate-500">cart</span>
+                    <span className="font-black text-slate-900">
+                      ₹{cart.subtotal}
                     </span>
                   </div>
+                  <div className="border-t border-dashed border-zinc-200 w-full" />
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                      Total
+                    </span>
+                    <div className="text-right">
+                      <span className="text-[24px] md:text-[32px] font-black text-slate-900 tracking-tighter leading-none block">
+                        ₹{cart.totalPrice}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase mt-1 block">
+                        (Inc. all taxes)
+                      </span>
+                    </div>
+                  </div>
                 </div>
+                <button className="w-full bg-[#18181B] text-white py-5 rounded-[2.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+                  Checkout Now <ArrowRight size={18} />
+                </button>
               </div>
-              <button className="w-full bg-[#18181B] text-white py-5 rounded-[2.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
-                Checkout Now <ArrowRight size={18} />
-              </button>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
