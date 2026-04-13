@@ -7,13 +7,20 @@ import {
   User,
   ChevronDown,
   X,
+  LayoutGrid,
+  ShoppingBag,
+  Percent,
+  Package,
+  Database,
+  MessageSquare,
+  Settings,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBottomNav, setShowBottomNav] = useState(true);
-
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -26,14 +33,32 @@ const Navbar = () => {
       }
       lastScrollY.current = currentScrollY;
     };
-
     window.addEventListener("scroll", controlNavbar, { passive: true });
     return () => window.removeEventListener("scroll", controlNavbar);
   }, []);
 
+  // Snappier, richer sidebar animation
+  const sidebarVariants = {
+    closed: {
+      x: "-100%",
+      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+    },
+    open: { x: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+  };
+
+  const menuItems = [
+    { name: "Live Orders", icon: LayoutGrid },
+    { name: "Order History", icon: ShoppingBag, active: true },
+    { name: "Offers", icon: Percent },
+    { name: "Products", icon: Package },
+    { name: "Stock", icon: Database },
+    { name: "Message", icon: MessageSquare },
+    { name: "Settings", icon: Settings },
+  ];
+
   return (
     <>
-      {/* 1. TOP NAVBAR (Permanently Fixed) */}
+      {/* 1. TOP NAVBAR */}
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
         <div
           className={`${PAGE_CONTAINER_CLASS} h-[55px] md:h-[68px] flex items-center justify-between relative`}
@@ -41,9 +66,10 @@ const Navbar = () => {
           <div className="flex-1 flex justify-start">
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 cursor-pointer hover:bg-gray-50 rounded-full transition-colors group"
+              className="p-2 -ml-2 cursor-pointer hover:bg-zinc-50 rounded-full transition-all"
             >
-              <Menu className="w-[22px] h-[22px] md:w-[24px] md:h-[24px] text-black stroke-[1.2] group-hover:scale-110 transition-transform" />
+              {/* REMOVED ROTATION - Clean and straight */}
+              <Menu className="w-[22px] h-[22px] md:w-[24px] md:h-[24px] text-black stroke-[1.5]" />
             </button>
           </div>
 
@@ -61,15 +87,15 @@ const Navbar = () => {
               </a>
             </div>
             <div className="flex items-center space-x-2 md:space-x-4">
-              <Bell className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
-              <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
-              <User className="w-[21px] h-[21px] text-black stroke-[1.2] cursor-pointer" />
+              <Bell className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
+              <ShoppingCart className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
+              <User className="w-[21px] h-[21px] text-black stroke-[1.5] cursor-pointer" />
             </div>
           </div>
         </div>
       </nav>
 
-      {/* 2. BOTTOM NAVBAR (Dynamic Reveal) */}
+      {/* 2. BOTTOM NAVBAR (LG Only) */}
       <div
         className={`hidden lg:block fixed left-0 w-full bg-white z-[55] transition-all duration-500 ease-in-out border-b border-[#f9f9f9]/50
         ${showBottomNav ? "top-[68px] opacity-100 translate-y-0" : "top-[10px] opacity-0 -translate-y-full pointer-events-none"}`}
@@ -104,26 +130,69 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* MOBILE MENU */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 bg-white z-[100] p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-10">
-            <div className="text-[22px] font-bold">TeezMart</div>
-            <X
-              className="w-8 h-8 cursor-pointer hover:rotate-90 transition-transform"
+      {}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 bg-zinc-900/20 backdrop-blur-[2px] z-[100]"
             />
-          </div>
-          <div className="flex flex-col space-y-6 text-2xl font-bold">
-            <a href="#" className="hover:text-gray-500 transition">
-              New Arrivals
-            </a>
-            <a href="#" className="hover:text-gray-500 transition">
-              Sale
-            </a>
-          </div>
-        </div>
-      )}
+
+            <motion.div
+              variants={sidebarVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className="fixed top-0 left-0 h-full w-[280px] bg-white z-[101] shadow-[20px_0_60px_-15px_rgba(0,0,0,0.05)] flex flex-col"
+            >
+              <div className="p-8 pb-4 flex justify-between items-center">
+                <span className="text-[18px] font-black tracking-tighter uppercase text-zinc-900">
+                  TeezMart
+                </span>
+                <X
+                  size={20}
+                  className="cursor-pointer text-zinc-400 hover:text-black transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                />
+              </div>
+
+              {/* LIST EXTRACTION: Extracted directly from reference img */}
+              <div className="flex-1 px-4 py-6 space-y-1">
+                {menuItems.map((item, i) => (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05, duration: 0.3 }}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all cursor-pointer group
+                      ${
+                        item.active
+                          ? "bg-rose-50 text-rose-500 font-semibold"
+                          : "text-zinc-500 hover:bg-zinc-50"
+                      }`}
+                  >
+                    <item.icon
+                      className={`w-5 h-5 ${item.active ? "text-rose-500" : "text-zinc-400 group-hover:text-zinc-900"}`}
+                      strokeWidth={1.5}
+                    />
+                    <span className="text-[15px]">{item.name}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="p-8 border-t border-zinc-100">
+                <div className="flex items-center gap-3 text-zinc-400 text-[12px] font-bold tracking-[0.2em] uppercase">
+                  © NeuroZenith 2026
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };
