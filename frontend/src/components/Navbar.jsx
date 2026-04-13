@@ -28,7 +28,7 @@ const Navbar = () => {
   const [activeItem, setActiveItem] = useState("Order History");
 
   const lastScrollY = useRef(0);
-
+  motion;
   useEffect(() => {
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
