@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/useAdmin";
+import { useAuth } from "../../Hooks/useAuth";
 import { MobileCopyright } from "../HomepageComponents/FooterSection";
 
 // Optimized NavLink styling
@@ -24,6 +25,7 @@ const navClass = (isActive) =>
 
 export const AdminLayout = () => {
   const { admin } = useAdmin();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -31,7 +33,9 @@ export const AdminLayout = () => {
   const formatRole = (role) => {
     return role
       ?.toLowerCase()
-      .split("_")
+      .replace(/([A-Z])/g, " $1")
+      .trim()
+      .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
@@ -41,22 +45,27 @@ export const AdminLayout = () => {
       to: "dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
-      roles: ["DEV_ADMIN", "PRODUCT_ADMIN"],
+      roles: ["devAdmin", "admin"],
     },
     {
       to: "products",
       label: "Products",
       icon: Package,
-      roles: ["DEV_ADMIN", "PRODUCT_ADMIN"],
+      roles: ["devAdmin", "admin"],
     },
     {
       to: "orders",
       label: "Orders",
       icon: ShoppingBag,
-      roles: ["DEV_ADMIN", "PRODUCT_ADMIN"],
+      roles: ["devAdmin", "admin"],
     },
-    { to: "users", label: "Consumer", icon: Users, roles: ["DEV_ADMIN"] },
+    { to: "users", label: "Consumer", icon: Users, roles: ["devAdmin"] },
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const closeMobile = () => setIsMobileMenuOpen(false);
 
@@ -112,7 +121,7 @@ export const AdminLayout = () => {
 
         <div className="pt-6 border-t border-slate-50">
           <button
-            onClick={() => navigate("/")}
+            onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-500 transition-all text-sm font-bold w-full"
           >
             <LogOut size={18} />

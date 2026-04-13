@@ -58,13 +58,12 @@ const resolveUserProfileErrorStatus = (error) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const safeUser = await userService.getUserProfile(req.user.id);
+    const safeUser = await userService.getUserProfile(req.user._id);
 
     res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
       data: safeUser,
-      user: safeUser,
     });
   } catch (error) {
     console.error("Get Profile Error:", error);
@@ -76,7 +75,7 @@ const getUserProfile = async (req, res) => {
           ? 403
           : 500;
 
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       success: false,
       message: error.message || "Failed to fetch profile",
       data: null,
@@ -127,7 +126,6 @@ const updateUserAddresses = async (req, res) => {
       success: true,
       message: "Addresses updated successfully",
       data: safeUser,
-      user: safeUser,
     });
   } catch (error) {
     console.error("Update Address Error:", error);

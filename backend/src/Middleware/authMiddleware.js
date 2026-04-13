@@ -26,10 +26,26 @@ exports.protect = async (req, res, next) => {
       });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account is deactivated",
+        data: null,
+      });
+    }
+
     req.user = user;
     next();
   } catch (e) {
-    res.status(401).json({
+    if (e.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired",
+        data: null,
+      });
+    }
+
+    return res.status(401).json({
       success: false,
       message: "Invalid token",
       data: null,
@@ -57,6 +73,5 @@ exports.getMe = (req, res) => {
     success: true,
     message: "User fetched successfully",
     data: req.user,
-    user: req.user,
   });
 };

@@ -31,8 +31,10 @@ const ensureCanManageUser = (currentUser, targetUserId) => {
     throw new Error("Not authorized");
   }
 
-  const requesterId = currentUser._id?.toString?.() || currentUser.id?.toString?.();
-  const isAdmin = currentUser.role === "admin" || currentUser.role === "devAdmin";
+  const requesterId =
+    currentUser._id?.toString?.() || currentUser.id?.toString?.();
+  const isAdmin =
+    currentUser.role === "admin" || currentUser.role === "devAdmin";
 
   if (!isAdmin && requesterId !== targetUserId) {
     throw new Error("Unauthorized");
@@ -82,18 +84,22 @@ const updateUserAddresses = async (currentUser, targetUserId, payload) => {
   ensureCanManageUser(currentUser, targetUserId);
 
   const user = await getUserOrThrow(targetUserId);
+  if (!payload || (typeof payload !== "object" && !Array.isArray(payload))) {
+    throw new Error("Invalid payload");
+  }
 
-  const rawAddresses = Array.isArray(payload)
-    ? payload
-    : payload?.addresses;
+  const rawAddresses = Array.isArray(payload) ? payload : payload?.addresses;
 
-  if (!rawAddresses || (Array.isArray(rawAddresses) && rawAddresses.length === 0)) {
+  if (
+    !rawAddresses ||
+    (Array.isArray(rawAddresses) && rawAddresses.length === 0)
+  ) {
     throw new Error("At least one address is required");
   }
 
   // Step 1: Normalize ONLY incoming addresses (without limit logic conflict)
   const incomingAddresses = rawAddresses.map((addr, index) =>
-    validateAndNormalizeAddress(addr, index)
+    validateAndNormalizeAddress(addr, index),
   );
 
   const existingAddresses = user.addresses || [];

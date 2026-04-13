@@ -7,11 +7,11 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ✅ Load roles from .env
 const admins = process.env.ADMIN_EMAILS
-  ? process.env.ADMIN_EMAILS.split(",").map((e) => e.trim())
+  ? process.env.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase())
   : [];
 
 const devAdmins = process.env.DEV_ADMIN_EMAILS
-  ? process.env.DEV_ADMIN_EMAILS.split(",").map((e) => e.trim())
+  ? process.env.DEV_ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase())
   : [];
 
 exports.googleAuth = async (req, res) => {
@@ -42,8 +42,9 @@ exports.googleAuth = async (req, res) => {
     }
 
     const { sub, email, name, picture } = payload;
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    if (!email) {
+    if (!normalizedEmail) {
       return res.status(400).json({
         success: false,
         message: "Google account has no email",
@@ -54,19 +55,19 @@ exports.googleAuth = async (req, res) => {
     // ✅ Determine role dynamically
     let role = "user";
 
-    if (email && devAdmins.includes(email)) {
+    if (devAdmins.includes(normalizedEmail)) {
       role = "devAdmin";
-    } else if (email && admins.includes(email)) {
+    } else if (admins.includes(normalizedEmail)) {
       role = "admin";
     }
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       // ✅ New user
       user = await User.create({
         googleId: sub,
-        email,
+        email: normalizedEmail,
         name,
         avatar: picture,
         role,
@@ -75,6 +76,8 @@ exports.googleAuth = async (req, res) => {
     } else {
       // ✅ Existing user
       user.lastLogin = new Date();
+      user.googleId = sub;
+      user.email = normalizedEmail;
 
       // 🔥 CRITICAL FIX → update role if changed
       if (user.role !== role) {

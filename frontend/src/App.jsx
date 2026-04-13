@@ -12,13 +12,43 @@ import { Products } from "./Pages/admin/Products";
 import { Orders } from "./Pages/admin/Orders";
 import { Users } from "./Pages/admin/Users";
 import CartPage from "./Pages/CartPage";
+import { useAuth } from "./Hooks/useAuth";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { admin } = useAdmin();
+  const { isLoggedIn, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
   if (!allowedRoles.includes(admin.role)) {
     return <Navigate to="/admin/dashboard" replace />;
   }
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { admin } = useAdmin();
+  const { isLoggedIn, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!["admin", "devAdmin"].includes(admin.role)) {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 
@@ -35,7 +65,14 @@ function App() {
           </Route>
           <Route path="/cart" element={<CartPage />} />
 
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="products" element={<Products />} />
@@ -43,7 +80,7 @@ function App() {
             <Route
               path="users"
               element={
-                <ProtectedRoute allowedRoles={["DEV_ADMIN"]}>
+                <ProtectedRoute allowedRoles={["devAdmin"]}>
                   <Users />
                 </ProtectedRoute>
               }
