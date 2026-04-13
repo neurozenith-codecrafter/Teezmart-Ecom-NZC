@@ -25,7 +25,10 @@ const whyUsData = [
 
 export const WhyUsSection = () => {
   return (
-    <section className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full border-t border-slate-100">
+    <section
+      id="why-us"
+      className="bg-[#FBFBFB] py-12 md:py-20 text-slate-900 font-sans w-full border-t border-slate-100"
+    >
       <div className={PAGE_CONTAINER_CLASS}>
         {/* --- SECTION HEADER --- */}
         <div className="mb-10 md:mb-14 flex flex-col items-start">
