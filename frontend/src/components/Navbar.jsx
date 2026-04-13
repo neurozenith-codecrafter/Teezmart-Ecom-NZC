@@ -222,28 +222,24 @@ const Navbar = () => {
                       <button
                         type="button"
                         onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                        className="flex items-center gap-2 rounded-full border border-zinc-200 px-2 py-1 hover:bg-zinc-50 transition-colors"
+                        className="flex items-center justify-center transition-transform active:scale-95"
                       >
                         {user?.avatar ? (
                           <img
                             src={user.avatar}
                             alt={user?.name || "User"}
-                            className="w-7 h-7 rounded-full object-cover"
+                            className="w-8 h-8 rounded-full object-cover border border-zinc-100 shadow-sm"
                           />
                         ) : (
-                          <div className="w-7 h-7 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-zinc-900 text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
                             {userInitial}
                           </div>
                         )}
-                        <span className="hidden md:block text-xs font-semibold text-zinc-800 max-w-[84px] truncate">
-                          {user?.name || "Account"}
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
                       </button>
 
-                      {isProfileMenuOpen ? (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-zinc-100 rounded-2xl shadow-[0_16px_40px_-20px_rgba(0,0,0,0.35)] p-2 z-[120]">
-                          {canAccessAdmin ? (
+                      {isProfileMenuOpen && (
+                        <div className="absolute right-0 mt-3 w-48 bg-white border border-zinc-100 rounded-2xl shadow-[0_16px_40px_-20px_rgba(0,0,0,0.35)] p-2 z-[120]">
+                          {canAccessAdmin && (
                             <button
                               type="button"
                               onClick={() => {
@@ -254,8 +250,8 @@ const Navbar = () => {
                             >
                               My Profile
                             </button>
-                          ) : null}
-                          {canAccessAdmin ? (
+                          )}
+                          {canAccessAdmin && (
                             <button
                               type="button"
                               onClick={() => {
@@ -266,7 +262,7 @@ const Navbar = () => {
                             >
                               Admin Dashboard
                             </button>
-                          ) : null}
+                          )}
                           <button
                             type="button"
                             onClick={handleLogout}
@@ -276,7 +272,7 @@ const Navbar = () => {
                             Log out
                           </button>
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -445,7 +441,9 @@ const Navbar = () => {
                     <p className="text-sm font-semibold text-zinc-900 truncate">
                       {user?.name || "User"}
                     </p>
-                    <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+                    <p className="text-xs text-zinc-500 truncate">
+                      {user?.email}
+                    </p>
                     <p className="text-[10px] mt-1 inline-flex px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 uppercase tracking-wide">
                       {user?.role || "user"}
                     </p>
