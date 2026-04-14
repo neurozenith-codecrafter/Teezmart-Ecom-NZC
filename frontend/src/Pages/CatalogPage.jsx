@@ -3,9 +3,28 @@ import axios from "axios";
 import { Star, SlidersHorizontal, ChevronDown, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { useCart } from "../Hooks/useCart"
 
-const ProductCard = ({ product, index }) => {
+const ProductCard = ({ product, index, handleAddToCart }) => {
   const [isLiked, setIsLiked] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+
+  const onAdd = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsAdded(true);
+
+    try {
+      await handleAddToCart({
+        productId: product._id,
+        quantity: 1,
+        size: product?.sizes?.[0],
+      });
+    } finally {
+      setTimeout(() => setIsAdded(false), 1500);
+    }
+  };
 
   const toggleWishlist = (e) => {
     e.preventDefault(); // Prevents navigating to the product page
@@ -51,9 +70,35 @@ const ProductCard = ({ product, index }) => {
             />
 
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-              <button className="bg-white/90 backdrop-blur-md text-black text-[10px] font-black uppercase tracking-widest px-8 py-3.5 rounded-full shadow-xl hover:bg-black hover:text-white transition-colors">
-                Quick Add +
-              </button>
+              <Motion.button
+                            type="button"
+                            onClick={onAdd}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 25,
+                              mass: 0.5,
+                            }}
+                            animate={{
+                              backgroundColor: isAdded ? "#18181b" : "#ffffff",
+                              color: isAdded ? "#ffffff" : "#18181b",
+                              scale: isAdded ? 0.95 : 1,
+                            }}
+                            className="backdrop-blur-md text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-full shadow-2xl border border-zinc-200/50 transition-colors"
+                          >
+                            <AnimatePresence mode="wait">
+                              <Motion.span
+                                key={isAdded ? "added" : "add"}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.15 }}
+                                className="flex items-center gap-2"
+                              >
+                                {isAdded ? "Success ✓" : "Quick Add +"}
+                              </Motion.span>
+                            </AnimatePresence>
+                          </Motion.button>
             </div>
           </div>
 
@@ -149,6 +194,7 @@ const ProductCardSkeleton = ({ index = 0 }) => {
 
 export const CatalogPage = () => {
   const [products, setProducts] = useState([]);
+  const {handleAddToCart} = useCart();
 
   useEffect(() => {
     let isMounted = true;
@@ -202,7 +248,7 @@ export const CatalogPage = () => {
             ))}
 
           {products.map((item, index) => (
-            <ProductCard key={item._id} product={item} index={index} />
+            <ProductCard key={item._id} product={item} index={index} handleAddToCart={handleAddToCart} />
           ))}
         </div>
 
