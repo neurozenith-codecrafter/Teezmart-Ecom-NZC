@@ -5,10 +5,15 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Delay ensures DOM is fully rendered
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 0);
+    const frameId = window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [pathname]);
 
   return null;

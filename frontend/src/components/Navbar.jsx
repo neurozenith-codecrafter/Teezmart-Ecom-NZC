@@ -95,6 +95,12 @@ const Navbar = () => {
     navigate("/", { replace: true });
   };
 
+  const navigateToCatalog = () => {
+    setActiveItem("Products");
+    setIsMenuOpen(false);
+    navigate("/catalog");
+  };
+
   const scrollToWhyUs = (e) => {
     e.preventDefault();
     const element = document.getElementById("why-us");
@@ -533,6 +539,8 @@ const Navbar = () => {
                         } else if (item.name === "Wishlist") {
                           navigate("/wishlist");
                           setIsMenuOpen(false);
+                        } else if (item.name === "Products") {
+                          navigateToCatalog();
                         } else {
                           setIsMenuOpen(false);
                         }
