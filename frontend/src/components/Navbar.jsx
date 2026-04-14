@@ -27,6 +27,8 @@ const Navbar = () => {
   const [isMobileSidebar, setIsMobileSidebar] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
+  const [hasImgError, setHasImgError] = useState(false);
+  const [hasPopupImgError, setHasPopupImgError] = useState(false);
 
   const { isLoggedIn, user, logout } = useAuth();
   const { cartCount, wishlistCount } = useCommerce();
@@ -84,8 +86,19 @@ const Navbar = () => {
     };
   }, [isProfileMenuOpen]);
 
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      setHasImgError(false);
+      setHasPopupImgError(false);
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [user]);
+
   const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
   const canAccessAdmin = user?.role === "admin" || user?.role === "devAdmin";
+  const shouldShowNavAvatar = user?.avatar && !hasImgError;
+  const shouldShowPopupAvatar = user?.avatar && !hasPopupImgError;
 
   const handleLogout = () => {
     logout();
@@ -348,14 +361,15 @@ const Navbar = () => {
                         onClick={() => setIsProfileMenuOpen((prev) => !prev)}
                         className="flex items-center justify-center transition-transform active:scale-95"
                       >
-                        {user?.avatar ? (
+                        {shouldShowNavAvatar ? (
                           <img
                             src={user.avatar}
                             alt={user?.name || "User"}
+                            onError={() => setHasImgError(true)}
                             className="w-8 h-8 rounded-full object-cover border border-zinc-100 shadow-sm"
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-zinc-900 text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
+                          <div className="w-8 h-8 rounded-full bg-zinc-900 text-white text-[11px] font-bold flex items-center justify-center shadow-md border border-white/20">
                             {userInitial}
                           </div>
                         )}
@@ -602,14 +616,15 @@ const Navbar = () => {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  {user?.avatar ? (
+                  {shouldShowPopupAvatar ? (
                     <img
                       src={user.avatar}
                       alt={user?.name || "User"}
-                      className="w-12 h-12 rounded-full object-cover"
+                      onError={() => setHasPopupImgError(true)}
+                      className="w-12 h-12 rounded-full object-cover border border-zinc-50 shadow-sm"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-zinc-900 text-white text-sm font-bold flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-zinc-900 text-white text-sm font-bold flex items-center justify-center shadow-lg border-2 border-zinc-50">
                       {userInitial}
                     </div>
                   )}
