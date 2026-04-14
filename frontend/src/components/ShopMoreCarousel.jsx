@@ -3,130 +3,9 @@ import { Star, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, useMotionValue, animate } from "framer-motion";
+import Loader from "../components/Loader"
 
 // --- PROFESSIONAL DUMMY DATA ---
-const DUMMY_PRODUCTS = [
-  {
-    _id: "1",
-    title: "Polo with Contrast Trims",
-    price: 212,
-    slug: "polo-contrast",
-    rating: 4.0,
-    images: [
-      {
-        url: "https://i.pinimg.com/736x/62/2c/30/622c3034337829762cc0fabdd7a35b00.jpg",
-      },
-    ],
-  },
-  {
-    _id: "2",
-    title: "Gradient Graphic T-shirt",
-    price: 145,
-    slug: "gradient-graphic",
-    rating: 3.5,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/59/13/76/5913766b1e90301f5372cca0fd446e28.jpg",
-      },
-    ],
-  },
-  {
-    _id: "3",
-    title: "Polo with Tipping Details",
-    price: 180,
-    slug: "polo-tipping",
-    rating: 4.5,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/42/27/7c/42277c6ee51bb0a9ae700aade699a05b.jpg",
-      },
-    ],
-  },
-  {
-    _id: "4",
-    title: "Striped Jacket",
-    price: 120,
-    slug: "striped-jacket",
-    rating: 5.0,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/29/61/1b/29611b83311bf4e7a86a51ef090083c7.jpg",
-      },
-    ],
-  },
-  {
-    _id: "5",
-    title: "Oversized Street Hoodie",
-    price: 299,
-    slug: "oversized-hoodie",
-    rating: 4.8,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/01/88/9a/01889a48305fca69c530fc5aa735a9d3.jpg",
-      },
-    ],
-  },
-  {
-    _id: "6",
-    title: "Classic White Tee",
-    price: 89,
-    slug: "classic-white",
-    rating: 4.2,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/85/f5/ab/85f5ab828c6283e80bf92d97651a15ab.jpg",
-      },
-    ],
-  },
-  {
-    _id: "7",
-    title: "Midnight Denim Jacket",
-    price: 450,
-    slug: "denim-jacket",
-    rating: 4.9,
-    images: [
-      {
-        url: "https://i.pinimg.com/736x/84/fe/54/84fe5483e7baf091ef9cdf475cc7d400.jpg",
-      },
-    ],
-  },
-  {
-    _id: "8",
-    title: "Urban Cargo Pants",
-    price: 195,
-    slug: "cargo-pants",
-    rating: 4.3,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/80/38/c2/8038c25bec701cc59c247664e02b605f.jpg",
-      },
-    ],
-  },
-  {
-    _id: "9",
-    title: "Vintage Flannel Shirt",
-    price: 165,
-    slug: "flannel-shirt",
-    rating: 4.6,
-    images: [
-      {
-        url: "https://i.pinimg.com/1200x/ac/f9/49/acf949c5a1b1af629c8adf2bb27f28af.jpg",
-      },
-    ],
-  },
-  {
-    _id: "10",
-    title: "Tech Shell Windbreaker",
-    price: 540,
-    slug: "windbreaker",
-    rating: 4.7,
-    images: [
-      {
-        url: "https://i.pinimg.com/736x/8e/73/a3/8e73a39cfa8046fddf971135b06de1b0.jpg",
-      },
-    ],
-  },
-];
 
 const ProductCard = ({ product }) => {
   return (
@@ -202,41 +81,50 @@ const NavButton = ({ onClick, icon, label }) => {
   );
 };
 
-export const ShopMoreCarousel = () => {
+export const ShopMoreCarousel = ({ productId }) => {
   const containerRef = useRef(null);
-  const [products, setProducts] = useState(DUMMY_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [constraints, setConstraints] = useState({ left: 0, right: 0 });
   const x = useMotionValue(0);
 
   useEffect(() => {
-    const updateConstraints = () => {
-      if (!containerRef.current) return;
-      const scrollWidth = containerRef.current.scrollWidth;
-      const offsetWidth = containerRef.current.offsetWidth;
-      // Increased padding to ensure the "Explore All" card is fully reachable
-      const maxDrag = Math.min(0, offsetWidth - scrollWidth - 80);
-      setConstraints({ left: maxDrag, right: 0 });
-    };
+    if (!productId) return;
 
-    updateConstraints();
-    window.addEventListener("resize", updateConstraints);
+    x.set(0);
 
     const fetchRelated = async () => {
       try {
-        const res = await axios.get("/api/products?limit=10");
+        const res = await axios.get(`/api/products/${productId}/suggestions`);
+
         if (res.data.data?.length > 0) {
           setProducts(res.data.data);
-          // Recalculate after state update
-          setTimeout(updateConstraints, 100);
         }
-      } catch {
-        console.warn("Using dummy data.");
+      } catch (error) {
+        console.error("Error fetching show more ->", error);
       }
     };
-    fetchRelated();
 
+    fetchRelated();
+  }, [productId, x]);
+
+  useEffect(() => {
+    const updateConstraints = () => {
+      requestAnimationFrame(() => {
+        if (!containerRef.current) return;
+
+        const scrollWidth = containerRef.current.scrollWidth;
+        const offsetWidth = containerRef.current.offsetWidth;
+
+        const maxDrag = Math.min(0, offsetWidth - scrollWidth - 80);
+        setConstraints({ left: maxDrag, right: 0 });
+      });
+    };
+
+    updateConstraints(); // ✅ runs AFTER products render
+
+    window.addEventListener("resize", updateConstraints);
     return () => window.removeEventListener("resize", updateConstraints);
-  }, []);
+  }, [products]); // ✅ KEY CHANGE
 
   useEffect(() => {
     const el = containerRef.current;
@@ -310,9 +198,12 @@ export const ShopMoreCarousel = () => {
           whileTap={{ cursor: "grabbing" }}
           className="flex gap-5 md:gap-8 cursor-grab active:cursor-grabbing select-none"
         >
-          {products.map((item) => (
-            <ProductCard key={item._id} product={item} />
-          ))}
+          {
+            !products.length ? <Loader /> :
+            products.map((item) => (
+              <ProductCard key={item._id} product={item} />
+            ))
+          }
 
           <Link
             to="/catalog"
