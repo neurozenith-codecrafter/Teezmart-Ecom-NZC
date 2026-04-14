@@ -211,12 +211,6 @@ const Navbar = () => {
     },
   };
 
-  const HamburgerSpring = {
-    type: "spring",
-    stiffness: 400,
-    damping: 25,
-  };
-
   const curtainSpring = {
     type: "spring",
     stiffness: 120,
@@ -233,27 +227,12 @@ const Navbar = () => {
           <div className="flex-1 flex justify-start">
             <Motion.button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 flex flex-col gap-[4px] cursor-pointer hover:bg-zinc-50 rounded-full transition-colors group"
               whileTap={{ scale: 0.9 }}
+              className="p-2 -ml-2 rounded-full hover:bg-zinc-50 transition-colors flex flex-col gap-[4px] cursor-pointer"
             >
-              {/* Top Line */}
-              <Motion.span
-                className="w-5 h-[1.5px] bg-black rounded-full"
-                whileHover={{ x: 2 }}
-                transition={HamburgerSpring}
-              />
-              {/* Middle Line (Slightly shorter for a natural look) */}
-              <Motion.span
-                className="w-4 h-[1.5px] bg-black rounded-full"
-                whileHover={{ x: 4 }}
-                transition={HamburgerSpring}
-              />
-              {/* Bottom Line */}
-              <Motion.span
-                className="w-5 h-[1.5px] bg-black rounded-full"
-                whileHover={{ x: 2 }}
-                transition={HamburgerSpring}
-              />
+              <span className="w-5 h-[1.5px] bg-black rounded-full" />
+              <span className="w-4 h-[1.5px] bg-black rounded-full" />
+              <span className="w-5 h-[1.5px] bg-black rounded-full" />
             </Motion.button>
           </div>
 

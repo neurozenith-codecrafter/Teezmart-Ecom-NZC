@@ -33,10 +33,6 @@ const ProductPage = () => {
         setProductImages(response.data.data.images);
         setSelectedImg(0);
         setSelectedSize(response.data.data?.sizes?.[0] || "");
-
-        console.log("Response message ->", response.data.message);
-        console.log("Product data ->", response.data.data);
-        console.log("Product images URL ->", response.data.data.images);
       } catch (error) {
         console.error("Error fetching product details:", error);
       }
