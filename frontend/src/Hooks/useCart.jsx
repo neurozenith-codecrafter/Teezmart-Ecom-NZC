@@ -5,7 +5,7 @@ import { useCommerce } from "./useCommerce";
 export const useCart = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
-  const { addToCart, updateCartItem, removeCartItem, refreshCart, cart, cartItems } =
+  const { addToCart, updateCartItem, removeCartItem, refreshCart, cart, cartItems, isCartLoading } =
     useCommerce();
 
   const handleAddToCart = async ({ productId, quantity = 1, size }) => {
@@ -36,5 +36,6 @@ export const useCart = () => {
     refreshCart,
     cart,
     cartItems,
+    isCartLoading,
   };
 };
