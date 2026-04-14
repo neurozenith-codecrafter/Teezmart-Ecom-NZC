@@ -14,6 +14,7 @@ import { Users } from "./Pages/admin/Users";
 import CartPage from "./Pages/CartPage";
 import WishlistPage from "./Pages/WishlistPage";
 import { useAuth } from "./Hooks/useAuth";
+import CatalogPage from "./Pages/CatalogPage";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -64,6 +65,7 @@ function App() {
             <Route path="/login" element={<Auth />} />
             <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
           </Route>
           <Route path="/cart" element={<CartPage />} />
 
