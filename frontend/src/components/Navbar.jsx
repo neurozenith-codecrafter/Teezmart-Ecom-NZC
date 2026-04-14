@@ -153,6 +153,58 @@ const Navbar = () => {
     { name: "Report", icon: ShieldAlert, isContact: true },
   ];
 
+  const bubbleSpring = {
+    type: "spring",
+    stiffness: 260,
+    damping: 18,
+  };
+
+  const logoSpring = {
+    type: "spring",
+    stiffness: 400,
+    damping: 15,
+  };
+
+  const containerVariants = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const letterVariants = {
+    initial: {
+      y: 10,
+      opacity: 0,
+      scale: 0.5,
+      filter: "blur(4px)",
+    },
+    animate: {
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: logoSpring,
+    },
+  };
+
+  const HamburgerSpring = {
+    type: "spring",
+    stiffness: 400,
+    damping: 25,
+  };
+
+  const curtainSpring = {
+    type: "spring",
+    stiffness: 120,
+    damping: 20,
+    mass: 0.8,
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
@@ -160,67 +212,133 @@ const Navbar = () => {
           className={`${PAGE_CONTAINER_CLASS} h-[55px] md:h-[68px] flex items-center justify-between relative`}
         >
           <div className="flex-1 flex justify-start">
-            <button
+            <Motion.button
               onClick={() => setIsMenuOpen(true)}
-              className="p-2 -ml-2 cursor-pointer hover:bg-zinc-50 rounded-full transition-all"
+              className="p-2 -ml-2 flex flex-col gap-[4px] cursor-pointer hover:bg-zinc-50 rounded-full transition-colors group"
+              whileTap={{ scale: 0.9 }}
             >
-              <Menu className="w-[22px] h-[22px] md:w-[24px] md:h-[24px] text-black stroke-[1.5]" />
-            </button>
+              {/* Top Line */}
+              <Motion.span
+                className="w-5 h-[1.5px] bg-black rounded-full"
+                whileHover={{ x: 2 }}
+                transition={HamburgerSpring}
+              />
+              {/* Middle Line (Slightly shorter for a natural look) */}
+              <Motion.span
+                className="w-4 h-[1.5px] bg-black rounded-full"
+                whileHover={{ x: 4 }}
+                transition={HamburgerSpring}
+              />
+              {/* Bottom Line */}
+              <Motion.span
+                className="w-5 h-[1.5px] bg-black rounded-full"
+                whileHover={{ x: 2 }}
+                transition={HamburgerSpring}
+              />
+            </Motion.button>
           </div>
 
           <Link
             to="/"
             onClick={scrollToTop}
-            className="absolute left-1/2 -translate-x-1/2 text-[19px] md:text-[23px] font-bold tracking-tight text-black whitespace-nowrap"
+            className="absolute left-1/2 -translate-x-1/2 text-[19px] md:text-[23px] font-bold tracking-tighter text-black whitespace-nowrap"
           >
-            TeezMart
+            <Motion.span
+              variants={containerVariants}
+              initial="initial"
+              animate="animate"
+              className="flex" // flex ensures letters sit side-by-side
+            >
+              {"TeezMart".split("").map((char, index) => (
+                <Motion.span
+                  key={index}
+                  variants={letterVariants}
+                  style={{ display: "inline-block" }}
+                  whileHover={{
+                    scale: 1.2,
+                    y: -3,
+                    transition: { type: "spring", stiffness: 600, damping: 10 },
+                  }}
+                >
+                  {char}
+                </Motion.span>
+              ))}
+            </Motion.span>
           </Link>
 
           <div className="flex-1 flex items-center justify-end space-x-4 md:space-x-8">
             <div className="hidden lg:flex items-center space-x-7 text-[12px] font-semibold text-black uppercase tracking-wider">
-              <a
+              <Motion.a
                 href="#why-us"
                 onClick={scrollToWhyUs}
+                whileHover={{ y: -2, color: "#71717a" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
                 className="hover:opacity-60 transition-opacity cursor-pointer"
               >
                 Blogs
-              </a>
-              <a
+              </Motion.a>
+              <Motion.a
                 href="#why-us"
                 onClick={scrollToWhyUs}
+                whileHover={{ y: -2, color: "#71717a" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
                 className="hover:opacity-60 transition-opacity cursor-pointer"
               >
                 FAQs
-              </a>
+              </Motion.a>
             </div>
 
             <div className="flex items-center space-x-3 md:space-x-5">
               <div className="flex items-center space-x-3 md:space-x-5">
                 {isLoggedIn ? (
                   <div className="flex items-center space-x-3 md:space-x-5">
-                    {/* 1. Wishlist Icon - Hidden on Mobile */}
                     <Link to="/wishlist" className="hidden md:block relative">
-                      <Heart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:text-rose-500 transition-colors" />
-                      {wishlistCount > 0 ? (
-                        <span className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center">
-                          {wishlistCount > 99 ? "99+" : wishlistCount}
-                        </span>
-                      ) : null}
+                      <Motion.div
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.8 }}
+                      >
+                        <Heart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:text-rose-500 transition-colors" />
+                        {wishlistCount > 0 ? (
+                          <Motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center"
+                          >
+                            {wishlistCount > 99 ? "99+" : wishlistCount}
+                          </Motion.span>
+                        ) : null}
+                      </Motion.div>
                     </Link>
 
-                    {/* 2. Cart Icon */}
                     <Link to="/cart" className="relative">
-                      <ShoppingCart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:opacity-60 transition-opacity" />
-                      {cartCount > 0 ? (
-                        <span className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-zinc-900 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center">
-                          {cartCount > 99 ? "99+" : cartCount}
-                        </span>
-                      ) : null}
+                      <Motion.div
+                        whileHover={{ y: -3, scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={bubbleSpring}
+                      >
+                        <ShoppingCart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:opacity-60 transition-opacity" />
+                        {cartCount > 0 ? (
+                          <Motion.span
+                            layoutId="cartBadge"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-zinc-900 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center"
+                          >
+                            {cartCount > 99 ? "99+" : cartCount}
+                          </Motion.span>
+                        ) : null}
+                      </Motion.div>
                     </Link>
 
                     <div className="relative ml-2 md:ml-0" ref={profileMenuRef}>
-                      <button
+                      <Motion.button
                         type="button"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setIsProfileMenuOpen((prev) => !prev)}
                         className="flex items-center justify-center transition-transform active:scale-95"
                       >
@@ -235,54 +353,79 @@ const Navbar = () => {
                             {userInitial}
                           </div>
                         )}
-                      </button>
+                      </Motion.button>
 
-                      {isProfileMenuOpen && (
-                        <div className="absolute right-0 mt-3 w-48 bg-white border border-zinc-100 rounded-2xl shadow-[0_16px_40px_-20px_rgba(0,0,0,0.35)] p-2 z-[120]">
-                          {canAccessAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsProfileMenuOpen(false);
-                                setIsProfilePopupOpen(true);
-                              }}
-                              className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-zinc-50 transition-colors"
-                            >
-                              My Profile
-                            </button>
-                          )}
-                          {canAccessAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsProfileMenuOpen(false);
-                                navigate("/admin/dashboard");
-                              }}
-                              className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-zinc-50 transition-colors"
-                            >
-                              Admin Dashboard
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={handleLogout}
-                            className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-500 transition-colors inline-flex items-center gap-2"
+                      <AnimatePresence>
+                        {isProfileMenuOpen && (
+                          <Motion.div
+                            initial={{
+                              opacity: 0,
+                              scale: 0.8,
+                              y: 10,
+                              filter: "blur(4px)",
+                            }}
+                            animate={{
+                              opacity: 1,
+                              scale: 1,
+                              y: 0,
+                              filter: "blur(0px)",
+                            }}
+                            exit={{
+                              opacity: 0,
+                              scale: 0.8,
+                              y: 10,
+                              filter: "blur(4px)",
+                            }}
+                            transition={bubbleSpring}
+                            className="absolute right-0 mt-3 w-48 bg-white border border-zinc-100 rounded-2xl shadow-[0_16px_40px_-20px_rgba(0,0,0,0.35)] p-2 z-[120] origin-top-right"
                           >
-                            <LogOut className="w-4 h-4" />
-                            Log out
-                          </button>
-                        </div>
-                      )}
+                            {canAccessAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsProfileMenuOpen(false);
+                                  setIsProfilePopupOpen(true);
+                                }}
+                                className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-zinc-50 transition-colors"
+                              >
+                                My Profile
+                              </button>
+                            )}
+                            {canAccessAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsProfileMenuOpen(false);
+                                  navigate("/admin/dashboard");
+                                }}
+                                className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-zinc-50 transition-colors"
+                              >
+                                Admin Dashboard
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleLogout}
+                              className="w-full text-left text-sm px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-500 transition-colors inline-flex items-center gap-2"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              Log out
+                            </button>
+                          </Motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 ) : (
-                  /* ... Login Button logic remains the same ... */
-                  <button
+                  <Motion.button
+                    whileHover={{ scale: 1.05, backgroundColor: "#000" }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={bubbleSpring}
                     onClick={() => navigate("/login")}
                     className="px-5 py-2 md:px-6 md:py-2.5 bg-[#18181B] text-white text-[11px] md:text-[12px] font-medium tracking-tight rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.1)] hover:bg-black transition-all duration-200 active:scale-[0.96] cursor-pointer flex items-center justify-center"
                   >
                     Log in
-                  </button>
+                  </Motion.button>
                 )}
               </div>
             </div>
@@ -291,38 +434,63 @@ const Navbar = () => {
       </nav>
 
       {/* BOTTOM NAV & SIDEBAR logic remains consistent with previous update */}
-      <div
-        className={`hidden lg:block fixed left-0 w-full bg-white z-[55] transition-all duration-500 ease-in-out border-b border-[#f9f9f9]/50 ${showBottomNav ? "top-[68px] opacity-100 translate-y-0" : "top-[10px] opacity-0 -translate-y-full pointer-events-none"}`}
-      >
-        <div
-          className={`${PAGE_CONTAINER_CLASS} flex items-center justify-between h-[58px] gap-x-6`}
-        >
-          <div className="flex items-center gap-x-3 shrink-0">
-            <button className="flex items-center justify-between min-w-[145px] bg-[#f9f9f9] border border-[#f0f0f0] px-5 py-2.5 rounded-xl hover:bg-white transition-all cursor-pointer group">
-              <span className="text-[14px] font-normal text-black">
-                Clothing
-              </span>
-              <ChevronDown className="w-4 h-4 text-gray-400 ml-4 group-hover:translate-y-0.5 transition-transform" />
-            </button>
-            <div className="flex items-center gap-x-2">
-              <button className="px-6 py-2.5 border border-[#f0f0f0] rounded-full text-[14px] font-normal text-black hover:bg-gray-50 transition-all">
-                New Arrivals
-              </button>
-              <button className="px-6 py-2.5 border border-[#f0f0f0] rounded-full text-[14px] font-normal text-black hover:bg-gray-50 transition-all">
-                Sale
-              </button>
-            </div>
-          </div>
-          <div className="relative w-full max-w-[400px]">
-            <input
-              type="text"
-              placeholder="Search collection..."
-              className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2.5 pl-6 pr-12 rounded-full text-[14px] font-normal outline-none focus:bg-white transition-all shadow-sm"
-            />
-            <Search className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-      </div>
+      <AnimatePresence>
+        {showBottomNav && (
+          <Motion.div
+            // 1. Reveal from the top border of the main nav
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "58px", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={curtainSpring}
+            style={{ overflow: "hidden" }} // Prevents content jitter during expansion
+            className="hidden lg:block fixed left-0 w-full bg-white z-[55] border-b border-[#f9f9f9]/50 top-[68px] origin-top"
+          >
+            <Motion.div
+              // 2. The content "flows" up into place as the bar expands
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
+              exit={{ y: -20 }}
+              transition={curtainSpring}
+              className={`${PAGE_CONTAINER_CLASS} flex items-center justify-between h-full gap-x-6`}
+            >
+              <div className="flex items-center gap-x-3 shrink-0">
+                <Motion.button
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center justify-between min-w-[145px] bg-[#f9f9f9] border border-[#f0f0f0] px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
+                >
+                  <span className="text-[14px] font-normal text-black">
+                    Clothing
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-400 ml-4" />
+                </Motion.button>
+
+                <div className="flex items-center gap-x-2">
+                  {["New Arrivals", "Sale"].map((label) => (
+                    <Motion.button
+                      key={label}
+                      whileHover={{ y: -2, backgroundColor: "#f9f9f9" }}
+                      whileTap={{ scale: 0.96 }}
+                      className="px-6 py-2.5 border border-[#f0f0f0] rounded-full text-[14px] font-normal text-black transition-colors"
+                    >
+                      {label}
+                    </Motion.button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative w-full max-w-[400px]">
+                <input
+                  type="text"
+                  placeholder="Search collection..."
+                  className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2.5 pl-6 pr-12 rounded-full text-[14px] font-normal outline-none focus:bg-white transition-all"
+                />
+                <Search className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isMenuOpen && (
