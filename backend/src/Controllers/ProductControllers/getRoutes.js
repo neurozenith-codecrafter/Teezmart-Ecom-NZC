@@ -29,14 +29,19 @@ const getAllProducts = async (req, res) => {
       _id: { $nin: usedIds },
     }).sort({ createdAt: -1 });
 
+    const taggedNew = newProducts.map((p) => ({ ...p.toObject(), tag: "new" }));
+    const taggedTop = topRated.map((p) => ({ ...p.toObject(), tag: "top" }));
+    const taggedOthers = others.map((p) => ({
+      ...p.toObject(),
+      tag: "others",
+    }));
+
+    const combinedProducts = [...taggedNew, ...taggedTop, ...taggedOthers];
+
     return res.status(200).json({
       success: true,
       message: "Products fetched successfully",
-      data: {
-        newProducts,
-        topRated,
-        others,
-      },
+      data: combinedProducts, // ✅ single array
     });
   } catch (error) {
     return res.status(500).json({
@@ -51,7 +56,8 @@ const getAllProducts = async (req, res) => {
 const getProductBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const normalizedSlug = typeof slug === "string" ? slug.trim().toLowerCase() : "";
+    const normalizedSlug =
+      typeof slug === "string" ? slug.trim().toLowerCase() : "";
 
     if (!normalizedSlug) {
       return res.status(400).json({
@@ -90,9 +96,8 @@ const getMostReviewedProducts = async (req, res) => {
     // const LIMIT = 10; // optional
 
     // Fetch products sorted by number of reviews in descending order
-    const products = await Product.find({})
-      .sort({ numReviews: -1 })
-      // .limit(LIMIT);
+    const products = await Product.find({}).sort({ numReviews: -1 });
+    // .limit(LIMIT);
 
     return res.status(200).json({
       success: true,
@@ -100,7 +105,6 @@ const getMostReviewedProducts = async (req, res) => {
       count: products.length,
       data: products,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -113,8 +117,10 @@ const getMostReviewedProducts = async (req, res) => {
 // `GET /api/products/most-selling` - Fetch products sorted by sales count
 const getMostSellingProducts = async (req, res) => {
   try {
-    const products = await Product.find({})
-    .sort({ salesCount: -1, rating: -1 }); // tie-breaker
+    const products = await Product.find({}).sort({
+      salesCount: -1,
+      rating: -1,
+    }); // tie-breaker
     // Sort by salesCount in descending order, and use rating as a tie-breaker
 
     return res.status(200).json({
@@ -123,7 +129,6 @@ const getMostSellingProducts = async (req, res) => {
       count: products.length,
       data: products,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -168,7 +173,6 @@ const getProductsByCategory = async (req, res) => {
       count: products.length,
       data: products,
     });
-
   } catch (error) {
     const statusCode = error.message === "Invalid category" ? 400 : 500;
 
@@ -193,7 +197,6 @@ const getRecommendedProducts = async (req, res) => {
       count: recommendedProducts.length,
       data: recommendedProducts,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -265,7 +268,6 @@ const getProductSuggestions = async (req, res) => {
       count: finalSuggestions.length,
       data: finalSuggestions,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -275,7 +277,6 @@ const getProductSuggestions = async (req, res) => {
   }
 };
 
-
 module.exports = {
   getAllProducts,
   getProductBySlug,
@@ -283,5 +284,5 @@ module.exports = {
   getMostSellingProducts,
   getProductsByCategory,
   getRecommendedProducts,
-  getProductSuggestions
+  getProductSuggestions,
 };

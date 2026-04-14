@@ -1,106 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Star, SlidersHorizontal, ChevronDown, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-
-const PRODUCTS = [
-  {
-    _id: "1",
-    title: "Polo with Contrast Trims",
-    price: 212,
-    slug: "polo-contrast",
-    rating: 4.0,
-    img: "https://i.pinimg.com/736x/62/2c/30/622c3034337829762cc0fabdd7a35b00.jpg",
-  },
-  {
-    _id: "2",
-    title: "Gradient Graphic T-shirt",
-    price: 145,
-    slug: "gradient-graphic",
-    rating: 3.5,
-    img: "https://i.pinimg.com/1200x/59/13/76/5913766b1e90301f5372cca0fd446e28.jpg",
-  },
-  {
-    _id: "3",
-    title: "Polo with Tipping Details",
-    price: 180,
-    slug: "polo-tipping",
-    rating: 4.5,
-    img: "https://i.pinimg.com/1200x/42/27/7c/42277c6ee51bb0a9ae700aade699a05b.jpg",
-  },
-  {
-    _id: "4",
-    title: "Striped Jacket",
-    price: 120,
-    slug: "striped-jacket",
-    rating: 5.0,
-    img: "https://i.pinimg.com/1200x/29/61/1b/29611b83311bf4e7a86a51ef090083c7.jpg",
-  },
-  {
-    _id: "5",
-    title: "Oversized Street Hoodie",
-    price: 299,
-    slug: "oversized-hoodie",
-    rating: 4.8,
-    img: "https://i.pinimg.com/1200x/01/88/9a/01889a48305fca69c530fc5aa735a9d3.jpg",
-  },
-  {
-    _id: "6",
-    title: "Classic White Tee",
-    price: 89,
-    slug: "classic-white",
-    rating: 4.2,
-    img: "https://i.pinimg.com/1200x/85/f5/ab/85f5ab828c6283e80bf92d97651a15ab.jpg",
-  },
-  {
-    _id: "7",
-    title: "Midnight Denim Jacket",
-    price: 450,
-    slug: "denim-jacket",
-    rating: 4.9,
-    img: "https://i.pinimg.com/736x/84/fe/54/84fe5483e7baf091ef9cdf475cc7d400.jpg",
-  },
-  {
-    _id: "8",
-    title: "Urban Cargo Pants",
-    price: 195,
-    slug: "cargo-pants",
-    rating: 4.3,
-    img: "https://i.pinimg.com/1200x/80/38/c2/8038c25bec701cc59c247664e02b605f.jpg",
-  },
-  {
-    _id: "9",
-    title: "Vintage Flannel Shirt",
-    price: 165,
-    slug: "flannel-shirt",
-    rating: 4.6,
-    img: "https://i.pinimg.com/1200x/ac/f9/49/acf949c5a1b1af629c8adf2bb27f28af.jpg",
-  },
-  {
-    _id: "10",
-    title: "Tech Shell Windbreaker",
-    price: 540,
-    slug: "windbreaker",
-    rating: 4.7,
-    img: "https://i.pinimg.com/736x/8e/73/a3/8e73a39cfa8046fddf971135b06de1b0.jpg",
-  },
-  {
-    _id: "11",
-    title: "Essential Black Joggers",
-    price: 130,
-    slug: "black-joggers",
-    rating: 4.4,
-    img: "https://i.pinimg.com/1200x/42/27/7c/42277c6ee51bb0a9ae700aade699a05b.jpg",
-  },
-  {
-    _id: "12",
-    title: "Heavyweight Cotton Tee",
-    price: 75,
-    slug: "heavy-tee",
-    rating: 4.1,
-    img: "https://i.pinimg.com/736x/62/2c/30/622c3034337829762cc0fabdd7a35b00.jpg",
-  },
-];
 
 const ProductCard = ({ product, index }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -143,7 +45,7 @@ const ProductCard = ({ product, index }) => {
             </button>
 
             <img
-              src={product.img}
+              src={product.images?.[0].url}
               alt={product.title}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
@@ -193,7 +95,83 @@ const ProductCard = ({ product, index }) => {
   );
 };
 
+const ProductCardSkeleton = ({ index = 0 }) => {
+  return (
+    <Motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: (index % 4) * 0.1, duration: 0.4 }}
+      className="group animate-pulse"
+    >
+      <div className="block relative">
+        <div className="space-y-4">
+          {/* Image Skeleton */}
+          <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-zinc-200 overflow-hidden">
+            {/* Wishlist placeholder */}
+            <div className="absolute top-5 right-5 w-10 h-10 rounded-full bg-zinc-300" />
+
+            {/* Shimmer */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1.5s_infinite]" />
+            </div>
+
+            {/* Quick add placeholder */}
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-24 h-8 bg-zinc-300 rounded-full" />
+          </div>
+
+          {/* Content */}
+          <div className="space-y-2 px-1">
+            {/* Title */}
+            <div className="h-4 w-3/4 bg-zinc-200 rounded" />
+
+            {/* Rating */}
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="w-3 h-3 bg-zinc-200 rounded" />
+                ))}
+              </div>
+              <div className="h-3 w-6 bg-zinc-200 rounded" />
+            </div>
+
+            {/* Price */}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="h-4 w-16 bg-zinc-200 rounded" />
+              <div className="h-3 w-10 bg-zinc-200 rounded" />
+              <div className="h-3 w-8 bg-zinc-200 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Motion.div>
+  );
+};
+
 export const CatalogPage = () => {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("/api/products");
+
+        if (isMounted) {
+          setProducts(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching ->", error);
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false; // prevents state update after unmount
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-zinc-100 pb-8">
@@ -218,7 +196,12 @@ export const CatalogPage = () => {
 
       <main className="w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
-          {PRODUCTS.map((item, index) => (
+          {products.length === 0 &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <ProductCardSkeleton key={i} index={i} />
+            ))}
+
+          {products.map((item, index) => (
             <ProductCard key={item._id} product={item} index={index} />
           ))}
         </div>

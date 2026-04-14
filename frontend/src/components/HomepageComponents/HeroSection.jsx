@@ -63,19 +63,17 @@ const HeroSection = () => {
 
       {/* 3. BOTTOM-CENTER CTA Block */}
       <div className="absolute bottom-6 md:bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 z-10 w-full px-4">
-        <Motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...heroSpring, delay: 0.8 }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-          }}
-          whileTap={{ scale: 0.95 }}
-          className="rounded-full"
-        >
-          <Link
-            to="/catalog"
+
+        <Link to={"/catalog"}>
+          <Motion.button
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...heroSpring, delay: 0.8 }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            }}
+            whileTap={{ scale: 0.95 }}
             className="group flex items-center gap-2 bg-white text-black px-5 py-3 md:px-8 md:py-4 rounded-full font-medium shadow-xl hover:bg-black hover:text-white transition-all duration-300 cursor-pointer whitespace-nowrap"
           >
             <span className="text-sm md:text-lg">Start shopping</span>
@@ -84,23 +82,20 @@ const HeroSection = () => {
               className="md:size-[22px] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
               strokeWidth={2.5}
             />
-          </Link>
-        </Motion.div>
-
-        <Motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.8 }}
-          transition={{ delay: 1.2 }}
-          whileHover={{ opacity: 1, scale: 1.1 }}
-          className="transition-all"
-        >
-          <Link
-            to="/catalog"
+          </Motion.button>
+        </Link>
+        
+        <Link to={"/catalog"}>
+          <Motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.8 }}
+            transition={{ delay: 1.2 }}
+            whileHover={{ opacity: 1, scale: 1.1 }}
             className="text-white text-[10px] md:text-[11px] font-light tracking-[0.3em] uppercase drop-shadow-xl cursor-pointer transition-all"
           >
             Top Collection
-          </Link>
-        </Motion.div>
+          </Motion.span>
+        </Link>
       </div>
     </Motion.div>
   );
