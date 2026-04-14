@@ -11,7 +11,13 @@ const PublicLayout = () => {
   const isHomePage = pathname === "/";
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden">
+    <Motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden"
+    >
       <Navbar />
       <div className="pt-[65px] lg:pt-[136px]">
         <AnimatePresence mode="wait">
@@ -28,7 +34,7 @@ const PublicLayout = () => {
       </div>
       <FooterSection compactMobile={!isHomePage} />
       {!isHomePage && <MobileCopyright />}
-    </div>
+    </Motion.div>
   );
 };
 
