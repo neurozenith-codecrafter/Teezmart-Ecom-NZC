@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Home from "./Pages/Home";
 import Auth from "./Services/Auth";
 import ProductPage from "./Pages/ProductPage";
@@ -54,44 +55,54 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/login" element={<Auth />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:slug" element={<ProductPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
+        </Route>
+        <Route path="/cart" element={<CartPage />} />
+
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="products" element={<Products />} />
+          <Route path="orders" element={<Orders />} />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute allowedRoles={["devAdmin"]}>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 function App() {
   return (
     <AdminProvider>
       <BrowserRouter>
         <ScrollToTop />
-        <Routes>
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/product/:slug" element={<ProductPage />} />
-            <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-          </Route>
-          <Route path="/cart" element={<CartPage />} />
-
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminLayout />
-              </AdminRoute>
-            }
-          >
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="products" element={<Products />} />
-            <Route path="orders" element={<Orders />} />
-            <Route
-              path="users"
-              element={
-                <ProtectedRoute allowedRoles={["devAdmin"]}>
-                  <Users />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="dashboard" replace />} />
-          </Route>
-        </Routes>
+        <AnimatedRoutes />
       </BrowserRouter>
     </AdminProvider>
   );
