@@ -8,6 +8,7 @@ import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
+import { ShopMoreCarousel } from "../components/ShopMoreCarousel";
 import useAnimations from "../Hooks/useAnimation";
 
 const ProductPage = () => {
@@ -273,6 +274,15 @@ const ProductPage = () => {
               </Motion.div>
             </Motion.div>
           </div>
+
+          <Motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <ShopMoreCarousel />
+          </Motion.div>
 
           <Motion.div
             initial={{ opacity: 0 }}
