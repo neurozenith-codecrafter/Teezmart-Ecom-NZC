@@ -109,46 +109,44 @@ const HeroSection = () => {
         {/* --- NEW OFFER TAG --- */}
         {/* --- BIG, EYE-CATCHING OFFER CARD --- */}
         <Motion.div
-          // 1. Entrance: "Inflatable Bubble" effect
           initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
           transition={{
             type: "spring",
             stiffness: 180,
-            damping: 15, // Slightly lower damping for a lively bounce
-            delay: 0.7, // Staggered entry after description
+            damping: 15,
+            delay: 0.7,
           }}
-          // 2. Addictive Hover: Magnetic pull & rotate
           whileHover={{
-            scale: 1.05,
-            rotate: [0, -1, 1, 0], // Gentle, playful wobble
+            scale: 1.02, // Tamer scale for mobile stability
+            rotate: [-0.5, 0.5, -0.5],
             transition: { type: "spring", stiffness: 400, damping: 20 },
           }}
-          className="mt-10 mb-8 inline-flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-[0_30px_70px_-15px_rgba(0,0,0,0.5)] cursor-pointer"
+          // Adjusted: w-auto for desktop, but max-width for mobile so it doesn't overflow
+          className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none"
         >
-          {/* The Icon: Flowy Gift Box */}
-          <div className="flex items-center justify-center p-3 bg-green-500 rounded-2xl shadow-inner">
-            <Gift className="w-6 h-6 md:w-8 md:h-8 text-white rotate-[-5deg]" />
+          {/* The Icon: Smaller for mobile */}
+          <div className="flex items-center justify-center p-2 md:p-3 bg-green-500 rounded-xl md:rounded-2xl shrink-0">
+            <Gift className="w-5 h-5 md:w-8 md:h-8 text-white" />
           </div>
 
           {/* The Main Text Block */}
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className="uppercase tracking-[0.2em] text-[11px] font-bold text-green-400">
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="uppercase tracking-[0.15em] text-[9px] md:text-[11px] font-bold text-green-400">
                 Special Offer
               </span>
-              <div className="relative flex h-2 w-2">
+              <div className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500"></span>
               </div>
             </div>
 
-            <p className="text-[18px] md:text-[24px] font-light tracking-tight text-white leading-tight">
+            {/* Responsive Text: Smaller on mobile, flowy on desktop */}
+            <p className="text-[14px] md:text-[22px] font-medium md:font-light tracking-tight text-white leading-tight">
               Buy 1, Get{" "}
-              <span className="font-bold text-green-400 drop-shadow-[0_2px_10px_rgba(74,222,128,0.5)]">
-                ₹50 OFF
-              </span>
-              <span className="block text-[14px] md:text-[16px] opacity-90 mt-1 font-light">
+              <span className="font-bold text-green-400">₹50 OFF</span>
+              <span className="block text-[11px] md:text-[16px] opacity-80 md:mt-1 font-light">
                 on every next T-shirt!
               </span>
             </p>
