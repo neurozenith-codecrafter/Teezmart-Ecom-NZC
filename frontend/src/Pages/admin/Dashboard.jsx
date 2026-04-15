@@ -6,58 +6,53 @@ import {
   ShieldCheck,
   CreditCard,
   Zap,
+  ArrowUpRight,
+  Package,
 } from "lucide-react";
 
-const PremiumCard = ({ label, value, icon: Icon, variant = "default" }) => {
-  const isIndigo = variant === "indigo";
-  const isEmerald = variant === "emerald";
+const PremiumCard = ({ label, value, icon, isSpecial = false }) => {
+  const IconComponent = icon;
 
   return (
     <div
-      className={`relative overflow-hidden p-8 rounded-3xl border transition-all duration-300 hover:translate-y-[-4px]
+      className={`relative group overflow-hidden p-8 rounded-[2rem] border transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-100/50 hover:-translate-y-1
       ${
-        isIndigo
-          ? "bg-slate-900 border-slate-800 text-white shadow-2xl"
-          : isEmerald
-            ? "bg-emerald-950 border-emerald-900 text-emerald-50 shadow-2xl"
-            : "bg-white border-slate-100 text-slate-900 shadow-sm hover:shadow-md"
+        isSpecial
+          ? "bg-[#F4F9F6] border-emerald-100/50"
+          : "bg-white border-slate-100"
       }`}
     >
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex justify-between items-start mb-10">
         <div
-          className={`p-3 rounded-2xl ${isIndigo ? "bg-slate-800" : isEmerald ? "bg-emerald-900" : "bg-slate-50"}`}
+          className={`p-3 rounded-2xl transition-colors duration-500 ${
+            isSpecial
+              ? "bg-white text-[#2D4F3C]"
+              : "bg-slate-50 text-slate-400 group-hover:text-[#86C19F]"
+          }`}
         >
-          <Icon
-            size={22}
-            className={
-              isIndigo
-                ? "text-indigo-400"
-                : isEmerald
-                  ? "text-emerald-400"
-                  : "text-slate-400"
-            }
-          />
+          <IconComponent size={20} strokeWidth={1.5} />
         </div>
-        <div
-          className={`text-[10px] font-bold uppercase tracking-widest ${isIndigo || isEmerald ? "opacity-50" : "text-slate-300"}`}
-        >
-          Live Status
+
+        {/* Minimal "Trend" indicator instead of "Live Status" text */}
+        <div className="flex items-center gap-1 text-[#86C19F]">
+          <span className="text-[10px] font-black tracking-tighter uppercase">
+            Active
+          </span>
+          <ArrowUpRight size={12} strokeWidth={3} />
         </div>
       </div>
 
-      <div>
-        <p
-          className={`text-xs font-medium mb-1 uppercase tracking-wider ${isIndigo || isEmerald ? "text-slate-400" : "text-slate-500"}`}
-        >
+      <div className="relative z-10">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">
           {label}
         </p>
-        <h3 className="text-4xl font-light tracking-tight italic">{value}</h3>
+        <h3 className="text-4xl font-light tracking-tight text-[#1A3024] italic">
+          {value}
+        </h3>
       </div>
 
-      {/* Subtle decorative element for premium feel */}
-      <div className="absolute -right-4 -bottom-4 opacity-5">
-        <Icon size={120} />
-      </div>
+      {/* Aesthetic Background Geometry - replaced big icon for a cleaner look */}
+      <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-[#EBF5EE] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
     </div>
   );
 };
@@ -65,52 +60,59 @@ const PremiumCard = ({ label, value, icon: Icon, variant = "default" }) => {
 export const Dashboard = () => {
   const { admin } = useAdmin();
 
-  // Dynamic role check
-  const isDevAdmin = admin?.role === "dev_admin";
+  // Role check matches your AdminLayout logic
+  const isDevAdmin = admin?.role === "devAdmin";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-      {/* Stats Grid - Now at the top of the component */}
+    <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      {/* Dynamic Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
-        {/* Common Stats for both Admins */}
+        {/* Global Metrics */}
         <PremiumCard label="Total Revenue" value="₹842,000" icon={CreditCard} />
-        <PremiumCard
-          label="Product Admin Profit"
-          value="₹124,500"
-          icon={TrendingUp}
-        />
-        <PremiumCard label="Total Orders" value="1,284" icon={ShoppingBag} />
+        <PremiumCard label="Admin Profit" value="₹124,500" icon={TrendingUp} />
+        <PremiumCard label="Shipments" value="1,284" icon={ShoppingBag} />
 
-        {/* Exclusive Dev Admin Stats */}
+        {/* Conditional Dev Metrics - styled as "Special" cards */}
         {isDevAdmin && (
           <>
             <PremiumCard
-              label="Dev Admin Profit"
+              label="Dev Net Profit"
               value="₹42,000"
               icon={ShieldCheck}
-              variant="indigo"
+              isSpecial={true}
             />
             <PremiumCard
-              label="Profit from Revenue"
+              label="Platform Yield"
               value="₹12,800"
               icon={Zap}
-              variant="emerald"
+              isSpecial={true}
             />
           </>
         )}
       </div>
 
-      {/* Simple Table or List Placeholder for "Recent Activity" */}
-      <div className="pt-6">
-        <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-300 mb-6">
-          Recent Inventory
-        </h2>
-        <div className="bg-white border border-slate-100 rounded-3xl p-4">
-          <div className="flex items-center justify-center h-32 border-2 border-dashed border-slate-50 rounded-2xl text-slate-300 text-xs font-medium">
-            Detailed logs and product lists will appear here.
-          </div>
+      {/* Activity Section */}
+      <section className="space-y-8">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">
+            Log Terminal
+          </h2>
+          <div className="h-px flex-1 bg-slate-50 ml-6" />
         </div>
-      </div>
+
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-10 min-h-[300px] flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="w-16 h-16 bg-[#F4F9F6] rounded-full flex items-center justify-center mb-6">
+            <Package size={24} className="text-[#86C19F] opacity-50" />
+          </div>
+          <h4 className="text-[#1A3024] font-bold text-sm tracking-tight">
+            Empty Inventory State
+          </h4>
+          <p className="text-slate-400 text-xs mt-2 max-w-[240px] leading-relaxed">
+            Your real-time product logs and transaction history will sync once
+            the first shipment is processed.
+          </p>
+        </div>
+      </section>
     </div>
   );
 };
