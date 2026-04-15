@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { motion as Motion } from "framer-motion";
@@ -28,34 +28,129 @@ const HeroSection = () => {
       {/* 2. TOP-LEFT Content Block */}
       <div className="absolute top-8 left-8 md:top-12 md:left-16 max-w-sm md:max-w-3xl text-white z-10">
         <Motion.h1
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...heroSpring, delay: 0.3 }}
-          className="text-[36px] md:text-[72px] font-light mb-2 md:mb-4 tracking-tight leading-[1.1] drop-shadow-lg"
+          className="relative text-[42px] md:text-[88px] tracking-tighter leading-[0.95] mb-6 select-none"
+          initial="initial"
+          animate="animate"
         >
-          TeezStyles.
+          {/* 1. Main Text with Staggered Letter Animation */}
+          <div className="flex overflow-hidden pb-2">
+            {"TeezStyles".split("").map((char, index) => (
+              <Motion.span
+                key={index}
+                variants={{
+                  initial: { y: "100%", opacity: 0 },
+                  animate: { y: 0, opacity: 1 },
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.2, 1, 0.3, 1],
+                  delay: 0.2 + index * 0.03,
+                }}
+                className="inline-block font-light drop-shadow-2xl"
+              >
+                {char}
+              </Motion.span>
+            ))}
+
+            {/* 2. The "Signature" Dot */}
+            <Motion.span
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 10,
+                delay: 0.8,
+              }}
+              className="inline-block text-green-400 font-bold"
+            >
+              .
+            </Motion.span>
+          </div>
+
+          {/* 3. Underline Decorative Flow */}
+          <Motion.div
+            initial={{ scaleX: 0, originX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
+            className="h-[1px] md:h-[2px] w-32 md:w-64 bg-gradient-to-r from-white/80 to-transparent mt-[-4px]"
+          />
         </Motion.h1>
 
         <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...heroSpring, delay: 0.5 }}
-          className="flex items-center gap-2 md:gap-4 opacity-90"
+          className="flex items-start gap-3 md:gap-5"
         >
+          {/* 1. The Icon - Simple & Clean */}
           <ArrowDownRight
-            size={14}
-            className="md:size-[26px] shrink-0 text-white md:-translate-y-[8px]"
-            strokeWidth={2.5}
+            size={20}
+            className="md:size-[32px] shrink-0 text-white mt-1 opacity-100"
+            strokeWidth={2}
           />
 
-          <div className="text-sm md:text-base font-light leading-relaxed drop-shadow-md max-w-xs md:max-w-md">
-            <p className="block md:hidden uppercase tracking-[0.2em] text-[11px] font-medium">
-              Shop smart
+          {/* 2. The Text - High Readability */}
+          <div className="max-w-xs md:max-w-md">
+            {/* Mobile Version: Simple high-contrast badge */}
+            <p className="block md:hidden bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full text-[12px] font-semibold uppercase tracking-widest text-white w-fit">
+              Shop Smart
             </p>
-            <p className="hidden md:block">
-              Upgrade your wardrobe with tees that speak style. Pick your
-              favourite stuff that matches your personal taste, style and suits
-              your style.
+
+            {/* Desktop Version: Clean, spaced typography */}
+            <p className="hidden md:block text-[18px] lg:text-[20px] font-normal leading-snug text-white drop-shadow-md">
+              Upgrade your wardrobe with tees that speak style.
+              <span className="block mt-2 opacity-80 font-light text-[16px]">
+                Pick your favourite stuff that matches your personal taste.
+              </span>
+            </p>
+          </div>
+        </Motion.div>
+        {/* --- NEW OFFER TAG --- */}
+        {/* --- BIG, EYE-CATCHING OFFER CARD --- */}
+        <Motion.div
+          // 1. Entrance: "Inflatable Bubble" effect
+          initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 180,
+            damping: 15, // Slightly lower damping for a lively bounce
+            delay: 0.7, // Staggered entry after description
+          }}
+          // 2. Addictive Hover: Magnetic pull & rotate
+          whileHover={{
+            scale: 1.05,
+            rotate: [0, -1, 1, 0], // Gentle, playful wobble
+            transition: { type: "spring", stiffness: 400, damping: 20 },
+          }}
+          className="mt-10 mb-8 inline-flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-[0_30px_70px_-15px_rgba(0,0,0,0.5)] cursor-pointer"
+        >
+          {/* The Icon: Flowy Gift Box */}
+          <div className="flex items-center justify-center p-3 bg-green-500 rounded-2xl shadow-inner">
+            <Gift className="w-6 h-6 md:w-8 md:h-8 text-white rotate-[-5deg]" />
+          </div>
+
+          {/* The Main Text Block */}
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="uppercase tracking-[0.2em] text-[11px] font-bold text-green-400">
+                Special Offer
+              </span>
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </div>
+            </div>
+
+            <p className="text-[18px] md:text-[24px] font-light tracking-tight text-white leading-tight">
+              Buy 1, Get{" "}
+              <span className="font-bold text-green-400 drop-shadow-[0_2px_10px_rgba(74,222,128,0.5)]">
+                ₹50 OFF
+              </span>
+              <span className="block text-[14px] md:text-[16px] opacity-90 mt-1 font-light">
+                on every next T-shirt!
+              </span>
             </p>
           </div>
         </Motion.div>
@@ -63,12 +158,11 @@ const HeroSection = () => {
 
       {/* 3. BOTTOM-CENTER CTA Block */}
       <div className="absolute bottom-6 md:bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 z-10 w-full px-4">
-
         <Link to={"/catalog"}>
           <Motion.button
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...heroSpring, delay: 0.8 }}
+            transition={{ ...heroSpring, delay: 1.2 }}
             whileHover={{
               scale: 1.05,
               boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
@@ -84,7 +178,7 @@ const HeroSection = () => {
             />
           </Motion.button>
         </Link>
-        
+
         <Link to={"/catalog"}>
           <Motion.span
             initial={{ opacity: 0 }}
