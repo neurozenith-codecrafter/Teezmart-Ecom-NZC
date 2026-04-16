@@ -35,16 +35,32 @@ const CartItemRow = ({
   const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
 
   return (
-    <div
+    <Motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{
+        type: "spring",
+        stiffness: 500,
+        damping: 35,
+        mass: 0.8,
+      }}
       key={key}
       className="relative group/item border-b border-zinc-100 last:border-0 mx-4 md:mx-0 overflow-hidden"
     >
       {/* 🗑️ MOBILE SWIPE LAYER */}
       <Motion.div
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden rounded-[1.5rem]"
+        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden rounded-[1.5rem] "
       >
-        <Motion.div style={{ scale: iconScale }}>
+        <Motion.div
+          style={{
+            scale: iconScale,
+            rotate: x.get() < -80 ? [0, -10, 10, 0] : 0,
+          }}
+          transition={{ duration: 0.2 }}
+        >
           <Trash2 className="text-rose-500" size={24} />
         </Motion.div>
       </Motion.div>
@@ -67,12 +83,13 @@ const CartItemRow = ({
             animate(x, 0, { type: "spring", stiffness: 300, damping: 30 });
           }
         }}
-        className="relative bg-white md:bg-transparent flex gap-5 md:gap-10 py-10 items-center z-10 transition-colors duration-300"
+        className="relative bg-white md:bg-transparent flex gap-5 md:gap-10 py-10 items-center z-10"
       >
-        <div className="relative aspect-[4/5] w-28 md:w-36 bg-zinc-50 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-zinc-100/50">
+        {/* Product Image with Hover Depth */}
+        <div className="relative aspect-[4/5] w-28 md:w-36 bg-zinc-50 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-zinc-100/50 group-hover/item:shadow-xl transition-shadow duration-500">
           <Motion.img
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.6 }}
+            whileHover={{ scale: 1.1, rotate: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             src={getProductImage(item)}
             alt={getProductName(item)}
             className="w-full h-full object-cover"
@@ -83,7 +100,6 @@ const CartItemRow = ({
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-start gap-4">
               <div className="min-w-0">
-                {/* Product Name: Reduced to font-medium */}
                 <h2 className="text-[15px] md:text-xl font-medium text-zinc-900 tracking-tight leading-snug">
                   {getProductName(item)}
                 </h2>
@@ -92,10 +108,35 @@ const CartItemRow = ({
                   <span className="text-zinc-600 font-black">{item.size}</span>
                 </p>
               </div>
-              {/* Price: Reduced to font-medium/semibold */}
-              <span className="text-base md:text-2xl font-medium text-zinc-900 tracking-tighter">
-                ₹{getProductPrice(item).toFixed(2)}
-              </span>
+
+              {/* Price: Animates color/scale when quantity changes */}
+              <div className="flex flex-col items-end leading-none">
+                {/* Unit Price: Muted, smaller, and slightly wider tracking for a clean look */}
+                <span className="text-[10px] md:text-xs text-zinc-400 font-bold uppercase tracking-[0.05em] mb-1">
+                  ₹{getProductPrice(item).toFixed(2)}{" "}
+                  <span className="opacity-60">ea</span>
+                </span>
+
+                {/* Total Price: Using popLayout for a seamless "rolling" transition */}
+                <div className="relative h-7 md:h-8 flex items-center overflow-hidden">
+                  <AnimatePresence mode="popLayout">
+                    <Motion.span
+                      key={item.quantity}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                      className="text-xl md:text-2xl font-bold text-zinc-900 tracking-tighter"
+                    >
+                      ₹{(item.quantity * getProductPrice(item)).toFixed(2)}
+                    </Motion.span>
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -121,7 +162,11 @@ const CartItemRow = ({
                       initial={{ y: 10, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: -10, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25,
+                      }}
                       className="absolute text-[13px] md:text-sm font-black text-zinc-900"
                     >
                       {item.quantity}
@@ -140,8 +185,9 @@ const CartItemRow = ({
               </div>
             </div>
 
+            {/* Desktop Remove Button with animated underline */}
             <Motion.button
-              whileHover={{ opacity: 0.7 }}
+              whileHover={{ x: 3 }}
               disabled={isBusy}
               onClick={() => onQuantity(item, 0)}
               className="hidden md:flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.25em] text-rose-500 group/btn"
@@ -155,7 +201,7 @@ const CartItemRow = ({
           </div>
         </div>
       </Motion.div>
-    </div>
+    </Motion.div>
   );
 };
 
@@ -215,6 +261,9 @@ const CartPage = () => {
     const key = `${productId}-${item.size}`;
     if (!productId) return;
     setBusyKey(key);
+
+    console.log("handle quantity provoked");
+
     try {
       if (nextQty <= 0) {
         await removeCartItem({ productId, size: item.size });

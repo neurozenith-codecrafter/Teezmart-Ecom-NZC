@@ -51,9 +51,9 @@ const DropDown = () => {
               T-Shirts
             </button>
 
-            <button className="w-full text-left px-5 py-3 text-[14px] hover:bg-[#f9f9f9] transition-colors">
+            {/* <button className="w-full text-left px-5 py-3 text-[14px] hover:bg-[#f9f9f9] transition-colors">
               Track Pants
-            </button>
+            </button> */}
           </Motion.div>
         )}
       </AnimatePresence>
