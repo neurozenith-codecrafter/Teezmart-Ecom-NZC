@@ -242,6 +242,22 @@ export const CatalogPage = () => {
                   className="absolute right-0 mt-3 w-72 bg-white/80 backdrop-blur-xl border border-zinc-200 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
                 >
                   <div className="p-6 space-y-6">
+                    {/* Category Section - NEW */}
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                        Category
+                      </p>
+                      <div className="flex gap-2">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat}
+                            className="flex-1 py-2.5 rounded-2xl bg-zinc-100 border border-transparent text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 transition-all active:scale-95"
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {/* Filter Section */}
                     <div className="space-y-3">
                       <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
