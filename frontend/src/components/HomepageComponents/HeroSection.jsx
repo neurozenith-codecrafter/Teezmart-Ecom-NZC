@@ -114,23 +114,27 @@ const HeroSection = () => {
           transition={{
             type: "spring",
             stiffness: 180,
-            damping: 15,
+            damping: 18, // slightly smoother
             delay: 0.7,
           }}
           whileHover={{
-            scale: 1.02, // Tamer scale for mobile stability
-            rotate: [-0.5, 0.5, -0.5],
-            transition: { type: "spring", stiffness: 400, damping: 20 },
+            scale: 1.02,
+            rotate: 0.8, // ✅ stable instead of array
           }}
-          // Adjusted: w-auto for desktop, but max-width for mobile so it doesn't overflow
+          style={{ willChange: "transform" }} // ✅ performance boost
+          transition={{
+            type: "spring",
+            stiffness: 250,
+            damping: 20,
+          }}
           className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none"
         >
-          {/* The Icon: Smaller for mobile */}
+          {/* Icon */}
           <div className="flex items-center justify-center p-2 md:p-3 bg-green-500 rounded-xl md:rounded-2xl shrink-0">
             <Gift className="w-5 h-5 md:w-8 md:h-8 text-white" />
           </div>
 
-          {/* The Main Text Block */}
+          {/* Text */}
           <div className="flex flex-col text-left">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="uppercase tracking-[0.15em] text-[9px] md:text-[11px] font-bold text-green-400">
@@ -142,7 +146,6 @@ const HeroSection = () => {
               </div>
             </div>
 
-            {/* Responsive Text: Smaller on mobile, flowy on desktop */}
             <p className="text-[14px] md:text-[22px] font-medium md:font-light tracking-tight text-white leading-tight">
               Buy 1, Get{" "}
               <span className="font-bold text-green-400">₹50 OFF</span>
