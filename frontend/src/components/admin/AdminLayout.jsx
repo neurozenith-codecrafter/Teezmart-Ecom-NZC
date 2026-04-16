@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -7,20 +7,20 @@ import {
   LogOut,
   Bell,
   Menu,
-  X,
-  Search,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/useAdmin";
 import { useAuth } from "../../Hooks/useAuth";
 import { MobileCopyright } from "../HomepageComponents/FooterSection";
 
-// Optimized NavLink styling
+/**
+ * Premium Mint/White Palette
+ */
 const navClass = (isActive) =>
-  `group relative w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+  `group relative w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 ${
     isActive
-      ? "bg-[#5D5FEF] text-white shadow-lg shadow-[#5D5FEF]/30"
-      : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+      ? "bg-[#EBF5EE] text-[#2D4F3C] font-semibold shadow-sm"
+      : "text-slate-400 hover:text-[#2D4F3C] hover:bg-[#F8FBFA]"
   }`;
 
 export const AdminLayout = () => {
@@ -29,37 +29,58 @@ export const AdminLayout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // ✅ Helper to convert role to Title Case (Dev Admin)
-  const formatRole = (role) => {
+  // --- Avatar Logic (STRICT BACKEND ONLY) ---
+  const [hasImgError, setHasImgError] = useState(false);
+
+  useEffect(() => {
+    setHasImgError(false);
+  }, [admin]);
+
+  // ✅ Only backend avatar is allowed (NO Google photoURL)
+  const externalImage = useMemo(() => {
+    if (!admin?.avatar) return null;
+
+    // Basic validation for URL
+    try {
+      const url = new URL(admin.avatar);
+      return url.href;
+    } catch {
+      return null;
+    }
+  }, [admin]);
+
+  const userInitial = admin?.name?.trim()?.charAt(0)?.toUpperCase() || "A";
+
+  const shouldShowAvatar = Boolean(externalImage) && !hasImgError;
+
+  const formatRoleText = (role) => {
+    if (!role) return "";
     return role
-      ?.toLowerCase()
-      .replace(/([A-Z])/g, " $1")
+      .replace(/([A-Z])/g, "$1")
       .trim()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+      .toUpperCase();
   };
 
   const menuItems = [
     {
       to: "dashboard",
-      label: "Dashboard",
+      label: "Overview",
       icon: LayoutDashboard,
       roles: ["devAdmin", "admin"],
     },
     {
       to: "products",
-      label: "Products",
+      label: "Inventory",
       icon: Package,
       roles: ["devAdmin", "admin"],
     },
     {
       to: "orders",
-      label: "Orders",
+      label: "Shipments",
       icon: ShoppingBag,
       roles: ["devAdmin", "admin"],
     },
-    { to: "users", label: "Consumer", icon: Users, roles: ["devAdmin"] },
+    { to: "users", label: "Customers", icon: Users, roles: ["devAdmin"] },
   ];
 
   const handleLogout = () => {
@@ -67,113 +88,132 @@ export const AdminLayout = () => {
     navigate("/");
   };
 
-  const closeMobile = () => setIsMobileMenuOpen(false);
+  if (!admin) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#86C19F] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#FBFBFB] flex font-sans text-slate-900 overflow-hidden">
-      {/* Mobile Backdrop */}
+    <div className="min-h-screen bg-white flex font-sans text-slate-900 overflow-hidden">
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm lg:hidden"
-          onClick={closeMobile}
+          className="fixed inset-0 z-[60] bg-slate-900/10 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* --- SIDEBAR --- */}
       <aside
         className={`
-        fixed inset-y-4 left-4 z-[70] w-64 bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col transition-all duration-500
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-[110%] lg:translate-x-0"}
-      `}
+          fixed inset-y-4 left-4 z-[70] w-72 bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col transition-all duration-500 ease-out
+          ${
+            isMobileMenuOpen
+              ? "translate-x-0 shadow-2xl"
+              : "-translate-x-[110%] lg:translate-x-0"
+          }
+        `}
       >
-        <div className="flex items-center gap-3 mb-10 px-2 pt-2">
-          <span className="font-bold text-2xl tracking-tight text-slate-800 uppercase">
+        <div className="mb-12 px-2">
+          <span className="font-bold text-xl tracking-tight text-[#1A3024]">
             TeezMart
           </span>
+          <div className="h-0.5 w-6 bg-[#86C19F] mt-1.5 rounded-full" />
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-8 no-scrollbar">
-          <div>
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-4 px-2">
-              MENU
+          <nav className="space-y-1.5">
+            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">
+              Management
             </p>
-            <nav className="space-y-1">
-              {menuItems.map((item) => {
-                if (!item.roles.includes(admin.role)) return null;
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={closeMobile}
-                    className={({ isActive }) => navClass(isActive)}
-                  >
-                    <Icon size={18} />
-                    <span className="text-sm font-medium tracking-tight">
-                      {item.label}
-                    </span>
-                  </NavLink>
-                );
-              })}
-            </nav>
-          </div>
+            {menuItems.map((item) => {
+              if (!item.roles.includes(admin?.role)) return null;
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) => navClass(isActive)}
+                >
+                  <Icon size={18} strokeWidth={2.2} />
+                  <span className="text-[13px] tracking-tight">
+                    {item.label}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
 
         <div className="pt-6 border-t border-slate-50">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-500 transition-all text-sm font-bold w-full"
+            className="flex items-center gap-3 px-5 py-3 text-slate-400 hover:text-rose-500 transition-colors text-sm font-semibold w-full rounded-2xl"
           >
             <LogOut size={18} />
-            Log Out
+            Sign Out
           </button>
         </div>
       </aside>
 
-      {/* --- MAIN WORKSPACE --- */}
-      <div className="flex-1 lg:ml-[18rem] min-w-0 flex flex-col">
+      <div className="flex-1 lg:ml-[20rem] min-w-0 flex flex-col">
         <header className="h-24 px-8 lg:px-12 flex items-center justify-between">
-          <div className="flex items-center gap-4 lg:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 text-slate-600"
-            >
-              <Menu size={24} />
-            </button>
-          </div>
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2.5 bg-slate-50 rounded-xl lg:hidden text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            <Menu size={20} />
+          </button>
 
-          {/* Right Aligned Utilities */}
-          <div className="flex items-center gap-4 ml-auto">
-            <button className="p-2.5 bg-white rounded-full shadow-sm text-slate-500 border border-slate-100 hover:scale-110 transition-all relative">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-            </button>
-
-            {/* Profile Section */}
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-800 leading-none">
-                  {admin.name}
-                </p>
-                {/* ✅ Fixed: Now using formatRole helper for Title Case */}
-                <p className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-tighter">
-                  {formatRole(admin.role)}
-                </p>
-              </div>
-              <img
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(admin.name)}&background=5d5fef&color=fff&bold=true`}
-                alt="Profile"
-                className="w-10 h-10 rounded-full border border-slate-200"
+          <div className="flex items-center gap-6 ml-auto">
+            <button className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all relative group">
+              <Bell
+                size={20}
+                className="group-hover:rotate-12 transition-transform"
               />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#86C19F] rounded-full border-2 border-white" />
+            </button>
+
+            {/* PROFILE UI */}
+            <div className="flex items-center justify-end gap-3.5 bg-white py-1 pl-6 pr-1 rounded-full border border-slate-100/70 shadow-[0_2px_15px_-4px_rgba(238,242,246,0.6)]">
+              <div className="flex flex-col text-right">
+                <span className="text-xs font-bold text-slate-900 leading-tight">
+                  {admin?.name || "User"}
+                </span>
+                <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                  {formatRoleText(admin?.role)}
+                </span>
+              </div>
+
+              <div className="relative flex items-center justify-center w-11 h-11 bg-white rounded-full border border-slate-50 shadow-inner">
+                {shouldShowAvatar ? (
+                  <img
+                    src={externalImage}
+                    alt={admin?.name}
+                    referrerPolicy="no-referrer"
+                    onError={() => setHasImgError(true)}
+                    className="w-11 h-11 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-11 h-11 rounded-full bg-zinc-900 text-white text-[11px] font-bold flex items-center justify-center">
+                    {userInitial}
+                  </div>
+                )}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full shadow-sm" />
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Content Area */}
-        <main className="px-8 pb-8 lg:px-12 overflow-y-auto no-scrollbar">
+        <main className="px-8 pb-8 lg:px-12 flex-1 overflow-y-auto no-scrollbar">
           <Outlet />
         </main>
-        <MobileCopyright />
+
+        <div className="mt-auto px-8 lg:px-12 py-4">
+          <MobileCopyright />
+        </div>
       </div>
     </div>
   );
