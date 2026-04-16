@@ -85,14 +85,14 @@ const FooterSection = ({ compactMobile = false }) => {
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50" />
 
       <div className={PAGE_CONTAINER_CLASS}>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-y-12 pb-10 relative">
-          {/* 1. Brand Block - Left Anchored */}
-          <div className="md:col-span-4 space-y-10">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-y-12 pb-10 relative">
+          {/* 1. Brand Block */}
+          <div className="col-span-2 md:col-span-12 lg:col-span-4 space-y-10">
             <FooterBrandBlock />
           </div>
 
-          {/* 2. Navigation - Now next to Brand */}
-          <div className="md:col-span-2 space-y-6">
+          {/* 2. Navigation */}
+          <div className="col-span-1 md:col-span-3 lg:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">
               Navigation
             </h4>
@@ -114,8 +114,8 @@ const FooterSection = ({ compactMobile = false }) => {
             </ul>
           </div>
 
-          {/* 3. Collections - Shifted towards the center-right */}
-          <div className="md:col-span-2 md:col-start-7 space-y-6">
+          {/* 3. Collections */}
+          <div className="col-span-1 md:col-span-3 lg:col-span-2 lg:col-start-7 space-y-6">
             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">
               Collections
             </h4>
@@ -137,11 +137,9 @@ const FooterSection = ({ compactMobile = false }) => {
             </ul>
           </div>
 
-          {/* 4. Contact Us - Moved inward (spans 4 cols, ends at 12) */}
-          <div className="md:col-start-9 md:col-span-4 relative group flex flex-col md:justify-self-end md:min-w-[320px]">
-            <div className="relative w-full px-6 py-2">
-              {" "}
-              {/* Increased padding for better internal rhythm */}
+          {/* 4. Contact Us */}
+          <div className="col-span-2 md:col-span-6 lg:col-start-9 lg:col-span-4 relative group flex flex-col md:justify-self-end lg:min-w-[320px]">
+            <div className="relative w-full px-0 md:px-6 py-2">
               <AnimatePresence>
                 {isPinging && (
                   <motion.div
@@ -160,7 +158,6 @@ const FooterSection = ({ compactMobile = false }) => {
                   Contact Us
                 </h4>
                 <div id="footer-contact" className="space-y-5">
-                  {/* Contact Row 1 */}
                   <div className="flex items-start gap-4 group cursor-pointer w-full">
                     <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
                       <MapPin size={16} strokeWidth={1.5} />
@@ -170,7 +167,6 @@ const FooterSection = ({ compactMobile = false }) => {
                     </span>
                   </div>
 
-                  {/* Contact Row 2 */}
                   <div className="flex items-center gap-4 group cursor-pointer w-full">
                     <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
                       <Mail size={16} strokeWidth={1.5} />
@@ -180,7 +176,6 @@ const FooterSection = ({ compactMobile = false }) => {
                     </span>
                   </div>
 
-                  {/* Contact Row 3 */}
                   <div className="flex items-center gap-4 group cursor-pointer w-full">
                     <div className="p-2.5 rounded-xl bg-slate-50 text-slate-400 group-hover:bg-[#18181B] group-hover:text-white transition-all duration-500 shrink-0">
                       <PhoneCall size={16} strokeWidth={1.5} />
@@ -195,7 +190,7 @@ const FooterSection = ({ compactMobile = false }) => {
           </div>
 
           {/* THE COPYRIGHT */}
-          <div className="md:col-span-12 relative flex items-center justify-center h-px mt-12 bg-slate-100">
+          <div className="col-span-2 md:col-span-12 relative flex items-center justify-center h-px mt-12 bg-slate-100">
             <div className="absolute bg-white px-8">
               <p className="text-[9px] text-slate-500 font-bold tracking-[0.7em] uppercase whitespace-nowrap">
                 © NeuroZenith 2026
