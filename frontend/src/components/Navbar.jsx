@@ -19,6 +19,7 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { useCommerce } from "../Hooks/useCommerce";
+import DropDown from "../components/HomepageComponents/DropDown"
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -441,7 +442,7 @@ const Navbar = () => {
             animate={{ height: "58px", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={curtainSpring}
-            style={{ overflow: "hidden" }} // Prevents content jitter during expansion
+            style={{ overflow: "visible" }} // Prevents content jitter during expansion
             className="hidden lg:block fixed left-0 w-full bg-white z-[55] border-b border-[#f9f9f9]/50 top-[68px] origin-top"
           >
             <Motion.div
@@ -453,16 +454,10 @@ const Navbar = () => {
               className={`${PAGE_CONTAINER_CLASS} flex items-center justify-between h-full gap-x-6`}
             >
               <div className="flex items-center gap-x-3 shrink-0">
-                <Motion.button
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center justify-between min-w-[145px] bg-[#f9f9f9] border border-[#f0f0f0] px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
-                >
-                  <span className="text-[14px] font-normal text-black">
-                    Clothing
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400 ml-4" />
-                </Motion.button>
+                <div className="relative">
+                  {" "}
+                  <DropDown />
+                </div>
 
                 <div className="flex items-center gap-x-2">
                   {["New Arrivals", "Sale"].map((label) => (

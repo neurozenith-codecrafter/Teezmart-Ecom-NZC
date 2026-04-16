@@ -59,6 +59,25 @@ const ProductPage = () => {
 
   const isLiked = product?._id ? wishlistIds.has(String(product._id)) : false;
 
+  // if (!productImages || productImages.length === 0) {
+  //   return (
+  //     <div className="lg:col-span-8 flex gap-6 justify-start animate-pulse">
+  //       {/* Thumbnail Skeletons */}
+  //       <div className="hidden lg:flex flex-col gap-3 shrink-0">
+  //         {[...Array(4)].map((_, idx) => (
+  //           <div
+  //             key={idx}
+  //             className="w-14 h-18 md:w-16 md:h-20 rounded-lg bg-zinc-200"
+  //           />
+  //         ))}
+  //       </div>
+
+  //       {/* Main Image Skeleton */}
+  //       <div className="flex-grow aspect-[4/5] max-w-[480px] rounded-xl bg-zinc-200 border border-zinc-100" />
+  //     </div>
+  //   );
+  // }
+
   return (
     <Motion.div
       initial="hidden"
@@ -69,6 +88,24 @@ const ProductPage = () => {
         <div className={`${PAGE_CONTAINER_CLASS} max-w-screen-xl mx-auto`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-start mb-24">
             {/* LEFT: GALLERY (Animated as a single block) */}
+
+            {(!productImages || productImages.length === 0) && (
+              <div className="lg:col-span-8 flex gap-6 justify-start animate-pulse">
+                {/* Thumbnail Skeletons */}
+                <div className="hidden lg:flex flex-col gap-3 shrink-0">
+                  {[...Array(productImages?.length || 4)].map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="w-14 h-18 md:w-16 md:h-20 rounded-lg bg-zinc-200"
+                    />
+                  ))}
+                </div>
+
+                {/* Main Image Skeleton */}
+                <div className="flex-grow aspect-[4/5] max-w-[480px] rounded-xl bg-zinc-200 border border-zinc-100" />
+              </div>
+            )}
+
             <Motion.div
               variants={subtleReveal}
               className="lg:col-span-8 flex gap-6 justify-start"
@@ -92,11 +129,20 @@ const ProductPage = () => {
                         : "opacity-40 hover:opacity-70"
                     }`}
                   >
-                    <img
-                      src={image.url}
-                      className="w-full h-full object-cover"
-                      alt={`thumb-${image._id}`}
-                    />
+                    <AnimatePresence mode="wait">
+                      <Motion.img
+                        key={productImages[selectedImg]?.url} // 🔥 THIS is the fix
+                        src={productImages[selectedImg]?.url}
+                        alt="Main Product"
+                        onLoad={(e) => {
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                        className="w-full h-full object-cover opacity-0 transition-opacity duration-300"
+                        initial={{ scale: 1.01 }}
+                        animate={{ scale: 1 }}
+                        exit={{ opacity: 0 }}
+                      />
+                    </AnimatePresence>
                   </Motion.button>
                 ))}
               </div>
@@ -133,13 +179,13 @@ const ProductPage = () => {
                   <div className="h-[1px] bg-zinc-200 flex-grow"></div>
                 </div>
                 <h1 className="text-3xl font-medium tracking-tight text-black leading-tight">
-                  {product?.title || "Product Title"}
+                  {product?.title}
                 </h1>
                 <p className="text-[14px] text-zinc-600 leading-relaxed font-light">
-                  {product?.description || "Product description goes here."}
+                  {product?.description}
                 </p>
                 <p className="text-2xl font-bold text-black tracking-tighter">
-                  ₹{product?.price || "499"}
+                  ₹{product?.price}
                 </p>
               </Motion.div>
 
@@ -277,7 +323,7 @@ const ProductPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <ShopMoreCarousel productId={product?._id}/>
+            <ShopMoreCarousel productId={product?._id} />
           </Motion.div>
 
           <Motion.div
