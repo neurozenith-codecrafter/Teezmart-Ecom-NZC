@@ -59,25 +59,6 @@ const ProductPage = () => {
 
   const isLiked = product?._id ? wishlistIds.has(String(product._id)) : false;
 
-  // if (!productImages || productImages.length === 0) {
-  //   return (
-  //     <div className="lg:col-span-8 flex gap-6 justify-start animate-pulse">
-  //       {/* Thumbnail Skeletons */}
-  //       <div className="hidden lg:flex flex-col gap-3 shrink-0">
-  //         {[...Array(4)].map((_, idx) => (
-  //           <div
-  //             key={idx}
-  //             className="w-14 h-18 md:w-16 md:h-20 rounded-lg bg-zinc-200"
-  //           />
-  //         ))}
-  //       </div>
-
-  //       {/* Main Image Skeleton */}
-  //       <div className="flex-grow aspect-[4/5] max-w-[480px] rounded-xl bg-zinc-200 border border-zinc-100" />
-  //     </div>
-  //   );
-  // }
-
   return (
     <Motion.div
       initial="hidden"
@@ -133,7 +114,7 @@ const ProductPage = () => {
                       <Motion.img
                         key={productImages[selectedImg]?.url} // 🔥 THIS is the fix
                         src={productImages[selectedImg]?.url}
-                        alt="Main Product"
+                        alt=" "
                         onLoad={(e) => {
                           e.currentTarget.style.opacity = "1";
                         }}

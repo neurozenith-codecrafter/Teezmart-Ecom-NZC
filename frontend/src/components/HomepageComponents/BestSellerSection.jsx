@@ -165,6 +165,35 @@ export const BestSellerSection = () => {
 
         {/* GRID SECTION - Updated spacing and layout */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
+          {(!bestSellers || bestSellers.length === 0) &&
+            [...Array(8)].map((_, i) => (
+              <div key={i} className="block relative animate-pulse">
+                <div className="space-y-4">
+                  {/* Image Skeleton */}
+                  <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-zinc-200 overflow-hidden" />
+
+                  {/* Content Skeleton */}
+                  <div className="space-y-2 px-1">
+                    {/* Title */}
+                    <div className="h-4 w-3/4 bg-zinc-200 rounded" />
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-20 bg-zinc-200 rounded" />
+                      <div className="h-3 w-6 bg-zinc-200 rounded" />
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-16 bg-zinc-200 rounded" />
+                      <div className="h-3 w-12 bg-zinc-200 rounded" />
+                      <div className="h-3 w-8 bg-zinc-200 rounded" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
           {bestSellers.map((item, index) => {
             const isLiked = wishlistIds.has(String(item._id));
 
