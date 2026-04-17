@@ -9,28 +9,16 @@ const orderRoutes = require("./src/Routes/OrderRoute.js");
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://teezmart-ecom-nzc.vercel.app",
-];
+const cors = require("cors");
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow non-browser tools (Postman, curl, server-to-server)
-      if (!origin) return callback(null, true);
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "https://teezmart-ecom-nzc.vercel.app"
+// ];
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
-
+app.use(cors({
+  origin: "https://teezmart-ecom-nzc.vercel.app",
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
