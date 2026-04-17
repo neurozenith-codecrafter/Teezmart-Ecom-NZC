@@ -133,26 +133,15 @@ const ProductCardSkeleton = ({ index = 0 }) => {
     >
       <div className="block relative">
         <div className="space-y-4">
-          {/* Image Skeleton */}
           <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-zinc-200 overflow-hidden">
-            {/* Wishlist placeholder */}
             <div className="absolute top-5 right-5 w-10 h-10 rounded-full bg-zinc-300" />
-
-            {/* Shimmer */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1.5s_infinite]" />
             </div>
-
-            {/* Quick add placeholder */}
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-24 h-8 bg-zinc-300 rounded-full" />
           </div>
-
-          {/* Content */}
           <div className="space-y-2 px-1">
-            {/* Title */}
             <div className="h-4 w-3/4 bg-zinc-200 rounded" />
-
-            {/* Rating */}
             <div className="flex items-center gap-2">
               <div className="flex gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -161,12 +150,9 @@ const ProductCardSkeleton = ({ index = 0 }) => {
               </div>
               <div className="h-3 w-6 bg-zinc-200 rounded" />
             </div>
-
-            {/* Price */}
             <div className="flex items-center gap-2 pt-1">
               <div className="h-4 w-16 bg-zinc-200 rounded" />
               <div className="h-3 w-10 bg-zinc-200 rounded" />
-              <div className="h-3 w-8 bg-zinc-200 rounded" />
             </div>
           </div>
         </div>
@@ -179,6 +165,7 @@ export const CatalogPage = () => {
   const [products, setProducts] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [selectedSizes, setSelectedSizes] = useState([]);
   const [activeSort, setActiveSort] = useState("New");
   const { handleAddToCart } = useCart();
 
@@ -198,10 +185,15 @@ export const CatalogPage = () => {
     };
   }, []);
 
+  const toggleSize = (size) => {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
+    );
+  };
+
   const sizes = ["S", "M", "L", "XL"];
-  const filters = ["Top Collection", "Most Rated", "Best Seller"];
+  const filters = ["All", "Top Collection", "Most Rated", "Best Seller"];
   const sortOptions = ["New", "Trending", "Recommended"];
-  const categories = ["tshirt", "tracks"];
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -217,12 +209,8 @@ export const CatalogPage = () => {
 
         <div className="relative">
           <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm transition-all border ${
-              isFilterOpen
-                ? "bg-zinc-900 border-zinc-900 text-white"
-                : "bg-white border-zinc-200 text-zinc-600 hover:border-black hover:text-black"
-            }`}
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm transition-all border bg-white border-zinc-200 text-zinc-600 hover:border-black hover:text-black"
           >
             <SlidersHorizontal size={13} /> Filter & Sort
           </button>
@@ -230,49 +218,47 @@ export const CatalogPage = () => {
           <AnimatePresence>
             {isFilterOpen && (
               <>
-                {/* Backdrop to close on outside click */}
-                <div
-                  className="fixed inset-0 z-40"
+                <Motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={() => setIsFilterOpen(false)}
+                  className="fixed inset-0 bg-black/20 backdrop-blur-md z-[60]"
                 />
 
                 <Motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-3 w-72 bg-white/80 backdrop-blur-xl border border-zinc-200 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="fixed inset-0 m-auto md:absolute md:inset-auto md:right-0 md:top-full md:mt-3 w-[90%] md:w-80 h-fit max-h-[90vh] bg-white/95 border border-zinc-200 rounded-[2.5rem] shadow-2xl z-[70] overflow-hidden flex flex-col"
                 >
-                  <div className="p-6 space-y-6">
-                    {/* Category Section - NEW */}
+                  <div className="p-6 pb-0 flex justify-between items-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                      Filter & Sort
+                    </p>
+                    <button
+                      onClick={() => setIsFilterOpen(false)}
+                      className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
+                    >
+                      <X size={16} className="text-zinc-900" />
+                    </button>
+                  </div>
+
+                  <div className="p-6 space-y-8 overflow-y-auto">
+                    {/* Collections Section */}
                     <div className="space-y-3">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                        Category
-                      </p>
-                      <div className="flex gap-2">
-                        {categories.map((cat) => (
-                          <button
-                            key={cat}
-                            className="flex-1 py-2.5 rounded-2xl bg-zinc-100 border border-transparent text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 transition-all active:scale-95"
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Filter Section */}
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                        Filters
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                        Collections
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {filters.map((f) => (
                           <button
                             key={f}
                             onClick={() => setActiveFilter(f)}
-                            className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
+                            className={`px-4 py-2 rounded-full text-[10px] font-bold transition-all border ${
                               activeFilter === f
                                 ? "bg-zinc-900 border-zinc-900 text-white"
-                                : "bg-zinc-100 border-transparent text-zinc-600 hover:bg-zinc-200"
+                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:bg-zinc-100"
                             }`}
                           >
                             {f}
@@ -281,16 +267,21 @@ export const CatalogPage = () => {
                       </div>
                     </div>
 
-                    {/* Size Section */}
+                    {/* Sizes Section */}
                     <div className="space-y-3">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                        Size
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                        Available Sizes
                       </p>
                       <div className="flex gap-2">
                         {sizes.map((s) => (
                           <button
                             key={s}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-100 border border-transparent text-[10px] font-bold text-zinc-600 hover:border-zinc-900 transition-all"
+                            onClick={() => toggleSize(s)}
+                            className={`w-11 h-11 flex items-center justify-center rounded-2xl text-[10px] font-bold transition-all border ${
+                              selectedSizes.includes(s)
+                                ? "bg-zinc-900 border-zinc-900 text-white shadow-lg"
+                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-zinc-300"
+                            }`}
                           >
                             {s}
                           </button>
@@ -298,32 +289,39 @@ export const CatalogPage = () => {
                       </div>
                     </div>
 
-                    <div className="h-px bg-zinc-100" />
-
                     {/* Sort Section */}
                     <div className="space-y-3">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                        Sort
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                        Sort By
                       </p>
                       <div className="grid grid-cols-1 gap-1">
                         {sortOptions.map((s) => (
                           <button
                             key={s}
                             onClick={() => setActiveSort(s)}
-                            className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all ${
+                            className={`flex items-center justify-between px-4 py-3 rounded-2xl text-[11px] font-bold transition-all ${
                               activeSort === s
-                                ? "bg-zinc-900 text-white"
-                                : "text-zinc-600 hover:bg-zinc-100"
+                                ? "bg-zinc-100 text-zinc-900"
+                                : "text-zinc-500 hover:bg-zinc-50"
                             }`}
                           >
                             {s}
                             {activeSort === s && (
-                              <div className="w-1 h-1 rounded-full bg-white" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
                             )}
                           </button>
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="p-6 pt-0 mt-auto">
+                    <button
+                      onClick={() => setIsFilterOpen(false)}
+                      className="w-full py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
+                    >
+                      Apply Filters
+                    </button>
                   </div>
                 </Motion.div>
               </>
@@ -334,19 +332,18 @@ export const CatalogPage = () => {
 
       <main className="w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
-          {products.length === 0 &&
-            Array.from({ length: 4 }).map((_, i) => (
-              <ProductCardSkeleton key={i} index={i} />
-            ))}
-
-          {products.map((item, index) => (
-            <ProductCard
-              key={item._id}
-              product={item}
-              index={index}
-              handleAddToCart={handleAddToCart}
-            />
-          ))}
+          {products.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} index={i} />
+              ))
+            : products.map((item, index) => (
+                <ProductCard
+                  key={item._id}
+                  product={item}
+                  index={index}
+                  handleAddToCart={handleAddToCart}
+                />
+              ))}
         </div>
 
         <div className="mt-24 flex flex-col items-center gap-6">
