@@ -159,6 +159,7 @@ export const CatalogPage = () => {
   const sizes = ["S", "M", "L", "XL"];
   const filters = ["Top Collection", "Most Rated", "Best Seller"];
   const sortOptions = ["New", "Trending", "Recommended"];
+  const categories = ["tshirt", "tracks"];
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
