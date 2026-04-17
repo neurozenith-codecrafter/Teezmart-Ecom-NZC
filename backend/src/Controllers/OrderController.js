@@ -10,9 +10,11 @@ const getErrorStatusCode = (error) => {
     error.name === "ValidationError" ||
     error.message?.startsWith("Missing field:") ||
     error.message?.startsWith("Invalid ") ||
+    error.message?.startsWith("Quantity must be greater than 0") ||
+    error.message?.startsWith("Each item must be an object") ||
+    error.message?.startsWith("Selected size not available") ||
     error.message === "Shipping address is required" ||
-    error.message === "Product ID is required for buy now" ||
-    error.message === "Quantity must be at least 1" ||
+    error.message === "At least one item is required" ||
     error.message === "Invalid order status" ||
     error.message === "Order status cannot move backwards"
   ) {
@@ -30,9 +32,14 @@ const getErrorStatusCode = (error) => {
   if (
     error.message === "Order not found" ||
     error.message === "Cart not found" ||
-    error.message === "Product not found"
+    error.message === "Product not found" ||
+    error.message?.startsWith("Product not found:")
   ) {
     return 404;
+  }
+
+  if (error.message?.startsWith("Insufficient stock")) {
+    return 409;
   }
 
   return 500;
@@ -40,7 +47,7 @@ const getErrorStatusCode = (error) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { shippingAddress, buyNowItem } = req.body;
+    const { shippingAddress, items, buyNowItem } = req.body;
     const userId = getUserId(req);
 
     if (!userId) {
@@ -57,11 +64,11 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const order = await orderService.createOrder(
-      userId,
+    const order = await orderService.createOrder(userId, {
       shippingAddress,
+      items,
       buyNowItem
-    );
+    });
 
     res.status(201).json({
       success: true,

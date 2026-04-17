@@ -345,7 +345,9 @@ export const CatalogPage = () => {
         sort: appliedSort,
       });
 
-      const url = query ? `/api/products/filter?${query}` : "/api/products/filter";
+      const url = query
+        ? `${import.meta.env.VITE_API_URL}/api/products/filter?${query}`
+        : `${import.meta.env.VITE_API_URL}/api/products/filter`;
 
       try {
         if (isMounted) {

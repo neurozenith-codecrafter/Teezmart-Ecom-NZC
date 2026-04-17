@@ -94,7 +94,7 @@ export const ShopMoreCarousel = ({ productId }) => {
 
     const fetchRelated = async () => {
       try {
-        const res = await axios.get(`/api/products/${productId}/suggestions`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}/suggestions`);
 
         if (res.data.data?.length > 0) {
           setProducts(res.data.data);

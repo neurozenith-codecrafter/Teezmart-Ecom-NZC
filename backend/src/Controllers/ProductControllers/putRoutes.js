@@ -7,7 +7,7 @@ const {
   validateDescription,
   validateTitle,
   parsePrice,
-  parseOptionalNonNegativeNumber,
+  parseOptionalDiscountPrice,
   normalizeSizes,
   normalizeRemoveImages,
   createSlugFromTitle,
@@ -62,6 +62,7 @@ const updateProduct = async (req, res) => {
       title,
       description,
       price,
+      stock,
       discountPrice,
       category,
       sizes,
@@ -72,6 +73,7 @@ const updateProduct = async (req, res) => {
       title === undefined &&
       description === undefined &&
       price === undefined &&
+      stock === undefined &&
       discountPrice === undefined &&
       category === undefined &&
       sizes === undefined &&
@@ -84,17 +86,11 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    if (Object.prototype.hasOwnProperty.call(req.body, "stock")) {
-      return res.status(400).json({
-        success: false,
-        message: "Stock is not a supported product field",
-      });
-    }
-
     let nextTitle = product.title;
     let nextSlug = product.slug;
     let nextDescription = product.description;
     let nextPrice = product.price;
+    let nextStock = product.stock;
     let nextDiscountPrice = product.discountPrice;
     let nextCategory = product.category;
     let nextSizes = product.sizes;
@@ -112,11 +108,31 @@ const updateProduct = async (req, res) => {
       nextPrice = parsePrice(price);
     }
 
+    if (stock !== undefined) {
+      const normalizedStock = Number(stock);
+
+      if (!Number.isInteger(normalizedStock) || normalizedStock < 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Stock must be a non-negative integer",
+        });
+      }
+
+      nextStock = normalizedStock;
+    }
+
     if (discountPrice !== undefined) {
       nextDiscountPrice =
         discountPrice === "" || discountPrice === null
           ? undefined
-          : parseOptionalNonNegativeNumber(discountPrice, "Discount price");
+          : parseOptionalDiscountPrice(discountPrice, nextPrice);
+    }
+
+    if (nextDiscountPrice !== undefined && nextDiscountPrice >= nextPrice) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount price must be less than price",
+      });
     }
 
     if (category !== undefined) {
@@ -179,6 +195,7 @@ const updateProduct = async (req, res) => {
     product.slug = nextSlug;
     product.description = nextDescription;
     product.price = nextPrice;
+    product.stock = nextStock;
     product.discountPrice = nextDiscountPrice;
     product.category = nextCategory;
     product.sizes = nextSizes;
@@ -211,12 +228,13 @@ const updateProduct = async (req, res) => {
 
     const statusCode =
       error.message === "Invalid product ID" ||
-      error.message === "Stock is not a supported product field" ||
       error.message === "Title is required and must be less than 120 characters" ||
       error.message === "Description is required and must be less than 2000 characters" ||
       error.message === "Invalid category" ||
-      error.message === "Price must be a valid non-negative number" ||
+      error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Stock must be a non-negative integer" ||
       error.message === "Discount price must be a valid non-negative number" ||
+      error.message === "Discount price must be less than price" ||
       error.message === "Total images cannot exceed 5" ||
       error.message === "Product must have at least one image" ||
       error.message === "Sizes must contain only strings" ||

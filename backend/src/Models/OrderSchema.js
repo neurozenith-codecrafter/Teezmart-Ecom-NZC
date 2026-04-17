@@ -80,6 +80,12 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
+    totalAmount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     pricing: {
       subtotal: { type: Number, required: true, min: 0 },
       shippingFee: { type: Number, default: 0 },

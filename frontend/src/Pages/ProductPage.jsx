@@ -28,7 +28,7 @@ const ProductPage = () => {
 
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`/api/products/${slug}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${slug}`);
         setProduct(response.data.data);
         setProductImages(response.data.data.images);
         setSelectedImg(0);

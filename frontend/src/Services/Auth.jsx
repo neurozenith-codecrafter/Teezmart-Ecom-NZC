@@ -28,7 +28,7 @@ const Auth = () => {
       }
 
       const response = await fetch(
-        "/api/auth/google", // ✅ safer
+        `${import.meta.env.VITE_API_URL}/api/auth/google`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

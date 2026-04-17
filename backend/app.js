@@ -9,7 +9,29 @@ const orderRoutes = require("./src/Routes/OrderRoute.js");
 
 const app = express();
 
-app.use(cors());
+// Allowed origins: localhost dev + any Vercel deployment for this project
+const allowedOrigins = [
+  "http://localhost:5173",
+  /^https:\/\/teezmart-ecom.*\.vercel\.app$/,
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow non-browser requests (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowed) =>
+      allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
