@@ -96,5 +96,7 @@ productSchema.index({ price: 1 });
 productSchema.index({ rating: -1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ salesCount: -1 });
+productSchema.index({ rating: -1, numReviews: 1 });
+productSchema.index({ sizes: 1 });
 
 module.exports = mongoose.model("Product", productSchema);

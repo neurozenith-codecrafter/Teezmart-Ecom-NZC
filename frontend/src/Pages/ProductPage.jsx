@@ -96,7 +96,6 @@ const ProductPage = () => {
                   <Motion.button
                     key={image._id}
                     onClick={() => setSelectedImg(idx)}
-                    // Subtle, controlled interaction
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     transition={{
@@ -110,20 +109,11 @@ const ProductPage = () => {
                         : "opacity-40 hover:opacity-70"
                     }`}
                   >
-                    <AnimatePresence mode="wait">
-                      <Motion.img
-                        key={productImages[selectedImg]?.url} // 🔥 THIS is the fix
-                        src={productImages[selectedImg]?.url}
-                        alt=" "
-                        onLoad={(e) => {
-                          e.currentTarget.style.opacity = "1";
-                        }}
-                        className="w-full h-full object-cover opacity-0 transition-opacity duration-300"
-                        initial={{ scale: 1.01 }}
-                        animate={{ scale: 1 }}
-                        exit={{ opacity: 0 }}
-                      />
-                    </AnimatePresence>
+                    <img
+                      src={image.url} // ✅ FIXED
+                      alt="product thumbnail"
+                      className="w-full h-full object-cover"
+                    />
                   </Motion.button>
                 ))}
               </div>

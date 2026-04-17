@@ -191,9 +191,19 @@ export const CatalogPage = () => {
     );
   };
 
-  const sizes = ["S", "M", "L", "XL"];
+  const sizes = ["S", "M", "L", "XL", "XXL"];
   const filters = ["All", "Top Collection", "Most Rated", "Best Seller"];
-  const sortOptions = ["New", "Trending", "Recommended"];
+  const sortOptions = [
+    "New",
+    "Rating (High to Low)",
+    "Rating (Low to High)",
+    "Underrated",
+  ];
+
+  const isDirty =
+    activeFilter !== filters[0] ||
+    selectedSizes.length > 0 ||
+    activeSort !== sortOptions[0];
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -316,6 +326,16 @@ export const CatalogPage = () => {
                   </div>
 
                   <div className="p-6 pt-0 mt-auto">
+                    <button
+                      disabled={!isDirty}
+                      className={`px-4 py-4 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
+                        isDirty
+                          ? "text-zinc-400 hover:text-rose-500"
+                          : "text-zinc-300 cursor-not-allowed"
+                      }`}
+                    >
+                      Reset
+                    </button>
                     <button
                       onClick={() => setIsFilterOpen(false)}
                       className="w-full py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"

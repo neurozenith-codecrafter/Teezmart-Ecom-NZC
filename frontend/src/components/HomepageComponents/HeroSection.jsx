@@ -111,22 +111,24 @@ const HeroSection = () => {
         <Motion.div
           initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+          // This is your entrance animation transition
           transition={{
             type: "spring",
             stiffness: 180,
-            damping: 18, // slightly smoother
+            damping: 18,
             delay: 0.7,
           }}
           whileHover={{
             scale: 1.02,
-            rotate: 0.8, // ✅ stable instead of array
+            rotate: 0.8,
+            // ✅ Hover-specific transition goes INSIDE whileHover
+            transition: {
+              type: "spring",
+              stiffness: 250,
+              damping: 20,
+            },
           }}
-          style={{ willChange: "transform" }} // ✅ performance boost
-          transition={{
-            type: "spring",
-            stiffness: 250,
-            damping: 20,
-          }}
+          style={{ willChange: "transform" }}
           className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none"
         >
           {/* Icon */}

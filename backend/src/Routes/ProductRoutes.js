@@ -8,6 +8,7 @@ const {
   getRecommendedProducts,
   getProductSuggestions
 } = require("../Controllers/ProductControllers/getRoutes.js");
+const { filterProductsController } = require("../Controllers/ProductControllers/getFilterSortRoutes.js")
 
 
 
@@ -29,6 +30,9 @@ router.get("/recommended", getRecommendedProducts);
 
 // `GET /api/products/category/:category` - Fetch products by category
 router.get("/category/:category", getProductsByCategory);
+
+// GET - Get filtered products
+router.get("/filter", filterProductsController);
 
 // `GET /api/products/:id/suggestions` - Fetch product suggestions based on a given product ID to show in the product details page
 router.get("/:id/suggestions", getProductSuggestions);
