@@ -2,6 +2,50 @@ const Cart = require("../Models/CartSchema");
 const Product = require("../Models/ProductSchema");
 const { ensureValidObjectId } = require("../Utils/validation");
 
+const populateCartProducts = (query) =>
+  query.populate("items.product", "title price images slug sizes category");
+
+// Ensure snapshot fields reflect the latest Product data.
+// This keeps cart UI consistent after admin edits.
+const syncSnapshotsFromProducts = (cart) => {
+  if (!cart || !Array.isArray(cart.items)) return cart;
+
+  for (const item of cart.items) {
+    const productDoc = item?.product;
+    if (!productDoc || typeof productDoc !== "object") continue;
+
+    const latestTitle = productDoc.title;
+    const latestPrice = productDoc.price;
+    const latestImage = productDoc.images?.[0]?.url || "";
+
+    if (typeof latestTitle === "string" && latestTitle.trim()) {
+      item.name = latestTitle;
+    }
+
+    if (typeof latestPrice === "number" && Number.isFinite(latestPrice)) {
+      item.price = latestPrice;
+    }
+
+    item.image = latestImage;
+    item.totalItemPrice = item.quantity * item.price;
+  }
+
+  return cart;
+};
+
+const getHydratedCartByUserId = async (userId) => {
+  const cart = await populateCartProducts(Cart.findOne({ user: userId }));
+  if (!cart) return null;
+
+  syncSnapshotsFromProducts(cart);
+  recalculateCart(cart);
+
+  // Persist the synced snapshots so subsequent responses are consistent
+  // even if other handlers don't populate.
+  await cart.save();
+  return cart;
+};
+
 // Helper: recalculate cart totals
 const recalculateCart = (cart) => {
   cart.totalQuantity = cart.items.reduce((acc, item) => acc + item.quantity, 0);
@@ -65,7 +109,10 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
   if (existingItem) {
     // ✅ Update quantity
     existingItem.quantity += normalizedQuantity;
-
+    // Always use latest price/title/image when product was edited
+    existingItem.name = product.title;
+    existingItem.price = product.price;
+    existingItem.image = product.images?.[0]?.url || "";
     existingItem.totalItemPrice = existingItem.quantity * existingItem.price;
   } else {
     // ✅ Add new item (SNAPSHOT)
@@ -89,17 +136,15 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
   // 🔹 7. Save
   await cart.save();
 
-  return cart;
+  // Return hydrated cart so frontend always receives latest product details
+  return getHydratedCartByUserId(userId);
 };
 
 // cart.service.js
 exports.getCart = async (userId) => {
   ensureValidObjectId(userId, "user ID");
 
-  const cart = await Cart.findOne({ user: userId }).populate(
-    "items.product",
-    "title price images slug",
-  );
+  const cart = await populateCartProducts(Cart.findOne({ user: userId }));
 
   if (!cart) {
     return {
@@ -110,6 +155,9 @@ exports.getCart = async (userId) => {
     };
   }
 
+  syncSnapshotsFromProducts(cart);
+  recalculateCart(cart);
+  await cart.save();
   return cart;
 };
 
@@ -138,6 +186,12 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
       (i) => !(i.product.toString() === productId && i.size === size),
     );
   } else {
+    // Sync item pricing/name/image with latest product
+    const product = await Product.findById(productId);
+    if (!product) throw new Error("Product not found");
+    item.name = product.title;
+    item.price = product.price;
+    item.image = product.images?.[0]?.url || "";
     item.quantity = normalizedQuantity;
     item.totalItemPrice = item.price * normalizedQuantity;
   }
@@ -146,7 +200,7 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   recalculateCart(cart);
 
   await cart.save();
-  return cart;
+  return getHydratedCartByUserId(userId);
 };
 
 exports.removeItem = async (userId, productId, size) => {
@@ -163,7 +217,7 @@ exports.removeItem = async (userId, productId, size) => {
   recalculateCart(cart);
 
   await cart.save();
-  return cart;
+  return getHydratedCartByUserId(userId);
 };
 
 exports.clearCart = async (userId) => {
@@ -177,7 +231,7 @@ exports.clearCart = async (userId) => {
       items: [],
     });
     await newCart.save();
-    return newCart;
+    return getHydratedCartByUserId(userId);
   }
 
   cart.items = [];
@@ -186,5 +240,5 @@ exports.clearCart = async (userId) => {
   cart.totalPrice = 0;
 
   await cart.save();
-  return cart;
+  return getHydratedCartByUserId(userId);
 };

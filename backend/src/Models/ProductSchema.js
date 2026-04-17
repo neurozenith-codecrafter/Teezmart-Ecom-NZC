@@ -26,16 +26,6 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
-    discountPrice: {
-      type: Number,
-      validate: {
-        validator: function (value) {
-          return value < this.price;
-        },
-        message: "Discount price must be less than price",
-      },
-    },
-
     category: {
       type: String,
       enum: CATEGORIES,
