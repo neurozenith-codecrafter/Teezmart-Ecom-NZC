@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Star, SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
 
@@ -161,6 +161,41 @@ const ProductCardSkeleton = ({ index = 0 }) => {
   );
 };
 
+const normalizeCategory = (value) => {
+  if (!value) return null;
+
+  const normalizedValue = value.toString().trim().toLowerCase();
+  const categoryMap = {
+    tshirt: "tshirt",
+    tshirts: "tshirt",
+    "t-shirt": "tshirt",
+    "t-shirts": "tshirt",
+    trackpant: "trackpant",
+    trackpants: "trackpant",
+    tracks: "trackpant",
+  };
+
+  return categoryMap[normalizedValue] || null;
+};
+
+const normalizeFilter = (value) => {
+  if (!value) return "all";
+
+  const normalizedValue = value.toString().trim().toLowerCase();
+  const validFilters = new Set(["all", "best", "rated"]);
+
+  return validFilters.has(normalizedValue) ? normalizedValue : "all";
+};
+
+const normalizeSort = (value) => {
+  if (!value) return "new";
+
+  const normalizedValue = value.toString().trim().toLowerCase();
+  const validSorts = new Set(["new", "rating_desc", "underrated"]);
+
+  return validSorts.has(normalizedValue) ? normalizedValue : "new";
+};
+
 export const CatalogPage = () => {
   const categories = [
     { label: "T-Shirt", value: "tshirt" },
@@ -179,67 +214,39 @@ export const CatalogPage = () => {
   const sizes = ["S", "M", "L", "XL", "XXL"];
 
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedSizes, setSelectedSizes] = useState([]);
-  const [activeSort, setActiveSort] = useState("new");
-  const [activeCategory, setActiveCategory] = useState(null);
-
+  const [appliedFilter, setAppliedFilter] = useState("all");
+  const [appliedSizes, setAppliedSizes] = useState([]);
+  const [appliedSort, setAppliedSort] = useState("new");
+  const [draftCategory, setDraftCategory] = useState(null);
+  const [draftFilter, setDraftFilter] = useState("all");
+  const [draftSizes, setDraftSizes] = useState([]);
+  const [draftSort, setDraftSort] = useState("new");
   const [productNotAvailable, setProductNotAvailable] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { handleAddToCart } = useCart();
-  
-  
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get("/api/products");
-        if (isMounted) setProducts(response.data.data);
-      } catch (error) {
-        console.error("Error fetching ->", error);
-      }
-    };
-    fetchProducts();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const activeCategory = normalizeCategory(searchParams.get("category"));
+  const activeFilterParam = normalizeFilter(searchParams.get("collection"));
+  const activeSortParam = normalizeSort(searchParams.get("sort"));
 
-  // 🔹 Normalize category
-
-  const toggleSize = (size) => {
-    setSelectedSizes((prev) => {
-      // Remove if already selected
-      if (prev.includes(size)) {
-        return prev.filter((s) => s !== size);
-      }
-
-      // Add if not selected
-      return [...prev, size];
-    });
-  };
-
-  const buildFilterQuery = ({ category, filter, sizes, sort }) => {
+  const buildFilterQuery = ({ category, filter, sizes: selectedSizes, sort }) => {
     const params = new URLSearchParams();
 
-    // 🔹 Normalize category
     if (category) {
       params.append("category", category);
     }
 
-    // 🔹 Normalize filter
     if (filter !== "all") {
       params.append("collection", filter);
     }
 
-    // 🔹 Normalize sizes
-    if (sizes?.length) {
-      params.append("sizes", sizes.join(","));
+    if (selectedSizes?.length) {
+      params.append("sizes", selectedSizes.join(","));
     }
 
-    // 🔹 Normalize sort
     if (sort !== "new") {
       params.append("sort", sort);
     }
@@ -247,56 +254,139 @@ export const CatalogPage = () => {
     return params.toString();
   };
 
-  const handleApply = async () => {
-    const query = buildFilterQuery({
-      category: activeCategory,
-      filter: activeFilter,
-      sizes: selectedSizes,
-      sort: activeSort,
+  const updateSearchParams = ({ category, filter, sort }) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (category) {
+      nextParams.set("category", category);
+    } else {
+      nextParams.delete("category");
+    }
+
+    if (filter && filter !== "all") {
+      nextParams.set("collection", filter);
+    } else {
+      nextParams.delete("collection");
+    }
+
+    if (sort && sort !== "new") {
+      nextParams.set("sort", sort);
+    } else {
+      nextParams.delete("sort");
+    }
+
+    setSearchParams(nextParams);
+  };
+
+  const handleCategoryChange = (value) => {
+    setDraftCategory((prev) => (prev === value ? null : value));
+  };
+
+  const toggleSize = (size) => {
+    setDraftSizes((prev) => {
+      if (prev.includes(size)) {
+        return prev.filter((s) => s !== size);
+      }
+
+      return [...prev, size];
     });
+  };
 
-    const url = query
-      ? `/api/products/filter?${query}`
-      : `/api/products/filter`;
-
-    const res = await axios.get(url);
-
-    setProducts(res.data.products);
+  const handleApplyFilters = () => {
+    setAppliedFilter(draftFilter);
+    setAppliedSizes(draftSizes);
+    setAppliedSort(draftSort);
+    updateSearchParams({
+      category: draftCategory,
+      filter: draftFilter,
+      sort: draftSort,
+    });
     setIsFilterOpen(false);
-
-    setProductNotAvailable(res.data.count === 0);
   };
 
-  const handleReset = async () => {
-    // 🔹 Reset UI state (NOT backend values)
-    setActiveFilter("all");
-    setSelectedSizes([]);
-    setActiveSort("new");
-    setActiveCategory(null);
-
-    // 🔹 Fetch using normalized query builder
-    const query = buildFilterQuery({
-      category: null,
-      filter: "all",
-      sizes: [],
-      sort: "new",
-    });
-
-    const url = query
-      ? `/api/products/filter?${query}`
-      : `/api/products/filter`;
-
-    const res = await axios.get(url);
-
-    setProducts(res.data.products);
+  const handleReset = () => {
+    setDraftCategory(null);
+    setDraftFilter("all");
+    setDraftSizes([]);
+    setDraftSort("new");
+    setAppliedFilter("all");
+    setAppliedSizes([]);
+    setAppliedSort("new");
     setProductNotAvailable(false);
+    setIsFilterOpen(false);
+    setSearchParams({});
   };
+
+  useEffect(() => {
+    setDraftCategory(activeCategory);
+    setAppliedFilter(activeFilterParam);
+    setAppliedSort(activeSortParam);
+    setDraftFilter(activeFilterParam);
+    setDraftSort(activeSortParam);
+  }, [activeCategory, activeFilterParam, activeSortParam]);
+
+  useEffect(() => {
+    if (!isFilterOpen) {
+      setDraftCategory(activeCategory);
+      setDraftFilter(appliedFilter);
+      setDraftSizes(appliedSizes);
+      setDraftSort(appliedSort);
+    }
+  }, [isFilterOpen, activeCategory, appliedFilter, appliedSizes, appliedSort]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      const query = buildFilterQuery({
+        category: activeCategory,
+        filter: appliedFilter,
+        sizes: appliedSizes,
+        sort: appliedSort,
+      });
+
+      const url = query ? `/api/products/filter?${query}` : "/api/products/filter";
+
+      try {
+        if (isMounted) {
+          setIsLoading(true);
+          setProductNotAvailable(false);
+        }
+
+        const res = await axios.get(url);
+
+        if (!isMounted) return;
+
+        const nextProducts = res.data.products || res.data.data || [];
+        setProducts(nextProducts);
+        setProductNotAvailable(nextProducts.length === 0);
+      } catch (error) {
+        console.error("Error fetching catalog products ->", error);
+
+        if (isMounted) {
+          setProducts([]);
+          setProductNotAvailable(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCategory, appliedFilter, appliedSizes, appliedSort]);
 
   const isDirty =
-    activeFilter !== filters[0].value ||
-    selectedSizes.length > 0 ||
-    activeSort !== sortOptions[0].value ||
-    activeCategory !== null;
+    draftCategory !== activeCategory ||
+    draftFilter !== appliedFilter ||
+    draftSort !== appliedSort ||
+    draftSizes.length !== appliedSizes.length ||
+    draftSizes.some((size) => !appliedSizes.includes(size));
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -348,7 +438,6 @@ export const CatalogPage = () => {
                   </div>
 
                   <div className="p-6 space-y-7">
-                    {/* Category Section - NEW */}
                     <div className="space-y-3">
                       <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Category
@@ -357,9 +446,9 @@ export const CatalogPage = () => {
                         {categories.map((cat) => (
                           <button
                             key={cat.value}
-                            onClick={() => setActiveCategory(cat.value)}
+                            onClick={() => handleCategoryChange(cat.value)}
                             className={`py-3 rounded-2xl text-[10px] font-bold transition-all border ${
-                              activeCategory === cat.value
+                              draftCategory === cat.value
                                 ? "bg-zinc-900 border-zinc-900 text-white shadow-lg shadow-zinc-200"
                                 : "bg-zinc-50 border-transparent text-zinc-500 hover:bg-zinc-100"
                             }`}
@@ -370,7 +459,6 @@ export const CatalogPage = () => {
                       </div>
                     </div>
 
-                    {/* Collections Section */}
                     <div className="space-y-3">
                       <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Collections
@@ -379,9 +467,9 @@ export const CatalogPage = () => {
                         {filters.map((filter) => (
                           <button
                             key={filter.value}
-                            onClick={() => setActiveFilter(filter.value)}
+                            onClick={() => setDraftFilter(filter.value)}
                             className={`px-4 py-2 rounded-full text-[10px] font-bold transition-all border ${
-                              activeFilter === filter.value
+                              draftFilter === filter.value
                                 ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
                                 : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:bg-zinc-100"
                             }`}
@@ -392,29 +480,27 @@ export const CatalogPage = () => {
                       </div>
                     </div>
 
-                    {/* Sizes Section */}
                     <div className="space-y-3">
                       <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Available Sizes
                       </p>
                       <div className="grid grid-cols-4 gap-2">
-                        {sizes.map((s) => (
+                        {sizes.map((size) => (
                           <button
-                            key={s}
-                            onClick={() => toggleSize(s)}
+                            key={size}
+                            onClick={() => toggleSize(size)}
                             className={`h-11 flex items-center justify-center rounded-full text-[10px] font-bold transition-all border ${
-                              selectedSizes.includes(s)
+                              draftSizes.includes(size)
                                 ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
                                 : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-zinc-900"
                             }`}
                           >
-                            {s}
+                            {size}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Sort Section */}
                     <div className="space-y-3">
                       <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Sort By
@@ -423,15 +509,15 @@ export const CatalogPage = () => {
                         {sortOptions.map((sortOption) => (
                           <button
                             key={sortOption.value}
-                            onClick={() => setActiveSort(sortOption.value)}
+                            onClick={() => setDraftSort(sortOption.value)}
                             className={`flex items-center justify-between px-4 py-3 rounded-2xl text-[11px] font-bold transition-all ${
-                              activeSort === sortOption.value
+                              draftSort === sortOption.value
                                 ? "bg-zinc-100 text-zinc-900"
                                 : "text-zinc-500 hover:bg-zinc-50"
                             }`}
                           >
                             {sortOption.label}
-                            {activeSort === sortOption.value && (
+                            {draftSort === sortOption.value && (
                               <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
                             )}
                           </button>
@@ -440,7 +526,6 @@ export const CatalogPage = () => {
                     </div>
                   </div>
 
-                  {/* Footer Section */}
                   <div className="p-6 pt-2 mt-auto space-y-3 bg-white/50 backdrop-blur-sm border-t border-zinc-50">
                     <div className="flex items-center gap-3">
                       <Motion.button
@@ -464,10 +549,7 @@ export const CatalogPage = () => {
                       </Motion.button>
 
                       <button
-                        onClick={() => {
-                          setIsFilterOpen(false);
-                          handleApply();
-                        }}
+                        onClick={handleApplyFilters}
                         className="flex-[2] py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
                       >
                         Apply Filters
@@ -483,18 +565,15 @@ export const CatalogPage = () => {
 
       <main className="w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
-          {products.length === 0 && !productNotAvailable ? (
-            // 🔹 1. Skeleton
+          {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <ProductCardSkeleton key={i} index={i} />
             ))
           ) : productNotAvailable ? (
-            // 🔹 2. No products
             <div className="col-span-full text-center py-10 text-zinc-500">
               No products found
             </div>
           ) : (
-            // 🔹 3. Render products
             products.map((item, index) => (
               <ProductCard
                 key={item._id}

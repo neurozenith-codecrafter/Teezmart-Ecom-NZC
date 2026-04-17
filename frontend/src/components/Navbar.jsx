@@ -197,6 +197,24 @@ const Navbar = () => {
     navigate("/catalog");
   };
 
+  // const navigateToTshirtCatalog = () => {
+  //   setActiveItem("Products");
+  //   setIsMenuOpen(false);
+  //   navigate("/catalog?category=tshirt");
+  // };
+
+  const navigateToNewArrivals = () => {
+    setActiveItem("Products");
+    setIsMenuOpen(false);
+    navigate("/catalog?sort=new");
+  };
+
+  const navigateToMostRated = () => {
+    setActiveItem("Products");
+    setIsMenuOpen(false);
+    navigate("/catalog?collection=rated");
+  };
+
   const scrollToWhyUs = (e) => {
     e.preventDefault();
     const element = document.getElementById("why-us");
@@ -547,6 +565,11 @@ const Navbar = () => {
                   {["New Arrivals", "Most Rated"].map((label) => (
                     <Motion.button
                       key={label}
+                      onClick={
+                        label === "New Arrivals"
+                          ? navigateToNewArrivals
+                          : navigateToMostRated
+                      }
                       whileHover={{ y: -2, backgroundColor: "#f9f9f9" }}
                       whileTap={{ scale: 0.96 }}
                       className="px-6 py-2.5 border border-[#f0f0f0] rounded-full text-[14px] font-normal text-black transition-colors"

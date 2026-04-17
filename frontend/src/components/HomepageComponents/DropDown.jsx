@@ -9,20 +9,19 @@ const DropDown = () => {
 
   const navigate = useNavigate();
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!ref.current?.contains(e.target)) {
         setIsOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div ref={ref} className="relative">
-      {/* Trigger */}
       <Motion.button
         onClick={() => setIsOpen((prev) => !prev)}
         whileHover={{ y: -2 }}
@@ -40,7 +39,6 @@ const DropDown = () => {
         </Motion.span>
       </Motion.button>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <Motion.div
@@ -50,9 +48,9 @@ const DropDown = () => {
             transition={{ duration: 0.2 }}
             className="absolute top-[calc(100%+8px)] left-0 min-w-[170px] bg-white border border-[#f0f0f0] rounded-xl shadow-lg z-[999] overflow-hidden"
           >
-            <button 
+            <button
               className="w-full text-left px-5 py-3 text-[14px] hover:bg-[#f9f9f9] transition-colors"
-              onClick={() => navigate("/catalog?category=tshirts")}
+              onClick={() => navigate("/catalog?category=tshirt")}
             >
               T-Shirts
             </button>
