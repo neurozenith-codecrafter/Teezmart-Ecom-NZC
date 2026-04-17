@@ -18,14 +18,25 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow non-browser requests (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowed) =>
+      allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+    );
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
+<<<<<<< HEAD
   credentials: true
+=======
+  credentials: true,
+>>>>>>> feature/AdminPanel
 }));
 app.use(express.json());
 

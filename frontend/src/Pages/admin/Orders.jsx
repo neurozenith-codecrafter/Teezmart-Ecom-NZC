@@ -29,7 +29,6 @@ const StatusBadge = ({ status }) => {
 export const Orders = () => {
   const { token } = useAuth();
   const [orders, setOrders] = useState([]);
-  const [page, setPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +48,7 @@ export const Orders = () => {
 
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/orders`, {
           params: {
-            page,
+            page: currentPage,
             limit: 10,
           },
           headers: {
@@ -72,7 +71,7 @@ export const Orders = () => {
     };
 
     fetchOrders();
-  }, [page, token]);
+  }, [currentPage, token]);
 
   const formattedOrders = orders.map((order) => {
     const items = order.items || [];
@@ -217,7 +216,7 @@ export const Orders = () => {
                   </td>
 
                   <td className="px-6 py-5 text-center">
-                    <StatusBadge status={order.status === "order placed" ? "placed" : order.status} />
+                    <StatusBadge status={order.status} />
                   </td>
 
                   <td className="px-8 py-5 text-right">
@@ -238,7 +237,7 @@ export const Orders = () => {
         <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between bg-[#FDFDFD]">
           <button
             className="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-slate-500 transition-all disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={16} /> Previous
@@ -249,7 +248,7 @@ export const Orders = () => {
               (pageNumber) => (
               <button
                 key={pageNumber}
-                onClick={() => setPage(pageNumber)}
+                onClick={() => setCurrentPage(pageNumber)}
                 className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
                   currentPage === pageNumber
                     ? "bg-black text-white shadow-lg shadow-black/10"
@@ -264,7 +263,7 @@ export const Orders = () => {
 
           <button
             className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-black transition-all disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
           >
             Next <ChevronRight size={16} />

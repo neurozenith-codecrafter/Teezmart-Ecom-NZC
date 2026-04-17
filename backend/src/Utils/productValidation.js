@@ -77,6 +77,20 @@ const parseOptionalDiscountPrice = (value, price) => {
   return parsedDiscountPrice;
 };
 
+const parseOptionalNonNegativeNumber = (value, fieldName) => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const parsedValue = Number(value);
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+    throw new Error(`${fieldName} must be a valid non-negative number`);
+  }
+
+  return parsedValue;
+};
+
 const normalizeSizes = (value) => {
   if (value === undefined) {
     return undefined;
@@ -128,6 +142,7 @@ module.exports = {
   validateDescription,
   parsePrice,
   parseOptionalDiscountPrice,
+  parseOptionalNonNegativeNumber,
   normalizeSizes,
   normalizeRemoveImages,
   createSlugFromTitle,
