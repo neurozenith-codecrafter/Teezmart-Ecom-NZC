@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../Hooks/useAuth";
 import {
   Menu,
@@ -37,6 +37,7 @@ const Navbar = () => {
   const lastScrollY = useRef(0);
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -96,6 +97,22 @@ const Navbar = () => {
     return () => cancelAnimationFrame(frameId);
   }, [user]);
 
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+    if (sessionStorage.getItem("scrollToHomeContact") !== "true") return;
+
+    const timerId = window.setTimeout(() => {
+      const element = document.getElementById("footer-contact");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.dispatchEvent(new CustomEvent("highlight-contact"));
+      }
+      sessionStorage.removeItem("scrollToHomeContact");
+    }, 350);
+
+    return () => window.clearTimeout(timerId);
+  }, [location.pathname]);
+
   const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
   const canAccessAdmin = user?.role === "admin" || user?.role === "devAdmin";
   const shouldShowNavAvatar = user?.avatar && !hasImgError;
@@ -153,6 +170,12 @@ const Navbar = () => {
         window.dispatchEvent(new CustomEvent("highlight-contact"));
       }
     }, 350);
+  };
+
+  const redirectToHomeContact = () => {
+    setIsMenuOpen(false);
+    sessionStorage.setItem("scrollToHomeContact", "true");
+    navigate("/");
   };
 
   const sidebarVariants = {
@@ -523,7 +546,11 @@ const Navbar = () => {
                       onClick={() => {
                         setActiveItem(item.name);
                         if (item.isContact) {
-                          scrollToContact();
+                          if (isMobileSidebar) {
+                            redirectToHomeContact();
+                          } else {
+                            scrollToContact();
+                          }
                         } else if (item.name === "Wishlist") {
                           navigate("/wishlist");
                           setIsMenuOpen(false);

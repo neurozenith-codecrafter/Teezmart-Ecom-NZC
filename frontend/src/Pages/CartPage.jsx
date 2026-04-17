@@ -52,7 +52,7 @@ const CartItemRow = ({
       {/* 🗑️ MOBILE SWIPE LAYER */}
       <Motion.div
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden rounded-[1.5rem] "
+        className="absolute inset-0 bg-rose-50 flex items-center justify-end px-8 md:hidden rounded-[1.25rem] "
       >
         <Motion.div
           style={{
@@ -61,7 +61,7 @@ const CartItemRow = ({
           }}
           transition={{ duration: 0.2 }}
         >
-          <Trash2 className="text-rose-500" size={24} />
+          <Trash2 className="text-rose-500" size={20} />
         </Motion.div>
       </Motion.div>
 
@@ -83,54 +83,49 @@ const CartItemRow = ({
             animate(x, 0, { type: "spring", stiffness: 300, damping: 30 });
           }
         }}
-        className="relative bg-white md:bg-transparent flex gap-5 md:gap-10 py-10 items-center z-10"
+        className="relative bg-white md:bg-transparent flex gap-4 md:gap-8 py-8 items-center z-10"
       >
-        {/* Product Image with Hover Depth */}
-        <div className="relative aspect-[4/5] w-28 md:w-36 bg-zinc-50 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-zinc-100/50 group-hover/item:shadow-xl transition-shadow duration-500">
+        {/* Product Image: Removed whileHover zoom/rotate logic */}
+        <div className="relative aspect-[4/5] w-24 md:w-32 bg-zinc-50 rounded-xl overflow-hidden shrink-0 shadow-sm border border-zinc-100/50 group-hover/item:shadow-lg transition-shadow duration-500">
           <Motion.img
-            whileHover={{ scale: 1.1, rotate: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             src={getProductImage(item)}
             alt={getProductName(item)}
             className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="flex flex-col flex-grow min-w-0 justify-between self-stretch py-1">
-          <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col flex-grow min-w-0 justify-between self-stretch py-0.5">
+          <div className="flex flex-col gap-1">
             <div className="flex justify-between items-start gap-4">
               <div className="min-w-0">
-                <h2 className="text-[15px] md:text-xl font-medium text-zinc-900 tracking-tight leading-snug">
+                <h2 className="text-[14px] md:text-lg font-medium text-zinc-900 tracking-tight leading-snug">
                   {getProductName(item)}
                 </h2>
-                <p className="text-[9px] md:text-[11px] uppercase tracking-[0.2em] text-zinc-400 font-bold mt-2">
+                <p className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-bold mt-1.5">
                   Size:{" "}
                   <span className="text-zinc-600 font-black">{item.size}</span>
                 </p>
               </div>
 
-              {/* Price: Animates color/scale when quantity changes */}
-              <div className="flex flex-col items-end leading-none">
-                {/* Unit Price: Muted, smaller, and slightly wider tracking for a clean look */}
-                <span className="text-[10px] md:text-xs text-zinc-400 font-bold uppercase tracking-[0.05em] mb-1">
+              <div className="flex flex-col items-end leading-none pt-1">
+                <span className="text-[9px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-[0.05em] mb-0.5">
                   ₹{getProductPrice(item).toFixed(2)}{" "}
-                  <span className="opacity-60">ea</span>
+                  <span className="opacity-60 lowercase">ea</span>
                 </span>
 
-                {/* Total Price: Using popLayout for a seamless "rolling" transition */}
-                <div className="relative h-7 md:h-8 flex items-center overflow-hidden">
+                <div className="relative h-6 md:h-7 flex items-center overflow-hidden">
                   <AnimatePresence mode="popLayout">
                     <Motion.span
                       key={item.quantity}
-                      initial={{ opacity: 0, y: 15 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
+                      exit={{ opacity: 0, y: -12 }}
                       transition={{
                         type: "spring",
                         stiffness: 400,
                         damping: 30,
                       }}
-                      className="text-xl md:text-2xl font-bold text-zinc-900 tracking-tighter"
+                      className="text-lg md:text-xl font-bold text-zinc-900 tracking-tighter"
                     >
                       ₹{(item.quantity * getProductPrice(item)).toFixed(2)}
                     </Motion.span>
@@ -140,34 +135,34 @@ const CartItemRow = ({
             </div>
           </div>
 
-          <div className="flex justify-between items-end mt-6">
-            <div className="flex flex-col gap-2.5">
-              <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.25em] text-zinc-300 ml-1">
+          <div className="flex justify-between items-end mt-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.25em] text-zinc-300 ml-0.5">
                 Quantity
               </span>
-              <div className="flex items-center gap-5 bg-zinc-50 px-4 py-2.5 rounded-xl border border-zinc-100">
+              <div className="flex items-center gap-4 bg-zinc-50 px-3 py-2 rounded-lg border border-zinc-100/80">
                 <Motion.button
                   whileTap={{ scale: 0.8 }}
                   disabled={isBusy}
                   onClick={() => onQuantity(item, item.quantity - 1)}
                   className="text-zinc-400 hover:text-rose-500 transition-colors disabled:opacity-50"
                 >
-                  <Minus size={13} strokeWidth={3} />
+                  <Minus size={11} strokeWidth={3} />
                 </Motion.button>
 
-                <div className="relative w-4 h-5 overflow-hidden flex items-center justify-center">
+                <div className="relative w-3.5 h-4 overflow-hidden flex items-center justify-center">
                   <AnimatePresence mode="popLayout">
                     <Motion.span
                       key={item.quantity}
-                      initial={{ y: 10, opacity: 0 }}
+                      initial={{ y: 8, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -10, opacity: 0 }}
+                      exit={{ y: -8, opacity: 0 }}
                       transition={{
                         type: "spring",
                         stiffness: 400,
                         damping: 25,
                       }}
-                      className="absolute text-[13px] md:text-sm font-black text-zinc-900"
+                      className="absolute text-[12px] md:text-[13px] font-black text-zinc-900"
                     >
                       {item.quantity}
                     </Motion.span>
@@ -180,22 +175,21 @@ const CartItemRow = ({
                   onClick={() => onQuantity(item, item.quantity + 1)}
                   className="text-zinc-400 hover:text-zinc-900 transition-colors disabled:opacity-50"
                 >
-                  <Plus size={13} strokeWidth={3} />
+                  <Plus size={11} strokeWidth={3} />
                 </Motion.button>
               </div>
             </div>
 
-            {/* Desktop Remove Button with animated underline */}
             <Motion.button
               whileHover={{ x: 3 }}
               disabled={isBusy}
               onClick={() => onQuantity(item, 0)}
-              className="hidden md:flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.25em] text-rose-500 group/btn"
+              className="hidden md:flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.25em] text-rose-500 group/btn"
             >
-              <Trash2 size={12} strokeWidth={2.5} />
+              <Trash2 size={11} strokeWidth={2.5} />
               <span className="relative">
                 Remove
-                <span className="absolute -bottom-1.5 left-0 w-full h-[1.5px] bg-rose-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-500 origin-left" />
+                <span className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-rose-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-500 origin-left" />
               </span>
             </Motion.button>
           </div>
@@ -208,20 +202,20 @@ const CartItemRow = ({
 const EmptyCart = () => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-8 selection:bg-zinc-900 selection:text-white">
-      <div className="max-w-[420px] w-full flex flex-col items-center text-center">
-        <div className="mb-10">
-          <ShoppingBag size={32} strokeWidth={1.2} className="text-zinc-300" />
+    <div className="min-h-screen bg-white flex items-center justify-center p-8">
+      <div className="max-w-[380px] w-full flex flex-col items-center text-center">
+        <div className="mb-8">
+          <ShoppingBag size={28} strokeWidth={1.2} className="text-zinc-300" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 tracking-tight mb-4">
+        <h1 className="text-xl md:text-2xl font-bold text-zinc-900 tracking-tight mb-3">
           Nothing here yet.
         </h1>
-        <p className="text-zinc-400 text-sm md:text-base font-medium leading-relaxed mb-12 max-w-[280px]">
+        <p className="text-zinc-400 text-[13px] md:text-sm font-medium leading-relaxed mb-10 max-w-[240px]">
           Start exploring and find something you&apos;ll actually want to wear.
         </p>
         <button
           onClick={() => navigate("/")}
-          className="w-full sm:w-auto px-10 py-4 bg-zinc-900 text-white rounded-full font-bold text-[13px] tracking-widest uppercase transition-all duration-300 hover:bg-zinc-800 active:scale-[0.98]"
+          className="w-full sm:w-auto px-8 py-3.5 bg-zinc-900 text-white rounded-full font-bold text-[12px] tracking-widest uppercase transition-all duration-300 hover:bg-zinc-800 active:scale-[0.98]"
         >
           Continue Shopping
         </button>
@@ -262,8 +256,6 @@ const CartPage = () => {
     if (!productId) return;
     setBusyKey(key);
 
-    console.log("handle quantity provoked");
-
     try {
       if (nextQty <= 0) {
         await removeCartItem({ productId, size: item.size });
@@ -279,24 +271,23 @@ const CartPage = () => {
   if (!cartItems.length) return <EmptyCart />;
 
   return (
-    <div className="min-h-screen bg-[#FBFBFB] md:flex md:items-center md:justify-center lg:items-start lg:pt-20 selection:bg-black selection:text-white">
-      <div className="max-w-[1400px] w-full mx-auto px-4 md:px-10 lg:px-20 py-10">
-        <header className="relative flex items-center justify-center mb-10 md:mb-20 py-2">
+    <div className="min-h-screen bg-[#FBFBFB] lg:pt-16 selection:bg-black selection:text-white">
+      <div className="max-w-[1300px] w-full mx-auto px-5 md:px-10 lg:px-16 py-8">
+        <header className="relative flex items-center justify-center mb-8 md:mb-14 py-1">
           <button
             onClick={() => navigate(-1)}
-            className="absolute left-0 p-3 text-zinc-900 hover:bg-zinc-100 rounded-full transition-all active:scale-90"
+            className="absolute left-0 p-2.5 text-zinc-900 hover:bg-zinc-100 rounded-full transition-all active:scale-90"
           >
-            <ChevronLeft size={24} strokeWidth={2} />
+            <ChevronLeft size={22} strokeWidth={2} />
           </button>
-          <h1 className="text-[22px] md:text-3xl font-bold text-zinc-900 tracking-tight">
+          <h1 className="text-[20px] md:text-2xl font-bold text-zinc-900 tracking-tight">
             Cart
           </h1>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-            {/* Repositioned Mobile Hint: Top Left of Product List */}
-            <span className="md:hidden mb-4 ml-1 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+            <span className="md:hidden mb-4 ml-1 text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-500">
               Swipe left to delete
             </span>
 
@@ -332,26 +323,25 @@ const CartPage = () => {
             </AnimatePresence>
           </div>
 
-          <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20">
-            {/* Order Summary UI stays the same */}
-            <div className="bg-white rounded-[2.5rem] border border-zinc-100 p-10 md:p-12 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.04)]">
-              <h2 className="text-xl font-black text-zinc-900 mb-10 tracking-tight">
+          <aside className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-16">
+            <div className="bg-white rounded-[2rem] border border-zinc-100 p-8 md:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.03)]">
+              <h2 className="text-lg font-black text-zinc-900 mb-8 tracking-tight">
                 Order Summary
               </h2>
 
-              <div className="bg-zinc-50 p-2 rounded-[2rem] border border-zinc-100 flex items-center mb-10">
+              <div className="bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100 flex items-center mb-8">
                 <input
                   type="text"
                   placeholder="Promo Code"
-                  className="flex-grow bg-transparent pl-5 pr-2 py-3 text-[13px] font-medium text-zinc-500 outline-none placeholder:text-zinc-300"
+                  className="flex-grow bg-transparent pl-4 pr-2 py-2 text-[12px] font-medium text-zinc-500 outline-none placeholder:text-zinc-300"
                 />
-                <button className="bg-zinc-900 text-white px-7 py-3 rounded-[1.6rem] text-[10px] font-black tracking-widest uppercase hover:bg-black transition-colors">
+                <button className="bg-zinc-900 text-white px-5 py-2.5 rounded-xl text-[9px] font-black tracking-widest uppercase hover:bg-black transition-colors">
                   Apply
                 </button>
               </div>
 
-              <div className="space-y-6 px-1 mb-10">
-                <div className="flex justify-between items-center text-[13px]">
+              <div className="space-y-5 px-1 mb-8">
+                <div className="flex justify-between items-center text-[12px]">
                   <span className="font-bold text-zinc-400 uppercase tracking-wider">
                     Subtotal
                   </span>
@@ -359,7 +349,7 @@ const CartPage = () => {
                     ₹{summary.subtotal.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-[13px]">
+                <div className="flex justify-between items-center text-[12px]">
                   <span className="font-bold text-zinc-400 uppercase tracking-wider">
                     Offer
                   </span>
@@ -367,37 +357,37 @@ const CartPage = () => {
                     - ₹{summary.discount.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-[13px]">
+                <div className="flex justify-between items-center text-[12px]">
                   <span className="font-bold text-zinc-400 uppercase tracking-wider">
-                    Delivery Fee
+                    Delivery
                   </span>
-                  <span className="font-black text-emerald-600 uppercase text-[10px] tracking-widest">
+                  <span className="font-black text-emerald-600 uppercase text-[9px] tracking-widest">
                     Free
                   </span>
                 </div>
                 <div className="border-t border-dashed border-zinc-200 w-full pt-4" />
-                <div className="flex justify-between items-start pt-2">
+                <div className="flex justify-between items-start pt-1">
                   <div className="flex flex-col">
-                    <span className="text-lg md:text-xl font-black text-zinc-900 tracking-tight">
+                    <span className="text-base md:text-lg font-black text-zinc-900 tracking-tight">
                       Total
                     </span>
-                    <span className="text-[9px] font-black text-zinc-300 uppercase tracking-[0.3em]">
+                    <span className="text-[8px] font-black text-zinc-300 uppercase tracking-[0.3em]">
                       {summary.units} Units
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tighter leading-none block">
+                    <span className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tighter leading-none block">
                       ₹{summary.total.toLocaleString()}
                     </span>
-                    <span className="text-[9px] font-bold text-zinc-300 uppercase mt-2 block tracking-widest">
+                    <span className="text-[8px] font-bold text-zinc-300 uppercase mt-1.5 block tracking-widest">
                       (GST Included)
                     </span>
                   </div>
                 </div>
               </div>
 
-              <button className="w-full bg-zinc-900 text-white py-6 rounded-[2.2rem] font-black text-[14px] uppercase tracking-[0.2em] shadow-2xl shadow-zinc-200 flex items-center justify-center gap-3 active:scale-[0.98] hover:bg-black transition-all">
-                Checkout <ArrowRight size={18} />
+              <button className="w-full bg-zinc-900 text-white py-5 rounded-[1.75rem] font-black text-[12px] uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 flex items-center justify-center gap-2.5 active:scale-[0.98] hover:bg-black transition-all">
+                Checkout <ArrowRight size={16} />
               </button>
             </div>
           </aside>
