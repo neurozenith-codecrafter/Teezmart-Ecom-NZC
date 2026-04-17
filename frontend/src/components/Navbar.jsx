@@ -544,7 +544,7 @@ const Navbar = () => {
                 </div>
 
                 <div className="flex items-center gap-x-2">
-                  {["New Arrivals", "Sale"].map((label) => (
+                  {["New Arrivals", "Most Rated"].map((label) => (
                     <Motion.button
                       key={label}
                       whileHover={{ y: -2, backgroundColor: "#f9f9f9" }}
