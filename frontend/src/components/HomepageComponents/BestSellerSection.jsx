@@ -136,6 +136,7 @@ export const BestSellerSection = () => {
     const fetchBestSellers = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/recommended`);
+        console.log(import.meta.env.VITE_API_URL)
         setBestSellers(response.data.data);
       } catch (error) {
         console.error("Error fetching best sellers:", error);
