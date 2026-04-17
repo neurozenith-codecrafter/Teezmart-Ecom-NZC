@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://teezmart-ecom-nzc.vercel.app"
+    "https://teezmart-ecom-dnpxr7rzt-neurozenith-codecrafters-projects.vercel.app"
   ],
   credentials: true
 }));
