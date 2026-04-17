@@ -7,6 +7,7 @@ import {
   LogOut,
   Bell,
   Menu,
+  Home,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/useAdmin";
@@ -124,9 +125,20 @@ export const AdminLayout = () => {
 
         <div className="flex-1 overflow-y-auto space-y-8 no-scrollbar">
           <nav className="space-y-1.5">
+            {/* Home Button with Home Icon and extra margin for spacing */}
+            <NavLink
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={({ isActive }) => `${navClass(isActive)} mb-6`}
+            >
+              <Home size={18} strokeWidth={2.2} />
+              <span className="text-[13px] tracking-tight">Home</span>
+            </NavLink>
+
             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">
               Management
             </p>
+
             {menuItems.map((item) => {
               if (!item.roles.includes(admin?.role)) return null;
               const Icon = item.icon;
