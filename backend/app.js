@@ -9,11 +9,20 @@ const orderRoutes = require("./src/Routes/OrderRoute.js");
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://teezmart-ecom-52187ext5-neurozenith-codecrafters-projects.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://teezmart-ecom-4xtjee5u0-neurozenith-codecrafters-projects.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
