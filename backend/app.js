@@ -11,21 +11,14 @@ const app = express();
 
 const cors = require("cors");
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://teezmart-ecom-nzc.vercel.app"
-];
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "https://teezmart-ecom-nzc.vercel.app"
+// ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
+  origin:  "https://teezmart-ecom-nzc.vercel.app",
+  credentials: true,
 }));
 app.use(express.json());
 
