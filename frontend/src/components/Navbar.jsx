@@ -257,8 +257,22 @@ const Navbar = () => {
 
   const redirectToHomeContact = () => {
     setIsMenuOpen(false);
-    sessionStorage.setItem("scrollToHomeContact", "true");
-    navigate("/");
+
+    if (location.pathname === "/") {
+      // Already on the homepage — the pathname won't change so the useEffect
+      // that reads sessionStorage will never fire. Scroll directly instead.
+      setTimeout(() => {
+        const element = document.getElementById("footer-contact");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          window.dispatchEvent(new CustomEvent("highlight-contact"));
+        }
+      }, 400); // slightly longer to let the mobile sidebar finish closing
+    } else {
+      // On a different page — navigate home, then the useEffect will handle it
+      sessionStorage.setItem("scrollToHomeContact", "true");
+      navigate("/");
+    }
   };
 
   const sidebarVariants = {
