@@ -9,7 +9,8 @@ const getFilteredProducts = async ({ collection, sizes, sort }) => {
   }
 
   if (collection === "rated") {
-    query.rating = { $gte: 4 };
+    query.rating = { $gte: 3.5 };
+    query.numReviews = { $gt: 0 };
   }
 
   // 🔹 Sizes Filter
@@ -34,7 +35,7 @@ const getFilteredProducts = async ({ collection, sizes, sort }) => {
 
   // 🔹 Underrated (based on YOUR schema)
   if (sort === "underrated") {
-    query.rating = { $gte: 4 };
+    query.rating = { $gte: 3.5 };
     query.numReviews = { $lte: 20 }; // using YOUR field
     sortQuery = { rating: -1 };
   }

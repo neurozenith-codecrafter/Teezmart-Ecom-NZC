@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Star, SlidersHorizontal, Heart, X } from "lucide-react";
+import { Star, SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
@@ -167,6 +167,9 @@ export const CatalogPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [activeSort, setActiveSort] = useState("New");
+
+  const [productNotAvailable, setProductNotAvailable] = useState(false);
+
   const { handleAddToCart } = useCart();
 
   useEffect(() => {
@@ -186,19 +189,96 @@ export const CatalogPage = () => {
   }, []);
 
   const toggleSize = (size) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
-    );
+    setSelectedSizes((prev) => {
+      // Remove if already selected
+      if (prev.includes(size)) {
+        return prev.filter((s) => s !== size);
+      }
+
+      // Add if not selected
+      return [...prev, size];
+    });
+  };
+
+  const buildFilterQuery = ({ filter, sizes, sort }) => {
+    const params = new URLSearchParams();
+
+    // 🔹 Normalize filter
+    const normalizedFilter = FILTER_MAP[filter] || "all";
+    if (normalizedFilter !== "all") {
+      params.append("collection", normalizedFilter);
+    }
+
+    // 🔹 Normalize sizes
+    if (sizes?.length) {
+      params.append("sizes", sizes.join(","));
+    }
+
+    // 🔹 Normalize sort
+    const normalizedSort = SORT_MAP[sort] || "new";
+    if (normalizedSort !== "new") {
+      params.append("sort", normalizedSort);
+    }
+
+    return params.toString();
+  };
+
+  const handleApply = async () => {
+    const query = buildFilterQuery({
+      filter: activeFilter,
+      sizes: selectedSizes,
+      sort: activeSort,
+    });
+
+    const url = query
+      ? `/api/products/filter?${query}`
+      : `/api/products/filter`;
+
+    const res = await axios.get(url);
+
+    setProducts(res.data.products);
+    setIsFilterOpen(false);
+
+    setProductNotAvailable(res.data.count === 0);
+  };
+
+  const handleReset = async () => {
+    // 🔹 Reset UI state (NOT backend values)
+    setActiveFilter("All");
+    setSelectedSizes([]);
+    setActiveSort("New");
+
+    // 🔹 Fetch using normalized query builder
+    const query = buildFilterQuery({
+      filter: "All",
+      sizes: [],
+      sort: "New",
+    });
+
+    const url = query
+      ? `/api/products/filter?${query}`
+      : `/api/products/filter`;
+
+    const res = await axios.get(url);
+
+    setProducts(res.data.products);
   };
 
   const sizes = ["S", "M", "L", "XL", "XXL"];
-  const filters = ["All", "Top Collection", "Most Rated", "Best Seller"];
-  const sortOptions = [
-    "New",
-    "Rating (High to Low)",
-    "Rating (Low to High)",
-    "Underrated",
-  ];
+  const filters = ["All", "Top Collection", "Most Rated"];
+  const sortOptions = ["New", "Rating (High to Low)", "Underrated"];
+
+  const FILTER_MAP = {
+    All: "all",
+    "Top Collection": "best",
+    "Most Rated": "rated",
+  };
+
+  const SORT_MAP = {
+    New: "new",
+    "Rating (High to Low)": "rating_desc",
+    Underrated: "underrated",
+  };
 
   const isDirty =
     activeFilter !== filters[0] ||
@@ -326,18 +406,34 @@ export const CatalogPage = () => {
                   </div>
 
                   <div className="p-6 pt-0 mt-auto">
-                    <button
+                    <Motion.button
                       disabled={!isDirty}
-                      className={`px-4 py-4 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer ${
-                        isDirty
-                          ? "text-zinc-400 hover:text-rose-500"
-                          : "text-zinc-300 cursor-not-allowed"
-                      }`}
+                      whileTap={isDirty ? { scale: 0.95 } : {}}
+                      onClick={handleReset}
+                      className={`
+                        relative group flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
+                        ${
+                          isDirty
+                            ? "bg-rose-50/50 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            : "bg-zinc-50 text-zinc-300 cursor-not-allowed opacity-60"
+                        }
+                      `}
                     >
-                      Reset
-                    </button>
+                      {/* Optional: Subtle icon that only shows/colors on hover when active */}
+                      <RotateCcw
+                        size={12}
+                        className={`transition-transform duration-500 ${isDirty ? "group-hover:-rotate-180" : ""}`}
+                      />
+
+                      <span className="relative">
+                        Reset
+                      </span>
+                    </Motion.button>
                     <button
-                      onClick={() => setIsFilterOpen(false)}
+                      onClick={() => {
+                        setIsFilterOpen(false);
+                        handleApply();
+                      }}
                       className="w-full py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
                     >
                       Apply Filters
@@ -352,18 +448,27 @@ export const CatalogPage = () => {
 
       <main className="w-full">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
-          {products.length === 0
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <ProductCardSkeleton key={i} index={i} />
-              ))
-            : products.map((item, index) => (
-                <ProductCard
-                  key={item._id}
-                  product={item}
-                  index={index}
-                  handleAddToCart={handleAddToCart}
-                />
-              ))}
+          {products.length === 0 && !productNotAvailable ? (
+            // 🔹 1. Skeleton
+            Array.from({ length: 4 }).map((_, i) => (
+              <ProductCardSkeleton key={i} index={i} />
+            ))
+          ) : productNotAvailable ? (
+            // 🔹 2. No products
+            <div className="col-span-full text-center py-10 text-zinc-500">
+              No products found
+            </div>
+          ) : (
+            // 🔹 3. Render products
+            products.map((item, index) => (
+              <ProductCard
+                key={item._id}
+                product={item}
+                index={index}
+                handleAddToCart={handleAddToCart}
+              />
+            ))
+          )}
         </div>
 
         <div className="mt-24 flex flex-col items-center gap-6">
