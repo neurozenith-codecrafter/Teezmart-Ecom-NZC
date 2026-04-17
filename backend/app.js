@@ -18,7 +18,6 @@ const cors = require("cors");
 
 app.use(cors({
   origin: "https://teezmart-ecom-nzc.vercel.app",
-  credentials: true,
 }));
 app.use(express.json());
 
