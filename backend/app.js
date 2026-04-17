@@ -9,15 +9,12 @@ const orderRoutes = require("./src/Routes/OrderRoute.js");
 
 const app = express();
 
-const cors = require("cors");
-
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://teezmart-ecom-nzc.vercel.app"
-// ];
-
 app.use(cors({
-  origin: "https://teezmart-ecom-nzc.vercel.app",
+  origin: [
+    "http://localhost:5173",
+    "https://teezmart-ecom-nzc.vercel.app"
+  ],
+  credentials: true
 }));
 app.use(express.json());
 
