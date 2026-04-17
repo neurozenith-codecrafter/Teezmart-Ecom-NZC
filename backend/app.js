@@ -11,7 +11,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://teezmart-ecom-nzc.vercel.app"
+  "https://teezmart-ecom-nzc.vercel.app/"
 ];
 
 app.use(cors({
@@ -21,8 +21,7 @@ app.use(cors({
     } else {
       callback(new Error("Not allowed by CORS"));
     }
-  },
-  credentials: true
+  }
 }));
 app.use(express.json());
 
