@@ -4,7 +4,6 @@ import { Star, SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
-import { buildApiUrl } from "../constants/api";
 
 const ProductCard = ({ product, index, handleAddToCart }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -347,8 +346,8 @@ export const CatalogPage = () => {
       });
 
       const url = query
-        ? buildApiUrl(`/api/products/filter?${query}`)
-        : buildApiUrl("/api/products/filter");
+        ? `${import.meta.env.VITE_API_URL}/api/products/filter?${query}`
+        : `${import.meta.env.VITE_API_URL}/api/products/filter`;
 
       try {
         if (isMounted) {

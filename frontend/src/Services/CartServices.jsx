@@ -1,9 +1,8 @@
 import axios from "axios";
-import { buildApiUrl } from "../constants/api";
 
 export const addToCartAPI = async ({ productId, quantity, size, token }) => {
   const response = await axios.post(
-    buildApiUrl("/api/cart"),
+    `${import.meta.env.VITE_API_URL}/api/cart`,
     {
       productId,
       quantity,
@@ -22,7 +21,7 @@ export const addToCartAPI = async ({ productId, quantity, size, token }) => {
 };
 
 export const getCartAPI = async ({ token }) => {
-  const response = await axios.get(buildApiUrl("/api/cart"), {
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/cart`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -33,7 +32,7 @@ export const getCartAPI = async ({ token }) => {
 
 export const updateCartItemAPI = async ({ productId, quantity, size, token }) => {
   const response = await axios.put(
-    buildApiUrl("/api/cart"),
+    `${import.meta.env.VITE_API_URL}/api/cart`,
     { productId, quantity, size },
     {
       headers: {
@@ -46,7 +45,7 @@ export const updateCartItemAPI = async ({ productId, quantity, size, token }) =>
 };
 
 export const removeCartItemAPI = async ({ productId, size, token }) => {
-  const response = await axios.delete(buildApiUrl(`/api/cart/${productId}`), {
+  const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/cart/${productId}`, {
     params: { size },
     headers: {
       Authorization: `Bearer ${token}`,

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, useMotionValue, animate } from "framer-motion";
 import Loader from "../components/Loader"
-import { buildApiUrl } from "../constants/api";
 
 // --- PROFESSIONAL DUMMY DATA ---
 
@@ -95,7 +94,7 @@ export const ShopMoreCarousel = ({ productId }) => {
 
     const fetchRelated = async () => {
       try {
-        const res = await axios.get(buildApiUrl(`/api/products/${productId}/suggestions`));
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}/suggestions`);
 
         if (res.data.data?.length > 0) {
           setProducts(res.data.data);

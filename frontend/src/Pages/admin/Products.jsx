@@ -10,7 +10,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "../../Hooks/useAuth";
-import { buildApiUrl } from "../../constants/api";
 motion;
 
 const ALLOWED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -463,7 +462,7 @@ export const Products = () => {
     setPageError("");
     setIsLoading(true);
     try {
-      const res = await axios.get(buildApiUrl("/api/products"));
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`);
       const data = res?.data?.data;
       setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -509,7 +508,7 @@ export const Products = () => {
       (payload.sizes || []).forEach((s) => fd.append("sizes", s));
       (payload.newImages || []).forEach((file) => fd.append("images", file));
 
-      const res = await axios.post(buildApiUrl("/api/admin/products/add"), fd, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/products/add`, fd, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -545,7 +544,7 @@ export const Products = () => {
       );
       (payload.newImages || []).forEach((file) => fd.append("images", file));
 
-      const res = await axios.put(buildApiUrl(`/api/admin/products/update/${id}`), fd, {
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/admin/products/update/${id}`, fd, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -585,7 +584,7 @@ export const Products = () => {
       if (!token) {
         throw new Error("Missing auth token");
       }
-      await axios.delete(buildApiUrl(`/api/admin/products/delete/${id}`), {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/products/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts((prev) => prev.filter((p) => p._id !== id));

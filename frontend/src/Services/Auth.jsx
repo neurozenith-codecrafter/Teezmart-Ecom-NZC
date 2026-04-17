@@ -3,7 +3,6 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { useAuth } from "../Hooks/useAuth";
-import { buildApiUrl } from "../constants/api";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ const Auth = () => {
       }
 
       const response = await fetch(
-        buildApiUrl("/api/auth/google"),
+        `${import.meta.env.VITE_API_URL}/api/auth/google`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

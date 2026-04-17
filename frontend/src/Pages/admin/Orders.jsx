@@ -7,7 +7,6 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { useAuth } from "../../Hooks/useAuth";
-import { buildApiUrl } from "../../constants/api";
 
 const StatusBadge = ({ status }) => {
   const normalizedStatus = (status || "").toLowerCase();
@@ -48,7 +47,7 @@ export const Orders = () => {
         setIsLoading(true);
         setError("");
 
-        const response = await axios.get(buildApiUrl("/api/admin/orders"), {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/orders`, {
           params: {
             page,
             limit: 10,
