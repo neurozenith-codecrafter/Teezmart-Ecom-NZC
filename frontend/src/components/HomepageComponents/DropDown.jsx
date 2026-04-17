@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
+
+  const navigate = useNavigate();
 
   // Close on outside click
   useEffect(() => {
@@ -47,7 +50,10 @@ const DropDown = () => {
             transition={{ duration: 0.2 }}
             className="absolute top-[calc(100%+8px)] left-0 min-w-[170px] bg-white border border-[#f0f0f0] rounded-xl shadow-lg z-[999] overflow-hidden"
           >
-            <button className="w-full text-left px-5 py-3 text-[14px] hover:bg-[#f9f9f9] transition-colors">
+            <button 
+              className="w-full text-left px-5 py-3 text-[14px] hover:bg-[#f9f9f9] transition-colors"
+              onClick={() => navigate("/catalog?category=tshirts")}
+            >
               T-Shirts
             </button>
 
