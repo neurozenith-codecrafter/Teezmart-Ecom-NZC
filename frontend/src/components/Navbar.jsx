@@ -15,11 +15,13 @@ import {
   Package,
   MessageSquare,
   ShieldAlert,
+  History,
+  TrendingUp,
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { useCommerce } from "../Hooks/useCommerce";
-import DropDown from "../components/HomepageComponents/DropDown"
+import DropDown from "../components/HomepageComponents/DropDown";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,6 +33,18 @@ const Navbar = () => {
   const [hasImgError, setHasImgError] = useState(false);
   const [hasPopupImgError, setHasPopupImgError] = useState(false);
 
+  // --- NEW SEARCH STATES ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const searchContainerRef = useRef(null);
+  const trendingSearches = [
+    "Oversized Tees",
+    "Graphic Hoodies",
+    "Summer Drop",
+    "Baggy Jeans",
+  ];
+
   const { isLoggedIn, user, logout } = useAuth();
   const { cartCount, wishlistCount } = useCommerce();
 
@@ -39,9 +53,60 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Load Recent Searches
+  useEffect(() => {
+    const saved = localStorage.getItem("recentSearches");
+    if (saved) setRecentSearches(JSON.parse(saved));
+  }, []);
+
+  // Handle Search Outside Click & ESC
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    const handleEsc = (event) => {
+      if (event.key === "Escape") setShowSuggestions(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
+
+  // Search Logic
+  const handleSearch = (query) => {
+    const term = query || searchQuery;
+    if (!term.trim()) return;
+
+    // Local Storage logic
+    const updatedRecent = [
+      term,
+      ...recentSearches.filter((s) => s !== term),
+    ].slice(0, 5);
+    setRecentSearches(updatedRecent);
+    localStorage.setItem("recentSearches", JSON.stringify(updatedRecent));
+
+    setShowSuggestions(false);
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+  };
+
   useEffect(() => {
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
+
+      if (showSuggestions) {
+        setShowBottomNav(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
       if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
         setShowBottomNav(false);
       } else {
@@ -62,7 +127,7 @@ const Navbar = () => {
       window.removeEventListener("scroll", controlNavbar);
       window.removeEventListener("resize", updateSidebarMode);
     };
-  }, []);
+  }, [showSuggestions]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return undefined;
@@ -136,7 +201,7 @@ const Navbar = () => {
     e.preventDefault();
     const element = document.getElementById("why-us");
     if (element) {
-      const offset = 100; // Account for fixed navbar height
+      const offset = 100;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -269,7 +334,7 @@ const Navbar = () => {
               variants={containerVariants}
               initial="initial"
               animate="animate"
-              className="flex" // flex ensures letters sit side-by-side
+              className="flex"
             >
               {"TeezMart".split("").map((char, index) => (
                 <Motion.span
@@ -456,20 +521,17 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* BOTTOM NAV & SIDEBAR logic remains consistent with previous update */}
       <AnimatePresence>
         {showBottomNav && (
           <Motion.div
-            // 1. Reveal from the top border of the main nav
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "58px", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={curtainSpring}
-            style={{ overflow: "visible" }} // Prevents content jitter during expansion
+            style={{ overflow: "visible" }}
             className="hidden lg:block fixed left-0 w-full bg-white z-[55] border-b border-[#f9f9f9]/50 top-[68px] origin-top"
           >
             <Motion.div
-              // 2. The content "flows" up into place as the bar expands
               initial={{ y: -20 }}
               animate={{ y: 0 }}
               exit={{ y: -20 }}
@@ -478,7 +540,6 @@ const Navbar = () => {
             >
               <div className="flex items-center gap-x-3 shrink-0">
                 <div className="relative">
-                  {" "}
                   <DropDown />
                 </div>
 
@@ -496,13 +557,75 @@ const Navbar = () => {
                 </div>
               </div>
 
-              <div className="relative w-full max-w-[400px]">
+              {/* ENHANCED SEARCH SECTION */}
+              <div
+                className="relative w-full max-w-[400px]"
+                ref={searchContainerRef}
+              >
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Search collection..."
                   className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2.5 pl-6 pr-12 rounded-full text-[14px] font-normal outline-none focus:bg-white transition-all"
                 />
-                <Search className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search
+                  className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-black transition-colors"
+                  onClick={() => {
+                    setShowSuggestions(true);
+                    handleSearch();
+                  }}
+                />
+
+                <AnimatePresence>
+                  {showSuggestions && (
+                    <Motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      className="absolute top-full mt-2 left-0 w-full bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                    >
+                      <div className="p-5 space-y-6">
+                        {recentSearches.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                              <History size={12} /> Recent Searches
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {recentSearches.map((item) => (
+                                <button
+                                  key={item}
+                                  onClick={() => handleSearch(item)}
+                                  className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                                >
+                                  {item}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="space-y-3">
+                          <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                            <TrendingUp size={12} /> Trending
+                          </h4>
+                          <div className="grid grid-cols-1 gap-1">
+                            {trendingSearches.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => handleSearch(item)}
+                                className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </Motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </Motion.div>
           </Motion.div>
@@ -546,11 +669,9 @@ const Navbar = () => {
                       onClick={() => {
                         setActiveItem(item.name);
                         if (item.isContact) {
-                          if (isMobileSidebar) {
-                            redirectToHomeContact();
-                          } else {
-                            scrollToContact();
-                          }
+                          isMobileSidebar
+                            ? redirectToHomeContact()
+                            : scrollToContact();
                         } else if (item.name === "Wishlist") {
                           navigate("/wishlist");
                           setIsMenuOpen(false);
