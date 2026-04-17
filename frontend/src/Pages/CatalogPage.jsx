@@ -162,15 +162,34 @@ const ProductCardSkeleton = ({ index = 0 }) => {
 };
 
 export const CatalogPage = () => {
+  const categories = [
+    { label: "T-Shirt", value: "tshirt" },
+    { label: "Tracks", value: "trackpant" },
+  ];
+  const filters = [
+    { label: "All", value: "all" },
+    { label: "Top Collection", value: "best" },
+    { label: "Most Rated", value: "rated" },
+  ];
+  const sortOptions = [
+    { label: "New", value: "new" },
+    { label: "Rating (High to Low)", value: "rating_desc" },
+    { label: "Underrated", value: "underrated" },
+  ];
+  const sizes = ["S", "M", "L", "XL", "XXL"];
+
   const [products, setProducts] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [selectedSizes, setSelectedSizes] = useState([]);
-  const [activeSort, setActiveSort] = useState("New");
+  const [activeSort, setActiveSort] = useState("new");
+  const [activeCategory, setActiveCategory] = useState(null);
 
   const [productNotAvailable, setProductNotAvailable] = useState(false);
 
   const { handleAddToCart } = useCart();
+  
+  
 
   useEffect(() => {
     let isMounted = true;
@@ -188,6 +207,8 @@ export const CatalogPage = () => {
     };
   }, []);
 
+  // 🔹 Normalize category
+
   const toggleSize = (size) => {
     setSelectedSizes((prev) => {
       // Remove if already selected
@@ -200,13 +221,17 @@ export const CatalogPage = () => {
     });
   };
 
-  const buildFilterQuery = ({ filter, sizes, sort }) => {
+  const buildFilterQuery = ({ category, filter, sizes, sort }) => {
     const params = new URLSearchParams();
 
+    // 🔹 Normalize category
+    if (category) {
+      params.append("category", category);
+    }
+
     // 🔹 Normalize filter
-    const normalizedFilter = FILTER_MAP[filter] || "all";
-    if (normalizedFilter !== "all") {
-      params.append("collection", normalizedFilter);
+    if (filter !== "all") {
+      params.append("collection", filter);
     }
 
     // 🔹 Normalize sizes
@@ -215,9 +240,8 @@ export const CatalogPage = () => {
     }
 
     // 🔹 Normalize sort
-    const normalizedSort = SORT_MAP[sort] || "new";
-    if (normalizedSort !== "new") {
-      params.append("sort", normalizedSort);
+    if (sort !== "new") {
+      params.append("sort", sort);
     }
 
     return params.toString();
@@ -225,6 +249,7 @@ export const CatalogPage = () => {
 
   const handleApply = async () => {
     const query = buildFilterQuery({
+      category: activeCategory,
       filter: activeFilter,
       sizes: selectedSizes,
       sort: activeSort,
@@ -244,15 +269,17 @@ export const CatalogPage = () => {
 
   const handleReset = async () => {
     // 🔹 Reset UI state (NOT backend values)
-    setActiveFilter("All");
+    setActiveFilter("all");
     setSelectedSizes([]);
-    setActiveSort("New");
+    setActiveSort("new");
+    setActiveCategory(null);
 
     // 🔹 Fetch using normalized query builder
     const query = buildFilterQuery({
-      filter: "All",
+      category: null,
+      filter: "all",
       sizes: [],
-      sort: "New",
+      sort: "new",
     });
 
     const url = query
@@ -262,28 +289,14 @@ export const CatalogPage = () => {
     const res = await axios.get(url);
 
     setProducts(res.data.products);
-  };
-
-  const sizes = ["S", "M", "L", "XL", "XXL"];
-  const filters = ["All", "Top Collection", "Most Rated"];
-  const sortOptions = ["New", "Rating (High to Low)", "Underrated"];
-
-  const FILTER_MAP = {
-    All: "all",
-    "Top Collection": "best",
-    "Most Rated": "rated",
-  };
-
-  const SORT_MAP = {
-    New: "new",
-    "Rating (High to Low)": "rating_desc",
-    Underrated: "underrated",
+    setProductNotAvailable(false);
   };
 
   const isDirty =
-    activeFilter !== filters[0] ||
+    activeFilter !== filters[0].value ||
     selectedSizes.length > 0 ||
-    activeSort !== sortOptions[0];
+    activeSort !== sortOptions[0].value ||
+    activeCategory !== null;
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -334,24 +347,46 @@ export const CatalogPage = () => {
                     </button>
                   </div>
 
-                  <div className="p-6 space-y-8 overflow-y-auto">
+                  <div className="p-6 space-y-7">
+                    {/* Category Section - NEW */}
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                        Category
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.value}
+                            onClick={() => setActiveCategory(cat.value)}
+                            className={`py-3 rounded-2xl text-[10px] font-bold transition-all border ${
+                              activeCategory === cat.value
+                                ? "bg-zinc-900 border-zinc-900 text-white shadow-lg shadow-zinc-200"
+                                : "bg-zinc-50 border-transparent text-zinc-500 hover:bg-zinc-100"
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Collections Section */}
                     <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Collections
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {filters.map((f) => (
+                        {filters.map((filter) => (
                           <button
-                            key={f}
-                            onClick={() => setActiveFilter(f)}
+                            key={filter.value}
+                            onClick={() => setActiveFilter(filter.value)}
                             className={`px-4 py-2 rounded-full text-[10px] font-bold transition-all border ${
-                              activeFilter === f
-                                ? "bg-zinc-900 border-zinc-900 text-white"
+                              activeFilter === filter.value
+                                ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
                                 : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:bg-zinc-100"
                             }`}
                           >
-                            {f}
+                            {filter.label}
                           </button>
                         ))}
                       </div>
@@ -359,18 +394,18 @@ export const CatalogPage = () => {
 
                     {/* Sizes Section */}
                     <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Available Sizes
                       </p>
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-4 gap-2">
                         {sizes.map((s) => (
                           <button
                             key={s}
                             onClick={() => toggleSize(s)}
-                            className={`w-11 h-11 flex items-center justify-center rounded-2xl text-[10px] font-bold transition-all border ${
+                            className={`h-11 flex items-center justify-center rounded-full text-[10px] font-bold transition-all border ${
                               selectedSizes.includes(s)
-                                ? "bg-zinc-900 border-zinc-900 text-white shadow-lg"
-                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-zinc-300"
+                                ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
+                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-zinc-900"
                             }`}
                           >
                             {s}
@@ -381,22 +416,22 @@ export const CatalogPage = () => {
 
                     {/* Sort Section */}
                     <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-zinc-400">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                         Sort By
                       </p>
                       <div className="grid grid-cols-1 gap-1">
-                        {sortOptions.map((s) => (
+                        {sortOptions.map((sortOption) => (
                           <button
-                            key={s}
-                            onClick={() => setActiveSort(s)}
+                            key={sortOption.value}
+                            onClick={() => setActiveSort(sortOption.value)}
                             className={`flex items-center justify-between px-4 py-3 rounded-2xl text-[11px] font-bold transition-all ${
-                              activeSort === s
+                              activeSort === sortOption.value
                                 ? "bg-zinc-100 text-zinc-900"
                                 : "text-zinc-500 hover:bg-zinc-50"
                             }`}
                           >
-                            {s}
-                            {activeSort === s && (
+                            {sortOption.label}
+                            {activeSort === sortOption.value && (
                               <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
                             )}
                           </button>
@@ -405,39 +440,39 @@ export const CatalogPage = () => {
                     </div>
                   </div>
 
-                  <div className="p-6 pt-0 mt-auto">
-                    <Motion.button
-                      disabled={!isDirty}
-                      whileTap={isDirty ? { scale: 0.95 } : {}}
-                      onClick={handleReset}
-                      className={`
-                        relative group flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
-                        ${
-                          isDirty
-                            ? "bg-rose-50/50 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                            : "bg-zinc-50 text-zinc-300 cursor-not-allowed opacity-60"
-                        }
-                      `}
-                    >
-                      {/* Optional: Subtle icon that only shows/colors on hover when active */}
-                      <RotateCcw
-                        size={12}
-                        className={`transition-transform duration-500 ${isDirty ? "group-hover:-rotate-180" : ""}`}
-                      />
+                  {/* Footer Section */}
+                  <div className="p-6 pt-2 mt-auto space-y-3 bg-white/50 backdrop-blur-sm border-t border-zinc-50">
+                    <div className="flex items-center gap-3">
+                      <Motion.button
+                        disabled={!isDirty}
+                        whileTap={isDirty ? { scale: 0.95 } : {}}
+                        onClick={handleReset}
+                        className={`
+                          flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
+                          ${
+                            isDirty
+                              ? "bg-rose-50/50 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                              : "bg-zinc-50 text-zinc-300 cursor-not-allowed opacity-60"
+                          }
+                        `}
+                      >
+                        <RotateCcw
+                          size={12}
+                          className={isDirty ? "animate-spin-once" : ""}
+                        />
+                        <span>Reset</span>
+                      </Motion.button>
 
-                      <span className="relative">
-                        Reset
-                      </span>
-                    </Motion.button>
-                    <button
-                      onClick={() => {
-                        setIsFilterOpen(false);
-                        handleApply();
-                      }}
-                      className="w-full py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
-                    >
-                      Apply Filters
-                    </button>
+                      <button
+                        onClick={() => {
+                          setIsFilterOpen(false);
+                          handleApply();
+                        }}
+                        className="flex-[2] py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
+                      >
+                        Apply Filters
+                      </button>
+                    </div>
                   </div>
                 </Motion.div>
               </>

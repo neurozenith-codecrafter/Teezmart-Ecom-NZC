@@ -109,27 +109,31 @@ const HeroSection = () => {
         {/* --- NEW OFFER TAG --- */}
         {/* --- BIG, EYE-CATCHING OFFER CARD --- */}
         <Motion.div
-          initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-          // This is your entrance animation transition
+          // 1. Entrance: Start blurry, slightly lower, and "tucked" back (scale 0.9)
+          initial={{ opacity: 0, scale: 0.9, y: 30, filter: "blur(10px)" }}
+          animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+          // 2. Physics: Heavy mass spring for a "luxurious" settle
           transition={{
             type: "spring",
-            stiffness: 180,
-            damping: 18,
-            delay: 0.7,
+            stiffness: 120, // Lower stiffness for a smoother ride
+            damping: 20,
+            mass: 1.2,
           }}
+          // 3. Interaction: Magnetic lift with a light flare
           whileHover={{
-            scale: 1.02,
-            rotate: 0.8,
-            // ✅ Hover-specific transition goes INSIDE whileHover
+            scale: 1.03,
+            y: -4, // Physical lift
+            rotate: -0.5, // Very slight natural tilt
+            backgroundColor: "rgba(255, 255, 255, 0.15)", // Subtle highlight
             transition: {
               type: "spring",
-              stiffness: 250,
-              damping: 20,
+              stiffness: 400,
+              damping: 25,
             },
           }}
-          style={{ willChange: "transform" }}
-          className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none"
+          whileTap={{ scale: 0.98, y: 0 }} // Click feedback
+          style={{ willChange: "transform, filter" }}
+          className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none transition-colors duration-300"
         >
           {/* Icon */}
           <div className="flex items-center justify-center p-2 md:p-3 bg-green-500 rounded-xl md:rounded-2xl shrink-0">

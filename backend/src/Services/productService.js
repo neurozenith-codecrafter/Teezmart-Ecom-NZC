@@ -1,11 +1,16 @@
 const Product = require("../Models/ProductSchema");
 
-const getFilteredProducts = async ({ collection, sizes, sort }) => {
+const getFilteredProducts = async ({ category, collection, sizes, sort }) => {
   const query = {};
+
+  // 🔹 Category Filter
+  if (category) {
+    query.category = category;
+  }
 
   // 🔹 Collection Mapping
   if (collection === "best") {
-    query.salesCount = { $gte: 50 }; // threshold (adjust later)
+    query.salesCount = { $gte: 50 };
   }
 
   if (collection === "rated") {
@@ -33,18 +38,14 @@ const getFilteredProducts = async ({ collection, sizes, sort }) => {
 
   let sortQuery = sortMap[sort] || { createdAt: -1 };
 
-  // 🔹 Underrated (based on YOUR schema)
+  // 🔹 Underrated
   if (sort === "underrated") {
     query.rating = { $gte: 3.5 };
-    query.numReviews = { $lte: 20 }; // using YOUR field
+    query.numReviews = { $lte: 20 };
     sortQuery = { rating: -1 };
   }
 
-  // 🔹 Execute
-  const products = await Product.find(query)
-    .sort(sortQuery)
-    .limit(100) // safety cap
-    .lean();
+  const products = await Product.find(query).sort(sortQuery).limit(100).lean();
 
   return {
     products,

@@ -3,12 +3,14 @@ const { getFilteredProducts } = require("../../Services/productService");
 const filterProductsController = async (req, res) => {
   try {
     const {
+      category = null,
       collection = "all",
       sizes,
       sort = "new",
     } = req.query;
 
     const result = await getFilteredProducts({
+      category,
       collection,
       sizes,
       sort,
