@@ -15,8 +15,6 @@ export const addToCartAPI = async ({ productId, quantity, size, token }) => {
     }
   );
 
-  console.log("Post api sent -> ", response.data);
-
   return response.data;
 };
 

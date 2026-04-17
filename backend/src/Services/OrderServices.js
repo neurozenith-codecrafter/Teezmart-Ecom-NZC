@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const Order = require("../Models/OrderSchema");
 const Product = require("../Models/ProductSchema");
-
-const ORDER_STATUSES = ["order placed", "shipped", "delivered"];
+const { ORDER_STATUSES } = require("../Constants/constant");
 
 const requiredAddressFields = [
   "fullName",
@@ -322,11 +321,20 @@ exports.updateOrderStatus = async (orderId, status) => {
     throw new Error("Order not found");
   }
 
-  const currentIndex = ORDER_STATUSES.indexOf(order.status);
-  const nextIndex = ORDER_STATUSES.indexOf(status);
+  // "cancelled" is a terminal side-exit — can be set from any non-delivered state
+  if (status === "cancelled") {
+    if (order.status === "delivered") {
+      throw new Error("Order status cannot move backwards");
+    }
+  } else {
+    // For forward progression: order placed → shipped → delivered
+    const progressionStatuses = ["order placed", "shipped", "delivered"];
+    const currentIndex = progressionStatuses.indexOf(order.status);
+    const nextIndex = progressionStatuses.indexOf(status);
 
-  if (nextIndex < currentIndex) {
-    throw new Error("Order status cannot move backwards");
+    if (currentIndex === -1 || nextIndex < currentIndex) {
+      throw new Error("Order status cannot move backwards");
+    }
   }
 
   order.status = status;
