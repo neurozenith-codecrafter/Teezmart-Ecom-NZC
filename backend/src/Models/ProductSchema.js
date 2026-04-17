@@ -26,6 +26,12 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // Optional field (kept for compatibility; no special behavior enforced)
+    discountPrice: {
+      type: Number,
+      min: 0,
+    },
+
     category: {
       type: String,
       enum: CATEGORIES,

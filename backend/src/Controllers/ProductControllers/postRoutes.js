@@ -8,7 +8,7 @@ const {
   validateDescription,
   validateTitle,
   parsePrice,
-  parseOptionalDiscountPrice,
+  parseOptionalNonNegativeNumber,
   normalizeSizes,
   createSlugFromTitle,
 } = require("../../Utils/productValidation");
@@ -37,7 +37,7 @@ const createProduct = async (req, res) => {
     title = validateTitle(title);
     description = validateDescription(description);
     price = parsePrice(price);
-    discountPrice = parseOptionalDiscountPrice(discountPrice, price);
+    discountPrice = parseOptionalNonNegativeNumber(discountPrice, "Discount price");
     const normalizedCategory = validateCategory(category);
     sizes = normalizeSizes(sizes);
     const slug = createSlugFromTitle(title);
@@ -99,9 +99,8 @@ const createProduct = async (req, res) => {
       error.message === "Title is required and must be less than 120 characters" ||
       error.message === "Description is required and must be less than 2000 characters" ||
       error.message === "Invalid category" ||
-      error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Price must be a valid non-negative number" ||
       error.message === "Discount price must be a valid non-negative number" ||
-      error.message === "Discount price must be less than price" ||
       error.message === "Sizes must contain only strings" ||
       error.message.startsWith("Sizes must be one of:")
         ? 400

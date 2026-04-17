@@ -39,10 +39,6 @@ const getHydratedCartByUserId = async (userId) => {
 
   syncSnapshotsFromProducts(cart);
   recalculateCart(cart);
-
-  // Persist the synced snapshots so subsequent responses are consistent
-  // even if other handlers don't populate.
-  await cart.save();
   return cart;
 };
 
@@ -157,7 +153,6 @@ exports.getCart = async (userId) => {
 
   syncSnapshotsFromProducts(cart);
   recalculateCart(cart);
-  await cart.save();
   return cart;
 };
 

@@ -138,8 +138,28 @@ const ProductFormModal = ({
   };
 
   const toggleRemoveExistingImage = (publicId) => {
+    setFormError("");
     setRemoveImages((prev) => {
       const set = new Set(prev);
+      const isRemoving = !set.has(publicId);
+
+      // If user is trying to remove an image, prevent removing the last remaining
+      // existing image unless they have added at least one new image.
+      if (isEditing && isRemoving) {
+        const existingCount = Array.isArray(existingImages) ? existingImages.length : 0;
+        const removedCount = set.size;
+        const remainingExistingCount = existingCount - removedCount;
+
+        // After removing this one, how many existing would remain?
+        const remainingAfter = remainingExistingCount - 1;
+        const newCount = Array.isArray(newImages) ? newImages.length : 0;
+
+        if (remainingAfter < 1 && newCount < 1) {
+          setFormError("Product must have at least one image. Add a new image before removing the last one.");
+          return Array.from(set);
+        }
+      }
+
       if (set.has(publicId)) set.delete(publicId);
       else set.add(publicId);
       return Array.from(set);

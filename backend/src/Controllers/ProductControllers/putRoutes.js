@@ -7,7 +7,7 @@ const {
   validateDescription,
   validateTitle,
   parsePrice,
-  parseOptionalDiscountPrice,
+  parseOptionalNonNegativeNumber,
   normalizeSizes,
   normalizeRemoveImages,
   createSlugFromTitle,
@@ -116,14 +116,7 @@ const updateProduct = async (req, res) => {
       nextDiscountPrice =
         discountPrice === "" || discountPrice === null
           ? undefined
-          : parseOptionalDiscountPrice(discountPrice, nextPrice);
-    }
-
-    if (nextDiscountPrice !== undefined && nextDiscountPrice >= nextPrice) {
-      return res.status(400).json({
-        success: false,
-        message: "Discount price must be less than price",
-      });
+          : parseOptionalNonNegativeNumber(discountPrice, "Discount price");
     }
 
     if (category !== undefined) {
@@ -222,9 +215,8 @@ const updateProduct = async (req, res) => {
       error.message === "Title is required and must be less than 120 characters" ||
       error.message === "Description is required and must be less than 2000 characters" ||
       error.message === "Invalid category" ||
-      error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Price must be a valid non-negative number" ||
       error.message === "Discount price must be a valid non-negative number" ||
-      error.message === "Discount price must be less than price" ||
       error.message === "Total images cannot exceed 5" ||
       error.message === "Product must have at least one image" ||
       error.message === "Sizes must contain only strings" ||

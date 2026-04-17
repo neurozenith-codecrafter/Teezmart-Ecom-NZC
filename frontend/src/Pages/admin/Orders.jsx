@@ -4,22 +4,26 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
+  Package,
+  ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "../../Hooks/useAuth";
 
 const StatusBadge = ({ status }) => {
   const normalizedStatus = (status || "").toLowerCase();
   const styles = {
-    "order placed": "bg-[#FFF4E5] text-[#FFB648]",
-    shipped: "bg-[#E6F9F0] text-[#34D399]",
-    delivered: "bg-[#EEF2FF] text-[#6366F1]",
-    cancelled: "bg-[#FFE4E6] text-[#FB7185]",
+    "order placed": "bg-orange-50 text-orange-600 ring-orange-200/50",
+    shipped: "bg-emerald-50 text-emerald-600 ring-emerald-200/50",
+    delivered: "bg-blue-50 text-blue-600 ring-blue-200/50",
+    cancelled: "bg-rose-50 text-rose-600 ring-rose-200/50",
   };
 
   return (
     <span
-      className={`px-4 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-tight ${styles[normalizedStatus] || styles["order placed"]}`}
+      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset shadow-sm backdrop-blur-sm ${
+        styles[normalizedStatus] || styles["order placed"]
+      }`}
     >
       {status || "order placed"}
     </span>
@@ -48,13 +52,8 @@ export const Orders = () => {
         setError("");
 
         const response = await axios.get("/api/admin/orders", {
-          params: {
-            page,
-            limit: 10,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { page, limit: 10 },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         setOrders(response.data.orders || []);
@@ -81,11 +80,18 @@ export const Orders = () => {
     return {
       id: order._id,
       product:
-        items.map((item) => item.name).filter(Boolean).join(", ") ||
+        items
+          .map((item) => item.name)
+          .filter(Boolean)
+          .join(", ") ||
         firstProduct?.product?.title ||
         "Untitled product",
       category: firstProduct?.product?.category || "N/A",
-      size: items.map((item) => item.size).filter(Boolean).join(", ") || "N/A",
+      size:
+        items
+          .map((item) => item.size)
+          .filter(Boolean)
+          .join(", ") || "N/A",
       price: new Intl.NumberFormat("en-IN", {
         style: "currency",
         currency: "INR",
@@ -96,19 +102,19 @@ export const Orders = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto pb-20 px-4 md:px-0">
       {/* Page Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Order Log
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight italic uppercase">
+            Order Log <span className="text-slate-200">/ {orders.length}</span>
           </h2>
-          <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage incoming store purchases and fulfillment
+          <p className="text-sm text-slate-400 font-medium mt-1">
+            Manage incoming purchases and store fulfillment
           </p>
         </div>
-        <div className="flex gap-3">
-          <select className="bg-white border-slate-200 rounded-xl text-xs font-bold px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-slate-100 transition-all cursor-pointer">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <select className="w-full md:w-auto bg-white border border-slate-200 text-slate-600 rounded-2xl text-[11px] font-black uppercase tracking-widest px-5 py-3 shadow-sm outline-none focus:ring-4 focus:ring-slate-50 transition-all cursor-pointer appearance-none hover:border-slate-300">
             <option>All Orders</option>
             <option>Recent</option>
             <option>High Value</option>
@@ -116,161 +122,125 @@ export const Orders = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-50 bg-[#FDFDFD]">
-              <th className="px-8 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Product Name <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Order ID <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Category <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Size <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Amount <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5 text-center">
-                <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Status
-                </div>
-              </th>
-              <th className="px-8 py-5 text-right text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-slate-50">
-            {isLoading ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-slate-400"
-                >
-                  Loading orders...
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-red-500"
-                >
-                  {error}
-                </td>
-              </tr>
-            ) : formattedOrders.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-slate-400"
-                >
-                  No orders found.
-                </td>
-              </tr>
-            ) : (
-              formattedOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-slate-50/50 transition-colors group"
-                >
-                  <td className="px-8 py-5">
-                    <span className="text-[14px] font-bold text-slate-800 tracking-tight">
-                      {order.product}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <span className="text-[12px] font-bold text-[#5D5FEF] bg-[#5D5FEF]/5 px-2 py-1 rounded-md">
-                      {order.id}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5 text-sm font-medium text-slate-500">
-                    {order.category}
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <span className="text-xs font-black text-slate-400">
-                      {order.size}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5 text-[14px] font-black text-slate-900">
-                    {order.price}
-                  </td>
-
-                  <td className="px-6 py-5 text-center">
-                    <StatusBadge status={order.status === "order placed" ? "placed" : order.status} />
-                  </td>
-
-                  <td className="px-8 py-5 text-right">
-                    <button
-                      type="button"
-                      className="p-2 text-slate-300 hover:text-slate-600 transition-all hover:bg-slate-100 rounded-full"
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Footer Pagination */}
-        <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between bg-[#FDFDFD]">
-          <button
-            className="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-slate-500 transition-all disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft size={16} /> Previous
-          </button>
-
-          <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (pageNumber) => (
-              <button
-                key={pageNumber}
-                onClick={() => setPage(pageNumber)}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
-                  currentPage === pageNumber
-                    ? "bg-black text-white shadow-lg shadow-black/10"
-                    : "text-slate-400 hover:bg-slate-100"
-                }`}
-              >
-                {pageNumber}
-              </button>
-              ),
-            )}
+      {/* Content Area */}
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-24 space-y-4">
+            <Loader2 className="w-8 h-8 text-slate-300 animate-spin" />
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+              Synchronizing Log...
+            </p>
           </div>
+        ) : error ? (
+          <div className="bg-rose-50 border border-rose-100 rounded-3xl p-8 text-center">
+            <p className="text-rose-500 text-sm font-bold">{error}</p>
+          </div>
+        ) : formattedOrders.length === 0 ? (
+          <div className="bg-white border border-dashed border-slate-200 rounded-[2.5rem] py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+              <Package className="w-8 h-8 text-slate-200" />
+            </div>
+            <h4 className="text-slate-900 font-bold text-lg">No Orders Yet</h4>
+            <p className="text-slate-400 text-sm max-w-[240px] mt-1">
+              Store logs will appear here once the first purchase is processed.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {formattedOrders.map((order) => (
+              <div
+                key={order.id}
+                className="group relative bg-white border border-slate-100 rounded-[1.8rem] p-5 md:p-6 transition-all duration-500 hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.08)] hover:scale-[1.01] hover:border-slate-200"
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-[16px] font-bold text-slate-800 tracking-tight truncate max-w-[300px]">
+                        {order.product}
+                      </h3>
+                      <span className="hidden md:inline-block text-[10px] font-black text-blue-500 bg-blue-50/50 px-2 py-0.5 rounded-lg uppercase tracking-tighter">
+                        #{order.id.slice(-6)}
+                      </span>
+                    </div>
 
-          <button
-            className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-black transition-all disabled:opacity-50"
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Next <ChevronRight size={16} />
-          </button>
-        </div>
+                    <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400 uppercase tracking-widest">
+                      <span>{order.category}</span>
+                      <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                      <span>Size: {order.size}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-50">
+                    <div className="text-right">
+                      <p className="text-lg font-black text-slate-900 tracking-tighter italic">
+                        {order.price}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <StatusBadge
+                        status={
+                          order.status === "order placed"
+                            ? "placed"
+                            : order.status
+                        }
+                      />
+
+                      <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-all duration-300">
+                        <ArrowUpRight size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && formattedOrders.length > 0 && (
+        <div className="mt-12 flex flex-col items-center gap-6">
+          <div className="w-px h-12 bg-slate-100" />
+          <div className="flex items-center gap-2 bg-white border border-slate-100 p-1.5 rounded-[2rem] shadow-sm">
+            <button
+              className="p-3 text-slate-400 hover:text-slate-900 disabled:opacity-30 transition-colors"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                (pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setPage(pageNumber)}
+                    className={`min-w-[40px] h-[40px] rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                      currentPage === pageNumber
+                        ? "bg-slate-900 text-white shadow-lg shadow-slate-200 scale-110"
+                        : "text-slate-400 hover:bg-slate-50"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ),
+              )}
+            </div>
+
+            <button
+              className="p-3 text-slate-900 hover:scale-110 disabled:opacity-30 transition-all"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+export default Orders;
