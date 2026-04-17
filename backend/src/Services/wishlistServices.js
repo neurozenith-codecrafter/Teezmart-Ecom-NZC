@@ -6,7 +6,6 @@ const WISHLIST_PRODUCT_SELECT = [
   "title",
   "slug",
   "price",
-  "discountPrice",
   "images",
   "category",
   "rating",

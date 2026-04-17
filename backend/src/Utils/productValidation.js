@@ -52,8 +52,8 @@ const validateDescription = (value) => {
 const parsePrice = (value, fieldName = "Price") => {
   const parsedValue = Number(value);
 
-  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-    throw new Error(`${fieldName} must be a valid number greater than 0`);
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+    throw new Error(`${fieldName} must be a valid non-negative number`);
   }
 
   return parsedValue;
