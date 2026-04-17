@@ -22,10 +22,10 @@ const PremiumCard = ({ label, value, icon, isSpecial = false }) => {
       className={`relative group overflow-hidden p-7 rounded-[2.5rem] transition-all duration-700 
       ${
         isSpecial
-          ? "bg-gradient-to-br from-zinc-50 to-emerald-50/30 border border-emerald-100/20 shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.01)]"
-          : "bg-white border border-zinc-100 shadow-[0_1px_2px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.02)]"
+          ? "bg-gradient-to-br from-zinc-50 to-emerald-50/50 border border-emerald-100/20 shadow-[0_2px_6px_rgba(0,0,0,0.04),0_10px_30px_rgba(0,0,0,0.04)]"
+          : "bg-[#FCFDFB] border border-zinc-200/60 shadow-[0_2px_6px_rgba(0,0,0,0.04),0_10px_30px_rgba(0,0,0,0.04)]"
       } 
-      hover:shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:-translate-y-1`}
+      hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)] hover:-translate-y-1`}
     >
       {/* Subtle Inner Glow (Top Edge Reflection) */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60" />
@@ -84,12 +84,12 @@ export const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
-        {/* Standard Premium Cards */}
+        {/* Standard Premium Cards - Updated with improved off-white and border */}
         <PremiumCard label="Total Revenue" value="₹842,000" icon={CreditCard} />
         <PremiumCard label="Admin Profit" value="₹124,500" icon={TrendingUp} />
         <PremiumCard label="Shipments" value="1,284" icon={ShoppingBag} />
 
-        {/* Special Dev Metrics */}
+        {/* Special Dev Metrics - Updated with improved gradient contrast */}
         {isDevAdmin && (
           <>
             <PremiumCard
@@ -108,17 +108,17 @@ export const Dashboard = () => {
         )}
       </div>
 
-      {/* Activity Section - Unchanged as per rules */}
+      {/* Activity Section - Matching updated card design language */}
       <section className="space-y-8">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">
             Log Terminal
           </h2>
-          <div className="h-px flex-1 bg-slate-50 ml-6" />
+          <div className="h-px flex-1 bg-slate-100 ml-6" />
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-10 min-h-[300px] flex flex-col items-center justify-center text-center shadow-sm">
-          <div className="w-16 h-16 bg-[#F4F9F6] rounded-full flex items-center justify-center mb-6">
+        <div className="bg-[#FCFDFB] border border-zinc-200/60 rounded-[2.5rem] p-10 min-h-[300px] flex flex-col items-center justify-center text-center shadow-[0_2px_6px_rgba(0,0,0,0.04),0_10px_30px_rgba(0,0,0,0.04)] transition-all duration-700 hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)]">
+          <div className="w-16 h-16 bg-[#F4F9F6] border border-[#86C19F]/10 rounded-full flex items-center justify-center mb-6 shadow-sm">
             <Package size={24} className="text-[#86C19F] opacity-50" />
           </div>
           <h4 className="text-[#1A3024] font-bold text-sm tracking-tight">
