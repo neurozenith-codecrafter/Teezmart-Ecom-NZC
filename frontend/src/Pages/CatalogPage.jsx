@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Star, SlidersHorizontal, Heart, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -123,15 +123,57 @@ const ProductCard = ({ product, index, handleAddToCart }) => {
   );
 };
 
-const ProductCardSkeleton = ({ index = 0 }) => (
-  <div className="animate-pulse space-y-4">
-    <div className="aspect-[4/5] rounded-[2rem] bg-zinc-200" />
-    <div className="space-y-2">
-      <div className="h-4 bg-zinc-200 rounded w-3/4" />
-      <div className="h-4 bg-zinc-200 rounded w-1/2" />
-    </div>
-  </div>
-);
+const ProductCardSkeleton = ({ index = 0 }) => {
+  return (
+    <Motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: (index % 4) * 0.1, duration: 0.4 }}
+      className="group animate-pulse"
+    >
+      <div className="block relative">
+        <div className="space-y-4">
+          {/* Image Skeleton */}
+          <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-zinc-200 overflow-hidden">
+            {/* Wishlist placeholder */}
+            <div className="absolute top-5 right-5 w-10 h-10 rounded-full bg-zinc-300" />
+
+            {/* Shimmer */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-[shimmer_1.5s_infinite]" />
+            </div>
+
+            {/* Quick add placeholder */}
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-24 h-8 bg-zinc-300 rounded-full" />
+          </div>
+
+          {/* Content */}
+          <div className="space-y-2 px-1">
+            {/* Title */}
+            <div className="h-4 w-3/4 bg-zinc-200 rounded" />
+
+            {/* Rating */}
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="w-3 h-3 bg-zinc-200 rounded" />
+                ))}
+              </div>
+              <div className="h-3 w-6 bg-zinc-200 rounded" />
+            </div>
+
+            {/* Price */}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="h-4 w-16 bg-zinc-200 rounded" />
+              <div className="h-3 w-10 bg-zinc-200 rounded" />
+              <div className="h-3 w-8 bg-zinc-200 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Motion.div>
+  );
+};
 
 export const CatalogPage = () => {
   const [products, setProducts] = useState([]);
