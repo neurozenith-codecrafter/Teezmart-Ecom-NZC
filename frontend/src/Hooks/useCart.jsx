@@ -23,6 +23,7 @@ export const useCart = () => {
 
     try {
       await addToCart({ productId, quantity, size });
+      console.log(token);
     } catch (error) {
       console.error("Add to cart failed:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Something went wrong");

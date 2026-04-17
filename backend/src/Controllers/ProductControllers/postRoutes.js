@@ -33,14 +33,22 @@ const createProduct = async (req, res) => {
   let uploadedImagePublicIds = [];
 
   try {
-    let { title, description, price, discountPrice, category, sizes } = req.body;
+    let { title, description, price, discountPrice, category, sizes, stock } = req.body;
     title = validateTitle(title);
     description = validateDescription(description);
     price = parsePrice(price);
     discountPrice = parseOptionalDiscountPrice(discountPrice, price);
     const normalizedCategory = validateCategory(category);
     sizes = normalizeSizes(sizes);
+    const normalizedStock = Number(stock);
     const slug = createSlugFromTitle(title);
+
+    if (!Number.isInteger(normalizedStock) || normalizedStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Stock must be a non-negative integer",
+      });
+    }
 
     // Validate images
     if (!req.files || req.files.length === 0) {
@@ -77,6 +85,7 @@ const createProduct = async (req, res) => {
       slug,
       description,
       price,
+      stock: normalizedStock,
       discountPrice,
       category: normalizedCategory,
       sizes,
@@ -100,6 +109,7 @@ const createProduct = async (req, res) => {
       error.message === "Description is required and must be less than 2000 characters" ||
       error.message === "Invalid category" ||
       error.message === "Price must be a valid number greater than 0" ||
+      error.message === "Stock must be a non-negative integer" ||
       error.message === "Discount price must be a valid non-negative number" ||
       error.message === "Discount price must be less than price" ||
       error.message === "Sizes must contain only strings" ||

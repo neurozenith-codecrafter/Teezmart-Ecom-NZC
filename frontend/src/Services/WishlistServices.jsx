@@ -1,7 +1,8 @@
 import axios from "axios";
+import { buildApiUrl } from "../constants/api";
 
 export const getWishlistAPI = async ({ token }) => {
-  const response = await axios.get("/api/users/wishlist", {
+  const response = await axios.get(buildApiUrl("/api/users/wishlist"), {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -12,7 +13,7 @@ export const getWishlistAPI = async ({ token }) => {
 
 export const addWishlistItemAPI = async ({ productId, token }) => {
   const response = await axios.post(
-    `/api/users/wishlist/${productId}`,
+    buildApiUrl(`/api/users/wishlist/${productId}`),
     {},
     {
       headers: {
@@ -25,7 +26,7 @@ export const addWishlistItemAPI = async ({ productId, token }) => {
 };
 
 export const removeWishlistItemAPI = async ({ productId, token }) => {
-  const response = await axios.delete(`/api/users/wishlist/${productId}`, {
+  const response = await axios.delete(buildApiUrl(`/api/users/wishlist/${productId}`), {
     headers: {
       Authorization: `Bearer ${token}`,
     },

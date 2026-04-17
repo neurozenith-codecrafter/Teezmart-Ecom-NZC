@@ -8,6 +8,7 @@ import {
   Zap,
   ArrowUpRight,
   Package,
+  Shirt
 } from "lucide-react";
 
 /**
@@ -88,6 +89,7 @@ export const Dashboard = () => {
         <PremiumCard label="Total Revenue" value="₹842,000" icon={CreditCard} />
         <PremiumCard label="Admin Profit" value="₹124,500" icon={TrendingUp} />
         <PremiumCard label="Shipments" value="1,284" icon={ShoppingBag} />
+        <PremiumCard label="Total Sale" value="1,284" icon={Shirt} />
 
         {/* Special Dev Metrics - Updated with improved gradient contrast */}
         {isDevAdmin && (

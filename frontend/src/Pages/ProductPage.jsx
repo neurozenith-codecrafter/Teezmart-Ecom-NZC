@@ -10,6 +10,7 @@ import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
 import { ShopMoreCarousel } from "../components/ShopMoreCarousel";
 import useAnimations from "../Hooks/useAnimation";
+import { buildApiUrl } from "../constants/api";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -28,7 +29,7 @@ const ProductPage = () => {
 
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`/api/products/${slug}`);
+        const response = await axios.get(buildApiUrl(`/api/products/${slug}`));
         setProduct(response.data.data);
         setProductImages(response.data.data.images);
         setSelectedImg(0);

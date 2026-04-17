@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./authContextInstance";
+import { buildApiUrl } from "../constants/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        const res = await fetch("/api/auth/me", {
+        const res = await fetch(buildApiUrl("/api/auth/me"), {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },

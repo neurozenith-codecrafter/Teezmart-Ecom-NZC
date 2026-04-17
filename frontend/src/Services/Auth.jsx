@@ -3,6 +3,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import { useAuth } from "../Hooks/useAuth";
+import { buildApiUrl } from "../constants/api";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Auth = () => {
       }
 
       const response = await fetch(
-        "/api/auth/google", // ✅ safer
+        buildApiUrl("/api/auth/google"),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

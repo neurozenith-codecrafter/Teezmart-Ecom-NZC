@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Order = require("../Models/OrderSchema");
-const Cart = require("../Models/CartSchema");
 const Product = require("../Models/ProductSchema");
 
 const ORDER_STATUSES = ["order placed", "shipped", "delivered"];
@@ -40,83 +39,212 @@ const ensureValidObjectId = (id, fieldName) => {
   }
 };
 
-const buildBuyNowItems = async (buyNowItem) => {
-  if (!buyNowItem.productId) {
-    throw new Error("Product ID is required for buy now");
+const applySession = (query, session) => (session ? query.session(session) : query);
+
+const normalizeSize = (size) => {
+  if (size === undefined || size === null || size === "") {
+    return undefined;
   }
 
-  ensureValidObjectId(buyNowItem.productId, "product ID");
-
-  const product = await Product.findById(buyNowItem.productId);
-
-  if (!product) {
-    throw new Error("Product not found");
+  if (typeof size !== "string") {
+    throw new Error("Selected size not available");
   }
 
-  const quantity = Number(buyNowItem.quantity) || 1;
-
-  if (!Number.isInteger(quantity) || quantity < 1) {
-    throw new Error("Quantity must be at least 1");
-  }
-
-  return {
-    orderItems: [
-      {
-        product: product._id,
-        name: product.title,
-        image: product.images?.[0]?.url || "",
-        price: product.price,
-        size: buyNowItem.size,
-        quantity
-      }
-    ],
-    subtotal: product.price * quantity
-  };
+  return size.trim();
 };
 
-const buildCartItems = async (userId) => {
-  const cart = await Cart.findOne({ user: userId });
+const normalizeCheckoutItems = ({ items, buyNowItem }) => {
+  const hasItems = Array.isArray(items) && items.length > 0;
+  const hasBuyNowItem =
+    buyNowItem && typeof buyNowItem === "object" && !Array.isArray(buyNowItem);
 
-  if (!cart) {
-    throw new Error("Cart not found");
+  if (!hasItems && !hasBuyNowItem) {
+    throw new Error("At least one item is required");
   }
 
-  if (!cart.items || cart.items.length === 0) {
-    throw new Error("Cart is empty");
-  }
+  const rawItems = hasItems ? items : [buyNowItem];
+  const normalizedItemsMap = new Map();
 
-  const orderItems = [];
-  let subtotal = 0;
-
-  for (const item of cart.items) {
-    const product = await Product.findById(item.product);
-
-    if (!product) {
-      throw new Error(`Product unavailable: ${item.product}`);
+  rawItems.forEach((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new Error(`Each item must be an object. Invalid item at index ${index}`);
     }
 
-    orderItems.push({
+    if (!item.productId) {
+      throw new Error(`Invalid product ID at index ${index}`);
+    }
+
+    ensureValidObjectId(item.productId, `product ID at index ${index}`);
+
+    const quantity = Number(item.quantity);
+
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw new Error(`Quantity must be greater than 0 for item at index ${index}`);
+    }
+
+    const normalizedSize = normalizeSize(item.size);
+    const dedupeKey = `${item.productId}:${normalizedSize || ""}`;
+    const existingItem = normalizedItemsMap.get(dedupeKey);
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      return;
+    }
+
+    normalizedItemsMap.set(dedupeKey, {
+      productId: String(item.productId),
+      quantity,
+      size: normalizedSize
+    });
+  });
+
+  const normalizedItems = Array.from(normalizedItemsMap.values());
+
+  if (normalizedItems.length === 0) {
+    throw new Error("At least one item is required");
+  }
+
+  return normalizedItems;
+};
+
+const fetchProductsByIds = async (productIds, session) => {
+  const query = Product.find({
+    _id: { $in: productIds }
+  });
+
+  const products = await applySession(query, session);
+
+  return new Map(products.map((product) => [String(product._id), product]));
+};
+
+const validateStockAndBuildOrderItems = (normalizedItems, productMap) => {
+  const requestedQuantityByProductId = new Map();
+
+  for (const item of normalizedItems) {
+    const currentQuantity = requestedQuantityByProductId.get(item.productId) || 0;
+    requestedQuantityByProductId.set(item.productId, currentQuantity + item.quantity);
+  }
+
+  for (const [productId, requestedQuantity] of requestedQuantityByProductId.entries()) {
+    const product = productMap.get(productId);
+
+    if (!product) {
+      throw new Error(`Product not found: ${productId}`);
+    }
+
+    if (!Number.isInteger(product.stock) || product.stock < requestedQuantity) {
+      throw new Error(`Insufficient stock for product: ${product.title}`);
+    }
+  }
+
+  const orderItems = normalizedItems.map((item) => {
+    const product = productMap.get(item.productId);
+
+    if (item.size && Array.isArray(product.sizes) && !product.sizes.includes(item.size)) {
+      throw new Error(`Selected size not available for product: ${product.title}`);
+    }
+
+    return {
       product: product._id,
       name: product.title,
       image: product.images?.[0]?.url || "",
       price: product.price,
       size: item.size,
       quantity: item.quantity
-    });
+    };
+  });
 
-    subtotal += product.price * item.quantity;
-  }
+  const subtotal = orderItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
-  cart.items = [];
-  cart.totalPrice = 0;
-  cart.subtotal = 0;
-  cart.totalQuantity = 0;
-  await cart.save();
-
-  return { orderItems, subtotal };
+  return {
+    orderItems,
+    subtotal,
+    requestedQuantityByProductId
+  };
 };
 
-exports.createOrder = async (userId, shippingAddress, buyNowItem = null) => {
+const reserveProductStock = async (requestedQuantityByProductId, session) => {
+  const bulkOperations = Array.from(requestedQuantityByProductId.entries()).map(
+    ([productId, quantity]) => ({
+      updateOne: {
+        filter: {
+          _id: productId,
+          stock: { $gte: quantity }
+        },
+        update: {
+          $inc: {
+            stock: -quantity,
+            salesCount: quantity
+          }
+        }
+      }
+    })
+  );
+
+  if (bulkOperations.length === 0) {
+    return;
+  }
+
+  const result = await Product.bulkWrite(bulkOperations, session ? { session } : {});
+
+  if (result.modifiedCount !== bulkOperations.length) {
+    throw new Error("Insufficient stock for one or more products");
+  }
+};
+
+const populateOrderById = (orderId, session) => {
+  const query = Order.findById(orderId).populate("items.product", "title price images stock");
+  return applySession(query, session);
+};
+
+const persistOrder = async ({ userId, shippingAddress, normalizedItems, session }) => {
+  const productIds = [...new Set(normalizedItems.map((item) => item.productId))];
+  const productMap = await fetchProductsByIds(productIds, session);
+  const { orderItems, subtotal, requestedQuantityByProductId } =
+    validateStockAndBuildOrderItems(normalizedItems, productMap);
+  const shippingFee = subtotal > 1000 ? 0 : 50;
+  const totalAmount = subtotal + shippingFee;
+
+  await reserveProductStock(requestedQuantityByProductId, session);
+
+  const [order] = await Order.create(
+    [
+      {
+        user: userId,
+        items: orderItems,
+        shippingAddress,
+        status: "order placed",
+        totalAmount,
+        pricing: {
+          subtotal,
+          shippingFee,
+          total: totalAmount
+        }
+      }
+    ],
+    session ? { session } : {}
+  );
+
+  return populateOrderById(order._id, session);
+};
+
+const isTransactionUnsupportedError = (error) => {
+  const message = error?.message || "";
+
+  return (
+    message.includes("Transaction numbers are only allowed on a replica set member") ||
+    message.includes("Transaction numbers are only allowed on a mongos") ||
+    message.includes("Standalone servers do not support transactions")
+  );
+};
+
+exports.createOrder = async (
+  userId,
+  { shippingAddress, items = [], buyNowItem = null } = {}
+) => {
   if (!userId) {
     throw new Error("User is required to place an order");
   }
@@ -124,30 +252,37 @@ exports.createOrder = async (userId, shippingAddress, buyNowItem = null) => {
   ensureValidObjectId(userId, "user ID");
 
   const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
-  const { orderItems, subtotal } = buyNowItem
-    ? await buildBuyNowItems(buyNowItem)
-    : await buildCartItems(userId);
+  const normalizedItems = normalizeCheckoutItems({ items, buyNowItem });
+  const session = await mongoose.startSession();
 
-  if (orderItems.length === 0) {
-    throw new Error("No valid items to place order");
-  }
+  try {
+    let order;
 
-  const shippingFee = subtotal > 1000 ? 0 : 50;
-  const total = subtotal + shippingFee;
+    try {
+      await session.withTransaction(async () => {
+        order = await persistOrder({
+          userId,
+          shippingAddress: normalizedShippingAddress,
+          normalizedItems,
+          session
+        });
+      });
+    } catch (error) {
+      if (!isTransactionUnsupportedError(error)) {
+        throw error;
+      }
 
-  const order = await Order.create({
-    user: userId,
-    items: orderItems,
-    shippingAddress: normalizedShippingAddress,
-    status: "order placed",
-    pricing: {
-      subtotal,
-      shippingFee,
-      total
+      order = await persistOrder({
+        userId,
+        shippingAddress: normalizedShippingAddress,
+        normalizedItems
+      });
     }
-  });
 
-  return Order.findById(order._id).populate("items.product", "title price images");
+    return order;
+  } finally {
+    await session.endSession();
+  }
 };
 
 exports.getMyOrders = async (userId) => {
