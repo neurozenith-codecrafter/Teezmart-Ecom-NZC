@@ -440,7 +440,10 @@ useEffect(() => {
                 </div>
               </div>
 
-              <button className="w-full bg-zinc-900 text-white py-5 rounded-[1.75rem] font-black text-[12px] uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 flex items-center justify-center gap-2.5 active:scale-[0.98] hover:bg-black transition-all">
+              <button
+                onClick={() => navigate("/checkout")}
+                className="w-full bg-zinc-900 text-white py-5 rounded-[1.75rem] font-black text-[12px] uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 flex items-center justify-center gap-2.5 active:scale-[0.98] hover:bg-black transition-all"
+              >
                 Checkout <ArrowRight size={16} />
               </button>
             </div>
