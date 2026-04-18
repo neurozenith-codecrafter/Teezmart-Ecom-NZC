@@ -68,10 +68,36 @@ exports.authorizeRoles = (...roles) => {
 };
 
 // Optional helper
-exports.getMe = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "User fetched successfully",
-    data: req.user,
-  });
+const Cart = require("../Models/CartSchema");
+const Wishlist = require("../Models/WishlistSchema");
+
+exports.getMe = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch in parallel (important for performance)
+    const [cart, wishlist] = await Promise.all([
+      Cart.findOne({ user: userId }),
+      Wishlist.findOne({ user: userId }),
+    ]);
+
+    const cartCount = cart?.totalQuantity || 0;
+    const wishlistCount = wishlist?.items?.length || 0;
+
+    res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: {
+        ...req.user.toObject(), // important if it's a mongoose doc
+        cartCount,
+        wishlistCount,
+      },
+    });
+  } catch (error) {
+    console.error("getMe error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user",
+    });
+  }
 };
