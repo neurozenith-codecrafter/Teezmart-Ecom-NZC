@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   MoreHorizontal,
@@ -7,6 +7,8 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { useAuth } from "../../Hooks/useAuth";
+
+const ORDER_STATUSES = ["order placed", "shipped", "delivered", "cancelled"];
 
 const StatusBadge = ({ status }) => {
   const normalizedStatus = (status || "").toLowerCase();
@@ -26,13 +28,87 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+// Inline action menu that appears when the MoreHorizontal button is clicked
+const ActionMenu = ({ orderId, currentStatus, token, onStatusUpdate }) => {
+  const [open, setOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const handleStatusClick = async (newStatus) => {
+    if (newStatus === currentStatus || updating) return;
+    setUpdating(true);
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/admin/orders/${orderId}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      onStatusUpdate(orderId, newStatus);
+      setOpen(false);
+    } catch (err) {
+      console.error("Status update failed:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return (
+    <div ref={menuRef} className="relative inline-block">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        disabled={updating}
+        className="p-2 text-slate-300 hover:text-slate-600 transition-all hover:bg-slate-100 rounded-full disabled:opacity-50"
+      >
+        <MoreHorizontal size={18} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-100 py-1.5 min-w-[160px]">
+          <p className="px-4 pt-1 pb-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+            Set Status
+          </p>
+          {ORDER_STATUSES.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => handleStatusClick(s)}
+              disabled={updating}
+              className={`w-full text-left px-4 py-2 text-[12px] font-semibold transition-colors capitalize ${
+                s === currentStatus
+                  ? "text-slate-900 bg-slate-50 font-black"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const Orders = () => {
   const { token } = useAuth();
   const [orders, setOrders] = useState([]);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [filterMode, setFilterMode] = useState("all"); // "all" | "recent" | "high-value"
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -50,6 +126,7 @@ export const Orders = () => {
           params: {
             page: currentPage,
             limit: 10,
+            filter: filterMode,
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,8 +134,10 @@ export const Orders = () => {
         });
 
         setOrders(response.data.orders || []);
+        setTotalOrders(response.data.totalOrders || 0);
         setCurrentPage(response.data.currentPage || 1);
         setTotalPages(response.data.totalPages || 1);
+        console.log("[Orders] filter:", filterMode, "| totalOrders:", response.data.totalOrders);
       } catch (fetchError) {
         console.error("Error fetching orders:", fetchError);
         setOrders([]);
@@ -71,19 +150,36 @@ export const Orders = () => {
     };
 
     fetchOrders();
-  }, [currentPage, token]);
+  }, [currentPage, token, filterMode]);
+
+  // Reset to page 1 whenever the filter changes
+  const handleFilterChange = (e) => {
+    setFilterMode(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Optimistic local update — no refetch needed
+  const handleStatusUpdate = (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)),
+    );
+  };
 
   const formattedOrders = orders.map((order) => {
     const items = order.items || [];
-    const firstProduct = items[0];
+    const firstItem = items[0];
 
     return {
       id: order._id,
+      // item.name is a required snapshot field — always present even if product deleted
       product:
         items.map((item) => item.name).filter(Boolean).join(", ") ||
-        firstProduct?.product?.title ||
         "Untitled product",
-      category: firstProduct?.product?.category || "N/A",
+      // category: prefer populated product data, fall back gracefully
+      category:
+        firstItem?.product?.category ||
+        firstItem?.category ||
+        "N/A",
       size: items.map((item) => item.size).filter(Boolean).join(", ") || "N/A",
       price: new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -105,12 +201,20 @@ export const Orders = () => {
           <p className="text-xs text-slate-400 font-medium mt-1">
             Manage incoming store purchases and fulfillment
           </p>
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest mt-0.5">
+            {filterMode === "all" ? "All orders" : filterMode === "recent" ? "Last 7 days" : "≥ ₹1,000"}
+            {" — "}{totalOrders} result{totalOrders !== 1 ? "s" : ""}
+          </p>
         </div>
         <div className="flex gap-3">
-          <select className="bg-white border-slate-200 rounded-xl text-xs font-bold px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-slate-100 transition-all cursor-pointer">
-            <option>All Orders</option>
-            <option>Recent</option>
-            <option>High Value</option>
+          <select
+            value={filterMode}
+            onChange={handleFilterChange}
+            className="bg-white border-slate-200 rounded-xl text-xs font-bold px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-slate-100 transition-all cursor-pointer"
+          >
+            <option value="all">All Orders</option>
+            <option value="recent">Recent</option>
+            <option value="high-value">High Value</option>
           </select>
         </div>
       </div>
@@ -220,12 +324,12 @@ export const Orders = () => {
                   </td>
 
                   <td className="px-8 py-5 text-right">
-                    <button
-                      type="button"
-                      className="p-2 text-slate-300 hover:text-slate-600 transition-all hover:bg-slate-100 rounded-full"
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
+                    <ActionMenu
+                      orderId={order.id}
+                      currentStatus={order.status}
+                      token={token}
+                      onStatusUpdate={handleStatusUpdate}
+                    />
                   </td>
                 </tr>
               ))

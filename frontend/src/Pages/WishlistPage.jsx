@@ -12,6 +12,10 @@ const WishlistPage = () => {
   const { handleAddToCart } = useCart();
   const [loadingProductId, setLoadingProductId] = useState(null);
 
+  // Filter out any completely null entries (shouldn't happen after backend cleanup,
+  // but guards against stale cached state between delete and next fetch)
+  const validItems = wishlistItems.filter((item) => item && item._id);
+
   const handleMoveToCart = async (product) => {
     const defaultSize = product?.sizes?.[0];
     if (!defaultSize) return;
@@ -27,7 +31,7 @@ const WishlistPage = () => {
     }
   };
 
-  if (!wishlistItems.length) {
+  if (!validItems.length) {
     return (
       <div className="min-h-[70vh] bg-[#FBFBFB] flex items-center justify-center px-4">
         <Motion.div
@@ -59,7 +63,7 @@ const WishlistPage = () => {
         <div className="space-y-1">
           <h1 className="text-4xl md:text-5xl font-black text-zinc-900 tracking-tighter uppercase italic leading-none">
             Saved{" "}
-            <span className="text-zinc-200">/ {wishlistItems.length}</span>
+            <span className="text-zinc-200">/ {validItems.length}</span>
           </h1>
           <p className="text-zinc-400 text-xs font-medium tracking-widest uppercase">
             Your personal curation.
@@ -71,92 +75,133 @@ const WishlistPage = () => {
         {/* Exact Grid spacing from Img1: gap-x-6 gap-y-14 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
           <AnimatePresence mode="popLayout">
-            {wishlistItems.map((item) => (
-              <Motion.div
-                key={item._id}
-                layout
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-                className="group"
-              >
-                <div className="space-y-4">
-                  {/* IMAGE BOX - Exact Rounded and Aspect Ratio from Img1 */}
-                  <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)]">
-                    <Link to={`/product/${item.slug}`} className="block h-full">
-                      <img
-                        src={item?.images?.[0]?.url}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-90"
-                      />
-                    </Link>
+            {validItems.map((item) => {
+              // Item has an ID but product data is gone (deleted between fetches)
+              const isAvailable = !!(item.title && item.images?.length);
 
-                    {/* REMOVE BUTTON - Using your Img1 style button position */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleToggleWishlist(item);
-                      }}
-                      className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 shadow-sm text-rose-500"
-                    >
-                      <Trash2 size={18} strokeWidth={2} />
-                    </button>
-
-                    {/* QUICK ADD OVERLAY - Matching Img1 exactly */}
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hidden md:block">
-                      <button
-                        onClick={() => handleMoveToCart(item)}
-                        disabled={loadingProductId === item._id}
-                        className="bg-white/90 backdrop-blur-md text-black text-[10px] font-black uppercase tracking-widest px-8 py-3.5 rounded-full shadow-xl hover:bg-black hover:text-white transition-all disabled:opacity-50"
-                      >
-                        {loadingProductId === item._id ? "..." : "Quick Add +"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* DETAILS - Using Img1 typography */}
-                  <div className="space-y-1.5 px-1">
-                    <h3 className="text-[15px] font-medium text-zinc-900 truncate tracking-tight">
-                      {item.title}
-                    </h3>
-
-                    {/* RATING */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={10}
-                            fill={
-                              i < (item.rating || 4) ? "currentColor" : "none"
-                            }
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          />
-                        ))}
+              if (!isAvailable) {
+                return (
+                  <Motion.div
+                    key={item._id}
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4 }}
+                    className="group"
+                  >
+                    <div className="space-y-4">
+                      <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-zinc-100 overflow-hidden flex items-center justify-center">
+                        <span className="text-zinc-300 text-[10px] font-bold uppercase tracking-widest text-center px-4">
+                          No longer available
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleToggleWishlist(item);
+                          }}
+                          className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 border border-white/20 transition-all hover:scale-110 active:scale-95 shadow-sm text-rose-500"
+                        >
+                          <Trash2 size={18} strokeWidth={2} />
+                        </button>
                       </div>
-                      <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
-                        {item.rating || "4.5"}
-                      </span>
+                      <div className="px-1">
+                        <p className="text-[13px] font-medium text-zinc-400 italic">
+                          Product removed
+                        </p>
+                      </div>
+                    </div>
+                  </Motion.div>
+                );
+              }
+
+              return (
+                <Motion.div
+                  key={item._id}
+                  layout
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4 }}
+                  className="group"
+                >
+                  <div className="space-y-4">
+                    {/* IMAGE BOX - Exact Rounded and Aspect Ratio from Img1 */}
+                    <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)]">
+                      <Link to={`/product/${item.slug}`} className="block h-full">
+                        <img
+                          src={item?.images?.[0]?.url}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-90"
+                        />
+                      </Link>
+
+                      {/* REMOVE BUTTON - Using your Img1 style button position */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleToggleWishlist(item);
+                        }}
+                        className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 shadow-sm text-rose-500"
+                      >
+                        <Trash2 size={18} strokeWidth={2} />
+                      </button>
+
+                      {/* QUICK ADD OVERLAY - Matching Img1 exactly */}
+                      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hidden md:block">
+                        <button
+                          onClick={() => handleMoveToCart(item)}
+                          disabled={loadingProductId === item._id}
+                          className="bg-white/90 backdrop-blur-md text-black text-[10px] font-black uppercase tracking-widest px-8 py-3.5 rounded-full shadow-xl hover:bg-black hover:text-white transition-all disabled:opacity-50"
+                        >
+                          {loadingProductId === item._id ? "..." : "Quick Add +"}
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-0.5">
-                      <span className="text-[17px] font-black text-zinc-900 tracking-tighter italic">
-                        ₹{item.price}
-                      </span>
-                      {/* Optional: Add discount display if available in your item data to match Img1 exactly */}
-                      <span className="text-[12px] text-zinc-300 line-through font-medium">
-                        ₹{Math.round(item.price * 1.3)}
-                      </span>
-                      <span className="text-red-500 text-[10px] font-black uppercase italic">
-                        -30%
-                      </span>
+                    {/* DETAILS - Using Img1 typography */}
+                    <div className="space-y-1.5 px-1">
+                      <h3 className="text-[15px] font-medium text-zinc-900 truncate tracking-tight">
+                        {item.title}
+                      </h3>
+
+                      {/* RATING */}
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex text-yellow-400">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={10}
+                              fill={
+                                i < (item.rating || 4) ? "currentColor" : "none"
+                              }
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
+                          {item.rating || "4.5"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span className="text-[17px] font-black text-zinc-900 tracking-tighter italic">
+                          ₹{item.price}
+                        </span>
+                        {/* Optional: Add discount display if available in your item data to match Img1 exactly */}
+                        <span className="text-[12px] text-zinc-300 line-through font-medium">
+                          ₹{Math.round(item.price * 1.3)}
+                        </span>
+                        <span className="text-red-500 text-[10px] font-black uppercase italic">
+                          -30%
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Motion.div>
-            ))}
+                </Motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       </main>

@@ -664,7 +664,9 @@ export const Products = () => {
       await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/products/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      // Full page reload so cart counts, wishlist, and product listings
+      // across the entire app reflect the deletion immediately.
+      window.location.reload();
     } catch (err) {
       setPageError(getApiErrorMessage(err, "Failed to delete product"));
     } finally {
