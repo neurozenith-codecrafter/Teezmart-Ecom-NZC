@@ -8,14 +8,16 @@ import {
   Bell,
   Menu,
   Home,
+  X,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAdmin } from "../../context/useAdmin";
 import { useAuth } from "../../Hooks/useAuth";
 import { MobileCopyright } from "../HomepageComponents/FooterSection";
 
 /**
- * Premium Mint/White Palette
+ * Premium Styling for NavLinks
  */
 const navClass = (isActive) =>
   `group relative w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 ${
@@ -29,19 +31,14 @@ export const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // --- Avatar Logic (STRICT BACKEND ONLY) ---
   const [hasImgError, setHasImgError] = useState(false);
 
   useEffect(() => {
     setHasImgError(false);
   }, [admin]);
 
-  // ✅ Only backend avatar is allowed (NO Google photoURL)
   const externalImage = useMemo(() => {
     if (!admin?.avatar) return null;
-
-    // Basic validation for URL
     try {
       const url = new URL(admin.avatar);
       return url.href;
@@ -51,42 +48,40 @@ export const AdminLayout = () => {
   }, [admin]);
 
   const userInitial = admin?.name?.trim()?.charAt(0)?.toUpperCase() || "A";
-
   const shouldShowAvatar = Boolean(externalImage) && !hasImgError;
 
   const formatRoleText = (role) => {
     if (!role) return "";
-    return role
-      .replace(/([A-Z])/g, "$1")
-      .trim()
-      .toUpperCase();
+    return role.replace(/([A-Z])/g, "$1").trim().toUpperCase();
   };
 
   const menuItems = [
-    {
-      to: "dashboard",
-      label: "Overview",
-      icon: LayoutDashboard,
-      roles: ["devAdmin", "admin"],
-    },
-    {
-      to: "products",
-      label: "Inventory",
-      icon: Package,
-      roles: ["devAdmin", "admin"],
-    },
-    {
-      to: "orders",
-      label: "Shipments",
-      icon: ShoppingBag,
-      roles: ["devAdmin", "admin"],
-    },
+    { to: "dashboard", label: "Overview", icon: LayoutDashboard, roles: ["devAdmin", "admin"] },
+    { to: "products", label: "Inventory", icon: Package, roles: ["devAdmin", "admin"] },
+    { to: "orders", label: "Shipments", icon: ShoppingBag, roles: ["devAdmin", "admin"] },
     { to: "users", label: "Admins", icon: Users, roles: ["devAdmin"] },
   ];
 
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  // --- Animation Variants ---
+  const sidebarVariants = {
+    closed: {
+      x: "-100%",
+      transition: { type: "spring", stiffness: 400, damping: 40 },
+    },
+    open: {
+      x: 0,
+      transition: { type: "spring", stiffness: 400, damping: 40 },
+    },
+  };
+
+  const overlayVariants = {
+    closed: { opacity: 0 },
+    open: { opacity: 1 },
   };
 
   if (!admin) {
@@ -99,92 +94,56 @@ export const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-white flex font-sans text-slate-900 overflow-hidden">
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-[60] bg-slate-900/10 backdrop-blur-sm lg:hidden transition-opacity"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`
-          fixed inset-y-4 left-4 z-[70] w-72 bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col transition-all duration-500 ease-out
-          ${
-            isMobileMenuOpen
-              ? "translate-x-0 shadow-2xl"
-              : "-translate-x-[110%] lg:translate-x-0"
-          }
-        `}
-      >
-        <div className="mb-12 px-2">
-          <span className="font-bold text-xl tracking-tight text-[#1A3024]">
-            TeezMart
-          </span>
-          <div className="h-0.5 w-6 bg-[#86C19F] mt-1.5 rounded-full" />
-        </div>
-
-        <div className="flex-1 overflow-y-auto space-y-8 no-scrollbar">
-          <nav className="space-y-1.5">
-            {/* Home Button with Home Icon and extra margin for spacing */}
-            <NavLink
-              to="/"
+      {/* GLOBAL HAMBURGER SIDEBAR LOGIC (Drawer for all breakpoints) */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={overlayVariants}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={({ isActive }) => `${navClass(isActive)} mb-6`}
+              className="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-md"
+            />
+
+            {/* Sidebar Drawer */}
+            <motion.aside
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={sidebarVariants}
+              className="fixed inset-y-4 left-4 z-[110] w-72 bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col shadow-2xl shadow-slate-200/50"
             >
-              <Home size={18} strokeWidth={2.2} />
-              <span className="text-[13px] tracking-tight">Home</span>
-            </NavLink>
+              <SidebarContent
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                menuItems={menuItems}
+                admin={admin}
+                handleLogout={handleLogout}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">
-              Management
-            </p>
-
-            {menuItems.map((item) => {
-              if (!item.roles.includes(admin?.role)) return null;
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) => navClass(isActive)}
-                >
-                  <Icon size={18} strokeWidth={2.2} />
-                  <span className="text-[13px] tracking-tight">
-                    {item.label}
-                  </span>
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="pt-6 border-t border-slate-50">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-5 py-3 text-slate-400 hover:text-rose-500 transition-colors text-sm font-semibold w-full rounded-2xl"
-          >
-            <LogOut size={18} />
-            Sign Out
-          </button>
-        </div>
-      </aside>
-
-      <div className="flex-1 lg:ml-[20rem] min-w-0 flex flex-col">
+      {/* CONTENT WRAPPER */}
+      <div className="flex-1 min-w-0 flex flex-col">
         <header className="h-24 px-8 lg:px-12 flex items-center justify-between">
+          {/* PREMIUM, LIGHT HAMBURGER TRIGGER (Visible on all screens) */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2.5 bg-slate-50 rounded-xl lg:hidden text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 -ml-1.5 flex flex-col gap-1 cursor-pointer group outline-none"
+            aria-label="Toggle Menu"
           >
-            <Menu size={20} />
+            <span className="w-6 h-0.5 bg-slate-400 rounded-full group-hover:bg-[#86C19F] transition-colors duration-300" />
+            <span className="w-4 h-0.5 bg-slate-400 rounded-full group-hover:bg-[#86C19F] transition-colors duration-300" />
+            <span className="w-6 h-0.5 bg-slate-400 rounded-full group-hover:bg-[#86C19F] transition-colors duration-300" />
           </button>
 
           <div className="flex items-center gap-6 ml-auto">
             <button className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all relative group">
-              <Bell
-                size={20}
-                className="group-hover:rotate-12 transition-transform"
-              />
+              <Bell size={20} className="group-hover:rotate-12 transition-transform" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#86C19F] rounded-full border-2 border-white" />
             </button>
 
@@ -230,3 +189,66 @@ export const AdminLayout = () => {
     </div>
   );
 };
+
+/**
+ * Sidebar Inner Content
+ */
+const SidebarContent = ({ setIsMobileMenuOpen, menuItems, admin, handleLogout }) => (
+  <>
+    <div className="mb-12 px-2 flex justify-between items-center">
+      <div>
+        <span className="font-bold text-xl tracking-tight text-[#1A3024]">TeezMart</span>
+        <div className="h-0.5 w-6 bg-[#86C19F] mt-1.5 rounded-full" />
+      </div>
+      <button 
+        onClick={() => setIsMobileMenuOpen(false)}
+        className="p-2 text-slate-300 hover:text-rose-500 transition-colors bg-slate-50 rounded-xl"
+      >
+        <X size={20} />
+      </button>
+    </div>
+
+    <div className="flex-1 overflow-y-auto space-y-8 no-scrollbar">
+      <nav className="space-y-1.5">
+        <NavLink
+          to="/"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className={({ isActive }) => `${navClass(isActive)} mb-6`}
+        >
+          <Home size={18} strokeWidth={2.2} />
+          <span className="text-[13px] tracking-tight">Home</span>
+        </NavLink>
+
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">
+          Management
+        </p>
+
+        {menuItems.map((item) => {
+          if (!item.roles.includes(admin?.role)) return null;
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={({ isActive }) => navClass(isActive)}
+            >
+              <Icon size={18} strokeWidth={2.2} />
+              <span className="text-[13px] tracking-tight">{item.label}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+    </div>
+
+    <div className="pt-6 border-t border-slate-50">
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 px-5 py-3 text-slate-400 hover:text-rose-500 transition-colors text-sm font-semibold w-full rounded-2xl"
+      >
+        <LogOut size={18} />
+        Sign Out
+      </button>
+    </div>
+  </>
+);
