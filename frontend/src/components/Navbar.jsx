@@ -17,6 +17,7 @@ import {
   ShieldAlert,
   History,
   TrendingUp,
+  Home,
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
@@ -284,10 +285,10 @@ const Navbar = () => {
   };
 
   const menuItems = [
+    { name: "Home", icon: Home },
     { name: "Live Orders", icon: LayoutGrid },
     { name: "Order History", icon: ShoppingBag },
     { name: "Wishlist", icon: Heart, isMobileOnly: true },
-    { name: "Offers", icon: Percent },
     { name: "Products", icon: Package },
     { name: "Message", icon: MessageSquare, isContact: true },
     { name: "Report", icon: ShieldAlert, isContact: true },
@@ -669,6 +670,105 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
+      {/* MOBILE SECONDARY NAV — visible only below lg breakpoint */}
+      {/* Always mounted; only `translateY` is animated so the GPU compositor handles it */}
+      <Motion.div
+        animate={{ y: showBottomNav ? 0 : "-100%" }}
+        transition={{ type: "tween", duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+        style={{ willChange: "transform", overflow: "visible" }}
+        className="block lg:hidden fixed left-0 w-full h-[52px] bg-white z-[55] border-b border-[#f5f5f5] top-[55px]"
+      >
+        <div className="h-full flex items-center px-4 gap-x-3">
+          {/* Shop pill */}
+          <Motion.button
+            onClick={navigateToCatalog}
+            whileTap={{ scale: 0.96 }}
+            className="shrink-0 px-4 py-2 bg-[#f9f9f9] border border-[#f0f0f0] rounded-full text-[13px] font-medium text-black"
+          >
+            Shop
+          </Motion.button>
+
+          {/* Search bar */}
+          <div className="relative flex-1" ref={searchContainerRef}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Search collection..."
+              className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2 pl-4 pr-10 rounded-full text-[13px] font-normal outline-none focus:bg-white transition-all"
+            />
+            <Search
+              className="w-3.5 h-3.5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-black transition-colors"
+              onClick={() => {
+                setShowSuggestions(true);
+                handleSearch();
+              }}
+            />
+
+            {/* Click-trap overlay: blocks taps on page elements while suggestions are open */}
+            {showSuggestions && (
+              <div
+                className="fixed inset-0 z-[98]"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  setShowSuggestions(false);
+                }}
+              />
+            )}
+
+            <AnimatePresence>
+              {showSuggestions && (
+                <Motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  className="absolute top-full mt-2 left-0 w-full bg-white border border-zinc-200 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[99]"
+                >
+                  <div className="p-4 space-y-5">
+                    {recentSearches.length > 0 && (
+                      <div className="space-y-2.5">
+                        <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                          <History size={12} /> Recent
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {recentSearches.map((item) => (
+                            <button
+                              key={item}
+                              onClick={() => handleSearch(item)}
+                              className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                            >
+                              {item}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                        <TrendingUp size={12} /> Trending
+                      </h4>
+                      <div className="grid grid-cols-1 gap-1">
+                        {trendingSearches.map((item) => (
+                          <button
+                            key={item}
+                            onClick={() => handleSearch(item)}
+                            className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </Motion.div>
+
       <AnimatePresence>
         {isMenuOpen && (
           <>
@@ -709,6 +809,10 @@ const Navbar = () => {
                           isMobileSidebar
                             ? redirectToHomeContact()
                             : scrollToContact();
+                        } else if (item.name === "Home") {
+                          navigate("/");
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                          setIsMenuOpen(false);
                         } else if (item.name === "Wishlist") {
                           navigate("/wishlist");
                           setIsMenuOpen(false);
