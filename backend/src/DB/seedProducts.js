@@ -88,6 +88,10 @@ const generateProduct = () => {
     to: new Date(),
   });
 
+  // 🔥 NEW
+  const sizes = getRandomSizes();
+  const stock = generateStock(sizes);
+
   return {
     title,
     slug: slugify(title + "-" + faker.string.alphanumeric(5)),
@@ -97,6 +101,7 @@ const generateProduct = () => {
     category: faker.helpers.arrayElement(CATEGORIES),
     images,
     sizes: getRandomSizes(),
+    stock, // ✅ added
     salesCount: faker.number.int({ min: 0, max: 500 }),
     rating,
     numReviews,
@@ -112,9 +117,7 @@ const seedProducts = async () => {
 
     await Product.deleteMany();
 
-    const products = Array.from({ length: 50 }).map(() =>
-      generateProduct()
-    );
+    const products = Array.from({ length: 50 }).map(() => generateProduct());
 
     await Product.insertMany(products);
 
