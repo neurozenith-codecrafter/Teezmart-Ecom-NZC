@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Home from "./Pages/Home";
 import Auth from "./Services/Auth";
@@ -16,6 +22,7 @@ import CartPage from "./Pages/CartPage";
 import WishlistPage from "./Pages/WishlistPage";
 import { useAuth } from "./Hooks/useAuth";
 import CatalogPage from "./Pages/CatalogPage";
+import CheckoutPage from "./Pages/CheckoutPage";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -69,6 +76,7 @@ const AnimatedRoutes = () => {
           <Route path="/catalog" element={<CatalogPage />} />
         </Route>
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
 
         <Route
           path="/admin"
