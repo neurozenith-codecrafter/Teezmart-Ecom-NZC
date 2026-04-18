@@ -597,7 +597,7 @@ const Navbar = () => {
 
               {/* ENHANCED SEARCH SECTION */}
               <div
-                className="relative w-full max-w-[400px]"
+                className="relative w-full max-w-[320px] lg:max-w-[360px]"
                 ref={searchContainerRef}
               >
                 <input

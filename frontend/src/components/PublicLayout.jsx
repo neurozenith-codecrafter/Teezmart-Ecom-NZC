@@ -19,7 +19,7 @@ const PublicLayout = () => {
       className="min-h-screen bg-white font-sans text-slate-900 overflow-x-hidden"
     >
       <Navbar />
-      <div className="pt-[65px] lg:pt-[136px]">
+      <div className="pt-[107px] lg:pt-[126px]">
         <AnimatePresence mode="wait">
           <Motion.div
             key={pathname}
