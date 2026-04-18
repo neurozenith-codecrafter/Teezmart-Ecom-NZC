@@ -69,7 +69,12 @@ const ProductCard = ({
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
 
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            <div
+              className="
+                pointer-events-none
+                [@media(hover:hover)_and_(pointer:fine)]:pointer-events-auto
+              "
+            >
               <Motion.button
                 type="button"
                 onClick={onAdd}
@@ -240,7 +245,12 @@ export const CatalogPage = () => {
   const activeFilterParam = normalizeFilter(searchParams.get("collection"));
   const activeSortParam = normalizeSort(searchParams.get("sort"));
 
-  const buildFilterQuery = ({ category, filter, sizes: selectedSizes, sort }) => {
+  const buildFilterQuery = ({
+    category,
+    filter,
+    sizes: selectedSizes,
+    sort,
+  }) => {
     const params = new URLSearchParams();
 
     if (category) {
