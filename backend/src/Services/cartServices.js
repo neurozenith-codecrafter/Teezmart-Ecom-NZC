@@ -193,17 +193,20 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
   if (!item) throw new Error("Item not found in cart");
 
   if (normalizedQuantity === 0) {
-    // remove item
+    // remove item — no product lookup needed
     cart.items = cart.items.filter(
       (i) => !(i.product.toString() === productId && i.size === size),
     );
   } else {
-    // Sync item pricing/name/image with latest product
-    const product = await Product.findById(productId);
-    if (!product) throw new Error("Product not found");
-    item.name = product.title;
-    item.price = product.price;
-    item.image = product.images?.[0]?.url || "";
+    // Try to sync from product, but gracefully fall back to snapshot
+    // if the product has been deleted — never throw for a missing product here
+    const product = await Product.findById(productId).catch(() => null);
+    if (product) {
+      item.name = product.title;
+      item.price = product.price;
+      item.image = product.images?.[0]?.url || "";
+    }
+    // Always update quantity using whatever price is current (live or snapshot)
     item.quantity = normalizedQuantity;
     item.totalItemPrice = item.price * normalizedQuantity;
   }

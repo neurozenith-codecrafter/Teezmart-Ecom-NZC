@@ -22,6 +22,7 @@ const CartItemRow = ({
   item,
   isBusy,
   onQuantity,
+  isAvailable,
   getProductId,
   getProductImage,
   getProductName,
@@ -33,6 +34,39 @@ const CartItemRow = ({
 
   const iconScale = useTransform(x, [-100, -50], [1.2, 0.5]);
   const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
+
+  // Render a lightweight unavailable row when the product has been deleted
+  if (!isAvailable) {
+    return (
+      <Motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -100 }}
+        transition={{ type: "spring", stiffness: 500, damping: 35, mass: 0.8 }}
+        className="relative border-b border-zinc-100 last:border-0 mx-4 md:mx-0"
+      >
+        <div className="flex items-center gap-4 md:gap-8 py-6">
+          <div className="aspect-[4/5] w-24 md:w-32 bg-zinc-50 rounded-xl shrink-0 flex items-center justify-center border border-zinc-100">
+            <span className="text-zinc-300 text-[10px] font-bold uppercase tracking-widest text-center px-2">No image</span>
+          </div>
+          <div className="flex flex-col flex-grow gap-2">
+            <p className="text-[13px] font-medium text-zinc-400 italic">Product no longer available</p>
+            {item.size && (
+              <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-300 font-bold">Size: {item.size}</p>
+            )}
+            <button
+              disabled={isBusy}
+              onClick={() => onQuantity(item, 0)}
+              className="mt-1 self-start flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.25em] text-rose-500 disabled:opacity-50"
+            >
+              <Trash2 size={11} strokeWidth={2.5} /> Remove
+            </button>
+          </div>
+        </div>
+      </Motion.div>
+    );
+  }
 
   return (
     <Motion.div
@@ -230,14 +264,22 @@ const CartPage = () => {
     useCart();
   const [busyKey, setBusyKey] = useState("");
 
+  // Resolve the product ObjectId — works even when populate returns null
+  // (item.product is always the raw ObjectId string/object from the DB)
   const getProductId = (item) =>
     String(item?.product?._id || item?.product || "");
+
   const getProductImage = (item) =>
     item?.image || item?.product?.images?.[0]?.url || "";
+
   const getProductName = (item) =>
-    item?.name || item?.product?.title || "Product";
+    item?.name || item?.product?.title || null; // null signals "unavailable"
+
   const getProductPrice = (item) =>
     Number(item?.price || item?.product?.price || 0);
+
+  // Whether the product reference is still resolvable (not deleted)
+  const isProductAvailable = (item) => !!getProductName(item);
 
   const summary = useMemo(
     () => ({
@@ -253,9 +295,13 @@ const CartPage = () => {
   const handleQuantity = async (item, nextQty) => {
     const productId = getProductId(item);
     const key = `${productId}-${item.size}`;
-    if (!productId) return;
-    setBusyKey(key);
 
+    // Always allow removal (qty ≤ 0) even if product was deleted.
+    // Block quantity increases/decreases only when no ID can be resolved.
+    if (!productId && nextQty > 0) return;
+    if (!productId) return; // can't remove without an ID to send to API either
+
+    setBusyKey(key);
     try {
       if (nextQty <= 0) {
         await removeCartItem({ productId, size: item.size });
@@ -312,6 +358,7 @@ const CartPage = () => {
                       item={item}
                       isBusy={busyKey === key}
                       onQuantity={handleQuantity}
+                      isAvailable={isProductAvailable(item)}
                       getProductId={getProductId}
                       getProductImage={getProductImage}
                       getProductName={getProductName}
