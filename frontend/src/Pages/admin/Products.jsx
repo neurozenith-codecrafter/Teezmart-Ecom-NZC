@@ -47,6 +47,7 @@ const ProductFormModal = ({
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0] || "");
   const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("0");
   const [sizes, setSizes] = useState([]);
   const [newImages, setNewImages] = useState([]); // File[]
   const [removeImages, setRemoveImages] = useState([]); // public_id[]
@@ -70,12 +71,18 @@ const ProductFormModal = ({
           ? ""
           : String(initialProduct.price),
       );
+      setStock(
+        initialProduct.stock === undefined || initialProduct.stock === null
+          ? "0"
+          : String(initialProduct.stock),
+      );
       setSizes(Array.isArray(initialProduct.sizes) ? initialProduct.sizes : []);
     } else {
       setTitle("");
       setDescription("");
       setCategory(CATEGORIES[0] || "");
       setPrice("");
+      setStock("0");
       setSizes([]);
     }
   }, [isOpen, isEditing, initialProduct]);
@@ -189,11 +196,17 @@ const ProductFormModal = ({
     if (finalImageCount > 5)
       return setFormError("Total images cannot exceed 5.");
 
+    const numericStock = Number(stock);
+    if (!Number.isFinite(numericStock) || numericStock < 0) {
+      return setFormError("Stock must be a valid non-negative number.");
+    }
+
     const payload = {
       title: trimmedTitle,
       description: trimmedDescription,
       category,
       price: numericPrice,
+      stock: numericStock,
       sizes,
       newImages,
       removeImages: isEditing ? removeImages : [],
@@ -378,6 +391,20 @@ const ProductFormModal = ({
 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
+                  Stock (units)
+                </label>
+                <input
+                  type="number"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  min="0"
+                  className="w-full bg-[#FBFBFB] border border-zinc-100 rounded-xl px-5 py-3.5 focus:ring-1 focus:ring-black outline-none text-sm font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 ml-1">
                   Category
                 </label>
                 <select
@@ -476,6 +503,9 @@ export const Products = () => {
   const [pageError, setPageError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState("");
+  const [activeProductId, setActiveProductId] = useState(null);
+  const [isLongPress, setIsLongPress] = useState(false);
+  const pressTimer = React.useRef(null);
 
   const fetchProducts = async () => {
     setPageError("");
@@ -495,6 +525,32 @@ export const Products = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Close active card when clicking anywhere outside a card
+  useEffect(() => {
+    const handleClickOutside = () => setActiveProductId(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  // Auto-close active card on scroll (premium feel)
+  useEffect(() => {
+    const handleScroll = () => setActiveProductId(null);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Long-press handlers
+  const handlePressStart = (id) => {
+    pressTimer.current = setTimeout(() => {
+      setActiveProductId(id);
+      setIsLongPress(true);
+    }, 400);
+  };
+
+  const handlePressEnd = () => {
+    clearTimeout(pressTimer.current);
+  };
 
   const openAddModal = () => {
     setModalMode("add");
@@ -524,6 +580,7 @@ export const Products = () => {
       fd.append("description", payload.description);
       fd.append("category", payload.category);
       fd.append("price", String(payload.price));
+      fd.append("stock", String(payload.stock ?? 0));
       (payload.sizes || []).forEach((s) => fd.append("sizes", s));
       (payload.newImages || []).forEach((file) => fd.append("images", file));
 
@@ -556,6 +613,7 @@ export const Products = () => {
       fd.append("description", payload.description);
       fd.append("category", payload.category);
       fd.append("price", String(payload.price));
+      fd.append("stock", String(payload.stock ?? 0));
 
       (payload.sizes || []).forEach((s) => fd.append("sizes", s));
       (payload.removeImages || []).forEach((publicId) =>
@@ -654,81 +712,114 @@ export const Products = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {products.map((product) => (
-            <motion.div
-              key={product._id}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-[1.5rem] border border-zinc-100 p-3 shadow-sm hover:shadow-xl hover:shadow-zinc-200/50 transition-all group"
-            >
-              <div className="relative aspect-[3/4] bg-[#F2F2F2] rounded-xl mb-5 overflow-hidden">
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-10 backdrop-blur-[2px]">
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(product)}
-                    className="bg-white p-3 rounded-full hover:scale-110 transition-transform shadow-xl text-black"
-                  >
-                    <Edit3 size={18} />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={deletingId === product._id}
-                    onClick={() => handleDelete(product)}
-                    className={`bg-white p-3 rounded-full transition-transform shadow-xl ${
-                      deletingId === product._id
-                        ? "text-zinc-300 cursor-not-allowed"
-                        : "text-rose-500 hover:scale-110"
+          {products.map((product) => {
+            const isActive = activeProductId === product._id;
+            return (
+              <motion.div
+                key={product._id}
+                whileHover={{ y: -5 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveProductId((prev) =>
+                    prev === product._id ? null : product._id
+                  );
+                }}
+                onMouseDown={() => handlePressStart(product._id)}
+                onMouseUp={handlePressEnd}
+                onTouchStart={() => handlePressStart(product._id)}
+                onTouchEnd={handlePressEnd}
+                className={`bg-white rounded-[1.5rem] border border-zinc-100 p-3 shadow-sm hover:shadow-xl hover:shadow-zinc-200/50 transition-all group relative ${
+                  isActive ? "z-20 scale-[1.02] shadow-xl shadow-zinc-200/50" : ""
+                }`}
+              >
+                <div className="relative aspect-[3/4] bg-[#F2F2F2] rounded-xl mb-5 overflow-hidden">
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center gap-3 z-10 backdrop-blur-[2px] transition-opacity ${
+                      isActive
+                        ? "opacity-100 bg-black/30"
+                        : "opacity-0 group-hover:opacity-100 bg-black/20"
                     }`}
-                    title={
-                      deletingId === product._id ? "Deleting..." : "Delete"
-                    }
                   >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-                {product?.images?.[0]?.url ? (
-                  <img
-                    src={product.images[0].url}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    alt={product.title || "product"}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                    <ImageIcon size={32} />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(product);
+                      }}
+                      className="bg-white p-3 rounded-full hover:scale-110 transition-transform shadow-xl text-black"
+                    >
+                      <Edit3 size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deletingId === product._id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(product);
+                      }}
+                      className={`bg-white p-3 rounded-full transition-transform shadow-xl ${
+                        deletingId === product._id
+                          ? "text-zinc-300 cursor-not-allowed"
+                          : "text-rose-500 hover:scale-110"
+                      }`}
+                      title={
+                        deletingId === product._id ? "Deleting..." : "Delete"
+                      }
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                )}
-              </div>
-
-              <div className="px-1 space-y-3">
-                <div>
-                  <h4 className="font-bold text-slate-800 tracking-tight text-lg leading-tight">
-                    {product.title}
-                  </h4>
-                  <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
-                    Category: {product.category || "—"}
-                  </p>
-                  <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
-                    Sizes:{" "}
-                    {Array.isArray(product.sizes) && product.sizes.length > 0
-                      ? product.sizes.join(", ")
-                      : "—"}
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2">
-                    {product.description || "—"}
-                  </p>
+                  {product?.images?.[0]?.url ? (
+                    <img
+                      src={product.images[0].url}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      alt={product.title || "product"}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-300">
+                      <ImageIcon size={32} />
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex justify-between items-center border-t border-zinc-50 pt-4 pb-1">
-                  <span className="text-xl font-bold text-slate-900 tracking-tighter">
-                    {formatCurrencyINR(product.price)}
-                  </span>
-                  <span className="text-[9px] font-black bg-zinc-50 px-2.5 py-1.5 rounded-lg text-zinc-400 uppercase tracking-widest border border-zinc-100">
-                    Images:{" "}
-                    {Array.isArray(product.images) ? product.images.length : 0}
-                  </span>
+                <div className="px-1 space-y-3">
+                  <div>
+                    <h4 className="font-bold text-slate-800 tracking-tight text-lg leading-tight">
+                      {product.title}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+                      Category: {product.category || "—"}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+                      Stock:{" "}
+                      <span className={product.stock === 0 ? "text-rose-400" : "text-emerald-500"}>
+                        {product.stock ?? 0} units
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
+                      Sizes:{" "}
+                      {Array.isArray(product.sizes) && product.sizes.length > 0
+                        ? product.sizes.join(", ")
+                        : "—"}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2">
+                      {product.description || "—"}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-zinc-50 pt-4 pb-1">
+                    <span className="text-xl font-bold text-slate-900 tracking-tighter">
+                      {formatCurrencyINR(product.price)}
+                    </span>
+                    <span className="text-[9px] font-black bg-zinc-50 px-2.5 py-1.5 rounded-lg text-zinc-400 uppercase tracking-widest border border-zinc-100">
+                      Images:{" "}
+                      {Array.isArray(product.images) ? product.images.length : 0}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
