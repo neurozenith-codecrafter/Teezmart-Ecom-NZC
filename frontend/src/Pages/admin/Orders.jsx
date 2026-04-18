@@ -4,42 +4,49 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
+  Filter,
+  ShoppingBag,
+  ArrowUpRight,
 } from "lucide-react";
 import { useAuth } from "../../Hooks/useAuth";
 
 const ORDER_STATUSES = ["order placed", "shipped", "delivered", "cancelled"];
 
+/**
+ * PREMIUM STATUS BADGE
+ * Fixed alignment: Using inline-flex to prevent horizontal stretching.
+ */
 const StatusBadge = ({ status }) => {
   const normalizedStatus = (status || "").toLowerCase();
   const styles = {
-    "order placed": "bg-[#FFF4E5] text-[#FFB648]",
-    shipped: "bg-[#E6F9F0] text-[#34D399]",
-    delivered: "bg-[#EEF2FF] text-[#6366F1]",
-    cancelled: "bg-[#FFE4E6] text-[#FB7185]",
+    "order placed": "bg-blue-500/5 text-blue-600 border-blue-500/10",
+    shipped: "bg-amber-500/5 text-amber-600 border-amber-500/10",
+    delivered: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
+    cancelled: "bg-rose-500/5 text-rose-600 border-rose-500/10",
   };
 
   return (
-    <span
-      className={`px-4 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-tight ${styles[normalizedStatus] || styles["order placed"]}`}
+    <div
+      className={`inline-flex items-center justify-center px-3 py-1 rounded-full border whitespace-nowrap transition-all duration-500 ${
+        styles[normalizedStatus] || styles["order placed"]
+      }`}
     >
-      {status || "order placed"}
-    </span>
+      <span className="text-[9px] font-bold uppercase tracking-wider">
+        {status || "order placed"}
+      </span>
+    </div>
   );
 };
 
-// Inline action menu that appears when the MoreHorizontal button is clicked
 const ActionMenu = ({ orderId, currentStatus, token, onStatusUpdate }) => {
   const [open, setOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const menuRef = useRef(null);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+      if (menuRef.current && !menuRef.current.contains(e.target))
         setOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
@@ -68,27 +75,25 @@ const ActionMenu = ({ orderId, currentStatus, token, onStatusUpdate }) => {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        disabled={updating}
-        className="p-2 text-slate-300 hover:text-slate-600 transition-all hover:bg-slate-100 rounded-full disabled:opacity-50"
+        className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-[#2D4F3C] hover:bg-[#EBF5EE] rounded-xl transition-all duration-300 border border-transparent hover:border-[#86C19F]/20"
       >
-        <MoreHorizontal size={18} />
+        <MoreHorizontal size={16} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-100 py-1.5 min-w-[160px]">
-          <p className="px-4 pt-1 pb-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
-            Set Status
+        <div className="absolute right-0 top-full mt-3 z-50 bg-white border border-zinc-100 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] py-2 min-w-[160px] animate-in fade-in zoom-in-95 duration-200">
+          <p className="px-4 py-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">
+            Update Status
           </p>
           {ORDER_STATUSES.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => handleStatusClick(s)}
-              disabled={updating}
-              className={`w-full text-left px-4 py-2 text-[12px] font-semibold transition-colors capitalize ${
+              className={`w-full text-left px-4 py-2.5 text-[11px] font-semibold capitalize transition-colors ${
                 s === currentStatus
-                  ? "text-slate-900 bg-slate-50 font-black"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  ? "text-[#2D4F3C] bg-[#EBF5EE]/50"
+                  : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
               }`}
             >
               {s}
@@ -107,271 +112,230 @@ export const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [filterMode, setFilterMode] = useState("all"); // "all" | "recent" | "high-value"
+  const [filterMode, setFilterMode] = useState("all");
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!token) {
-        setOrders([]);
-        setError("Missing auth token");
-        return;
-      }
-
+      if (!token) return;
       try {
         setIsLoading(true);
-        setError("");
-
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/orders`, {
-          params: {
-            page: currentPage,
-            limit: 10,
-            filter: filterMode,
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/admin/orders`,
+          {
+            params: { page: currentPage, limit: 10, filter: filterMode },
+            headers: { Authorization: `Bearer ${token}` },
           },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        );
         setOrders(response.data.orders || []);
         setTotalOrders(response.data.totalOrders || 0);
-        setCurrentPage(response.data.currentPage || 1);
         setTotalPages(response.data.totalPages || 1);
-        console.log("[Orders] filter:", filterMode, "| totalOrders:", response.data.totalOrders);
-      } catch (fetchError) {
-        console.error("Error fetching orders:", fetchError);
-        setOrders([]);
-        setError(
-          fetchError.response?.data?.message || "Failed to fetch orders",
-        );
+      } catch (err) {
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchOrders();
   }, [currentPage, token, filterMode]);
 
-  // Reset to page 1 whenever the filter changes
-  const handleFilterChange = (e) => {
-    setFilterMode(e.target.value);
-    setCurrentPage(1);
-  };
-
-  // Optimistic local update — no refetch needed
   const handleStatusUpdate = (orderId, newStatus) => {
     setOrders((prev) =>
       prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)),
     );
   };
 
-  const formattedOrders = orders.map((order) => {
-    const items = order.items || [];
-    const firstItem = items[0];
-
-    return {
-      id: order._id,
-      // item.name is a required snapshot field — always present even if product deleted
-      product:
-        items.map((item) => item.name).filter(Boolean).join(", ") ||
-        "Untitled product",
-      // category: prefer populated product data, fall back gracefully
-      category:
-        firstItem?.product?.category ||
-        firstItem?.category ||
-        "N/A",
-      size: items.map((item) => item.size).filter(Boolean).join(", ") || "N/A",
-      price: new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        maximumFractionDigits: 0,
-      }).format(order.pricing?.total || 0),
-      status: order.status,
-    };
-  });
-
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex justify-between items-center">
+    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Order Log
-          </h2>
-          <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage incoming store purchases and fulfillment
-          </p>
-          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest mt-0.5">
-            {filterMode === "all" ? "All orders" : filterMode === "recent" ? "Last 7 days" : "≥ ₹1,000"}
-            {" — "}{totalOrders} result{totalOrders !== 1 ? "s" : ""}
-          </p>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-[#EBF5EE] text-[#2D4F3C] rounded-2xl flex items-center justify-center shadow-sm">
+              <ShoppingBag size={18} />
+            </div>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">
+              Shipment Log
+            </h2>
+          </div>
+          <h1 className="text-3xl font-medium tracking-tight text-zinc-900">
+            Orders Management
+          </h1>
         </div>
-        <div className="flex gap-3">
-          <select
-            value={filterMode}
-            onChange={handleFilterChange}
-            className="bg-white border-slate-200 rounded-xl text-xs font-bold px-4 py-2.5 shadow-sm outline-none focus:ring-2 focus:ring-slate-100 transition-all cursor-pointer"
-          >
-            <option value="all">All Orders</option>
-            <option value="recent">Recent</option>
-            <option value="high-value">High Value</option>
-          </select>
+
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <select
+              value={filterMode}
+              onChange={(e) => {
+                setFilterMode(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="appearance-none bg-[#FCFDFB] border border-zinc-200/60 text-[11px] font-bold uppercase tracking-wider px-6 py-3.5 pr-12 rounded-2xl hover:border-[#86C19F]/30 focus:outline-none transition-all cursor-pointer shadow-sm"
+            >
+              <option value="all">All Transactions</option>
+              <option value="recent">Recent Sync</option>
+              <option value="high-value">Premium Orders</option>
+            </select>
+            <Filter
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-[#86C19F] transition-colors"
+              size={12}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-50 bg-[#FDFDFD]">
-              <th className="px-8 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Product Name <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Order ID <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Category <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Size <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                  Amount <ChevronsUpDown size={12} />
-                </div>
-              </th>
-              <th className="px-6 py-5 text-center">
-                <div className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+      {/* Main Table Container */}
+      <div className="bg-[#FCFDFB] border border-zinc-200/60 rounded-[2.5rem] shadow-[0_2px_6px_rgba(0,0,0,0.04),0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-700 hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-100/80">
+                <th className="pl-10 pr-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Reference
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Customer
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Product Details
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 text-center">
+                  Size
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Category
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 text-center">
                   Status
-                </div>
-              </th>
-              <th className="px-8 py-5 text-right text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-slate-50">
-            {isLoading ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-slate-400"
-                >
-                  Loading orders...
-                </td>
+                </th>
+                <th className="px-4 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Amount
+                </th>
+                <th className="pl-4 pr-10 py-8"></th>
               </tr>
-            ) : error ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-red-500"
-                >
-                  {error}
-                </td>
-              </tr>
-            ) : formattedOrders.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-8 py-10 text-center text-sm font-medium text-slate-400"
-                >
-                  No orders found.
-                </td>
-              </tr>
-            ) : (
-              formattedOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-slate-50/50 transition-colors group"
-                >
-                  <td className="px-8 py-5">
-                    <span className="text-[14px] font-bold text-slate-800 tracking-tight">
-                      {order.product}
-                    </span>
-                  </td>
+            </thead>
 
-                  <td className="px-6 py-5">
-                    <span className="text-[12px] font-bold text-[#5D5FEF] bg-[#5D5FEF]/5 px-2 py-1 rounded-md">
-                      {order.id}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5 text-sm font-medium text-slate-500">
-                    {order.category}
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <span className="text-xs font-black text-slate-400">
-                      {order.size}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-5 text-[14px] font-black text-slate-900">
-                    {order.price}
-                  </td>
-
-                  <td className="px-6 py-5 text-center">
-                    <StatusBadge status={order.status} />
-                  </td>
-
-                  <td className="px-8 py-5 text-right">
-                    <ActionMenu
-                      orderId={order.id}
-                      currentStatus={order.status}
-                      token={token}
-                      onStatusUpdate={handleStatusUpdate}
-                    />
+            <tbody className="divide-y divide-zinc-50">
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="py-32 text-center text-xs font-medium text-zinc-400 tracking-widest uppercase animate-pulse"
+                  >
+                    Syncing Database...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                orders.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="group hover:bg-[#F8FBFA]/50 transition-colors duration-500"
+                  >
+                    <td className="pl-10 pr-4 py-6">
+                      <span className="text-[11px] font-bold text-zinc-400 bg-zinc-50 px-2 py-1 rounded-lg border border-zinc-100">
+                        #{order._id.slice(-6).toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-6">
+                      <div className="text-[13px] font-semibold text-zinc-900">
+                        {order.customerName || "External User"}
+                      </div>
+                      <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider mt-0.5">
+                        Verified Payer
+                      </div>
+                    </td>
+                    <td className="px-4 py-6">
+                      <div className="text-[13px] text-zinc-600 font-medium max-w-[280px] leading-relaxed group-hover:text-zinc-900 transition-colors">
+                        {order.items?.length > 0
+                          ? order.items.map((i) => i.name).join(", ")
+                          : "No Items"}
+                      </div>
+                    </td>
+                    <td className="px-4 py-6 text-center">
+                      <div className="text-[11px] font-black text-zinc-400 uppercase tracking-tighter">
+                        {order.items?.length > 0
+                          ? [...new Set(order.items.map((i) => i.size))].join(
+                              ", ",
+                            )
+                          : "—"}
+                      </div>
+                    </td>
+                    <td className="px-4 py-6">
+                      <span className="text-[10px] font-bold text-[#2D4F3C] bg-[#EBF5EE] px-2.5 py-1 rounded-lg uppercase tracking-tight">
+                        {order.items?.[0]?.category || "General"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-6 text-center">
+                      <div className="flex justify-center items-center">
+                        <StatusBadge status={order.status} />
+                      </div>
+                    </td>
+                    <td className="px-4 py-6">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-zinc-900 font-medium text-base">
+                          ₹{(order.pricing?.total || 0).toLocaleString("en-IN")}
+                        </span>
+                        <ArrowUpRight
+                          size={10}
+                          className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                      </div>
+                    </td>
+                    <td className="pl-4 pr-10 py-6 text-right">
+                      <ActionMenu
+                        orderId={order._id}
+                        currentStatus={order.status}
+                        token={token}
+                        onStatusUpdate={handleStatusUpdate}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        {/* Footer Pagination */}
-        <div className="px-8 py-6 border-t border-slate-50 flex items-center justify-between bg-[#FDFDFD]">
-          <button
-            className="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-slate-500 transition-all disabled:opacity-50"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft size={16} /> Previous
-          </button>
-
-          <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (pageNumber) => (
-              <button
-                key={pageNumber}
-                onClick={() => setCurrentPage(pageNumber)}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
-                  currentPage === pageNumber
-                    ? "bg-black text-white shadow-lg shadow-black/10"
-                    : "text-slate-400 hover:bg-slate-100"
-                }`}
-              >
-                {pageNumber}
-              </button>
-              ),
-            )}
+        {/* Footer / Pagination */}
+        <div className="px-10 py-8 bg-zinc-50/30 border-t border-zinc-100/80 flex items-center justify-between">
+          <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.15em]">
+            Page <span className="text-zinc-900">{currentPage}</span> of{" "}
+            {totalPages}
           </div>
 
-          <button
-            className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-black transition-all disabled:opacity-50"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Next <ChevronRight size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="p-3 text-zinc-400 hover:text-[#2D4F3C] hover:bg-white rounded-xl border border-transparent hover:border-zinc-200 transition-all disabled:opacity-20 shadow-sm"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="flex gap-1.5 px-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-9 h-9 rounded-xl text-[11px] font-bold transition-all duration-300 ${
+                    currentPage === i + 1
+                      ? "bg-zinc-900 text-white shadow-lg shadow-zinc-200"
+                      : "text-zinc-400 hover:bg-white hover:text-zinc-900"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="p-3 text-zinc-900 hover:text-white hover:bg-zinc-900 rounded-xl border border-zinc-200 transition-all disabled:opacity-20 shadow-sm"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
