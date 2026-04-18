@@ -81,7 +81,7 @@ export const AdminLayout = () => {
       icon: ShoppingBag,
       roles: ["devAdmin", "admin"],
     },
-    { to: "users", label: "Customers", icon: Users, roles: ["devAdmin"] },
+    { to: "users", label: "Admins", icon: Users, roles: ["devAdmin"] },
   ];
 
   const handleLogout = () => {
