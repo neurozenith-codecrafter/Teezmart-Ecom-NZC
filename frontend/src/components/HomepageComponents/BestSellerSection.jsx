@@ -138,6 +138,7 @@ export const BestSellerSection = () => {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/recommended`);
         setBestSellers(response.data.data);
       } catch (error) {
+        console.log(import.meta.env.VITE_API_URL);
         console.error("Error fetching best sellers:", error);
       }
     };

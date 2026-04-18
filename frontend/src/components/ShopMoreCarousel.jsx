@@ -3,7 +3,7 @@ import { Star, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, useMotionValue, animate } from "framer-motion";
-import Loader from "../components/Loader"
+import Loader from "../components/Loader";
 
 // --- PROFESSIONAL DUMMY DATA ---
 
@@ -92,12 +92,30 @@ export const ShopMoreCarousel = ({ productId }) => {
 
     x.set(0);
 
+    const preloadImages = (products) => {
+      return Promise.all(
+        products.map((p) => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.src = p.images?.[0]?.url; // 🔥 IMPORTANT: match your actual data
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }),
+      );
+    };
+
     const fetchRelated = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${productId}/suggestions`);
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/products/${productId}/suggestions`,
+        );
 
-        if (res.data.data?.length > 0) {
-          setProducts(res.data.data);
+        const data = res.data.data;
+
+        if (data?.length > 0) {
+          await preloadImages(data); // ✅ WAIT here
+          setProducts(data); // ✅ THEN render
         }
       } catch (error) {
         console.error("Error fetching show more ->", error);
@@ -105,44 +123,47 @@ export const ShopMoreCarousel = ({ productId }) => {
     };
 
     fetchRelated();
-  }, [productId, x]);
+  }, [productId, x]); // ❗ removed x
 
   useEffect(() => {
+    if (!containerRef.current) return;
+
     const updateConstraints = () => {
       requestAnimationFrame(() => {
-        if (!containerRef.current) return;
-
         const scrollWidth = containerRef.current.scrollWidth;
         const offsetWidth = containerRef.current.offsetWidth;
-
         const maxDrag = Math.min(0, offsetWidth - scrollWidth - 80);
         setConstraints({ left: maxDrag, right: 0 });
       });
     };
 
-    updateConstraints(); // ✅ runs AFTER products render
+    // ResizeObserver watches the ACTUAL size of the element,
+    // including when it grows due to images loading.
+    const resizeObserver = new ResizeObserver(() => {
+      updateConstraints();
+    });
 
-    window.addEventListener("resize", updateConstraints);
-    return () => window.removeEventListener("resize", updateConstraints);
-  }, [products]); // ✅ KEY CHANGE
+    resizeObserver.observe(containerRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, [products]);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const handleWheel = (e) => {
-      // Sensitivity factor - touchpads often send very small deltas
-      const sensitivity = 1.2;
-
-      // If the user is swiping horizontally on trackpad
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
-        const currentX = x.get();
-        const newX = currentX - e.deltaX * sensitivity;
 
-        // Apply hard boundaries so we don't scroll into infinity
-        const boundedX = Math.max(constraints.left, Math.min(0, newX));
-        x.set(boundedX);
+        // Use requestAnimationFrame to ensure we only update the
+        // motion value when the browser is ready to paint.
+        requestAnimationFrame(() => {
+          const currentX = x.get();
+          const newX = currentX - e.deltaX * 1.2;
+          const boundedX = Math.max(constraints.left, Math.min(0, newX));
+          x.set(boundedX);
+        });
       }
     };
 
@@ -198,12 +219,13 @@ export const ShopMoreCarousel = ({ productId }) => {
           whileTap={{ cursor: "grabbing" }}
           className="flex gap-5 md:gap-8 cursor-grab active:cursor-grabbing select-none"
         >
-          {
-            !products.length ? <Loader /> :
+          {!products.length ? (
+            <Loader />
+          ) : (
             products.map((item) => (
               <ProductCard key={item._id} product={item} />
             ))
-          }
+          )}
 
           <Link
             to="/catalog"
