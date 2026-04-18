@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../Hooks/useAuth";
+import { useCommerce } from "../Hooks/useCommerce";
 import {
   Menu,
   Search,
@@ -21,7 +22,6 @@ import {
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
-import { useCommerce } from "../Hooks/useCommerce";
 import DropDown from "../components/HomepageComponents/DropDown";
 
 const Navbar = () => {

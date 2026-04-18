@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/UserSchema");
+const Cart = require("../Models/CartSchema");
+const { buildSafeUser } = require("../Utils/userResponse");
 
 exports.protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -53,7 +55,6 @@ exports.protect = async (req, res, next) => {
   }
 };
 
-// Role-based access control middleware
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -67,37 +68,26 @@ exports.authorizeRoles = (...roles) => {
   };
 };
 
-// Optional helper
-const Cart = require("../Models/CartSchema");
-const Wishlist = require("../Models/WishlistSchema");
-
 exports.getMe = async (req, res) => {
   try {
-    const userId = req.user._id;
-
-    // Fetch in parallel (important for performance)
-    const [cart, wishlist] = await Promise.all([
-      Cart.findOne({ user: userId }),
-      Wishlist.findOne({ user: userId }),
-    ]);
-
-    const cartCount = cart?.totalQuantity || 0;
-    const wishlistCount = wishlist?.items?.length || 0;
+    const cart = await Cart.findOne({ user: req.user._id }).select("totalQuantity");
+    const safeUser = buildSafeUser(req.user);
 
     res.status(200).json({
       success: true,
       message: "User fetched successfully",
       data: {
-        ...req.user.toObject(), // important if it's a mongoose doc
-        cartCount,
-        wishlistCount,
+        ...safeUser,
+        cartCount: cart?.totalQuantity || 0,
       },
+      user: safeUser,
     });
   } catch (error) {
     console.error("getMe error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch user",
+      data: null,
     });
   }
 };

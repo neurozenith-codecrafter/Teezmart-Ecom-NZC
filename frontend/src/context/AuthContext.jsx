@@ -1,20 +1,33 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./authContextInstance";
 
+const extractAuthUser = (payload) => {
+  const userData =
+    payload?.data ||
+    payload?.user ||
+    (payload?._id ? payload : null);
+
+  if (!userData || typeof userData !== "object") {
+    return null;
+  }
+
+  const { cartCount, wishlistCount, ...pureUser } = userData;
+  return pureUser;
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
       return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      console.error("Failed to parse stored user:", error);
+    } catch {
       return null;
     }
   });
+
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
-  // 🔥 Fetch user on app load
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -31,15 +44,18 @@ export const AuthProvider = ({ children }) => {
           },
         });
 
-        if (!res.ok) {
-          throw new Error("Auth failed");
+        if (!res.ok) throw new Error("Auth failed");
+
+        const payload = await res.json();
+        const userData = extractAuthUser(payload);
+
+        if (!userData) {
+          throw new Error("Invalid auth response");
         }
 
-        const data = await res.json();
-
-        setUser(data.data);
+        setUser(userData);
         setToken(storedToken);
-        localStorage.setItem("user", JSON.stringify(data.data));
+        localStorage.setItem("user", JSON.stringify(userData));
       } catch (err) {
         console.error("Auth init error:", err);
         localStorage.removeItem("token");
@@ -54,16 +70,20 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // 🔥 Login function (used after Google auth)
-  const login = (userData, tokenData) => {
-    setUser(userData);
+  const login = (payload, tokenData) => {
+    const pureUser = extractAuthUser(payload);
+
+    if (!pureUser) {
+      throw new Error("Invalid login payload");
+    }
+
+    setUser(pureUser);
     setToken(tokenData);
 
     localStorage.setItem("token", tokenData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(pureUser));
   };
 
-  // 🔥 Logout function
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -87,4 +107,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

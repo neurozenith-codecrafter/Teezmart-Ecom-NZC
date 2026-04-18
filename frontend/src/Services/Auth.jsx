@@ -46,7 +46,7 @@ const Auth = () => {
       const data = await response.json();
 
       // ✅ Consistent backend contract
-      login(data.data, data.token);
+      login(data, data.token);
 
       navigate("/", { replace: true });
     } catch (err) {
