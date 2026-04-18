@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus,
   Minus,
@@ -260,9 +260,16 @@ const EmptyCart = () => {
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, cartItems, isCartLoading, updateCartItem, removeCartItem } =
+  const location = useLocation();
+
+  const { cart, cartItems, isCartLoading, updateCartItem, removeCartItem, refreshCart } =
     useCart();
   const [busyKey, setBusyKey] = useState("");
+
+
+useEffect(() => {
+  refreshCart();
+}, [location.pathname, refreshCart]);
 
   // Resolve the product ObjectId — works even when populate returns null
   // (item.product is always the raw ObjectId string/object from the DB)
