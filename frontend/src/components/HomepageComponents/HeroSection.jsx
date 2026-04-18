@@ -186,7 +186,7 @@ const HeroSection = () => {
           </Motion.button>
         </Link>
 
-        <Link to={"/catalog"}>
+        <Link to={"/catalog?collection=best"}>
           <Motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.8 }}

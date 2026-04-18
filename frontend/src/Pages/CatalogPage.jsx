@@ -71,8 +71,19 @@ const ProductCard = ({
 
             <div
               className="
-                pointer-events-none
-                [@media(hover:hover)_and_(pointer:fine)]:pointer-events-auto
+                absolute bottom-5 left-1/2 -translate-x-1/2
+                transition-all duration-300
+
+                // MOBILE (default)
+                opacity-0 pointer-events-none
+
+                // DESKTOP base state
+                md:opacity-0 md:pointer-events-none
+
+                // DESKTOP hover state
+                md:group-hover:opacity-100
+                md:group-hover:translate-y-0
+                md:group-hover:pointer-events-auto
               "
             >
               <Motion.button
