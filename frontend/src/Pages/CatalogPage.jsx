@@ -4,9 +4,15 @@ import { Star, SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
+import { useWishlist } from "../Hooks/useWishlist";
 
-const ProductCard = ({ product, index, handleAddToCart }) => {
-  const [isLiked, setIsLiked] = useState(false);
+const ProductCard = ({
+  product,
+  index,
+  isLiked,
+  handleAddToCart,
+  onToggleWishlist,
+}) => {
   const [isAdded, setIsAdded] = useState(false);
 
   const onAdd = async (e) => {
@@ -24,10 +30,10 @@ const ProductCard = ({ product, index, handleAddToCart }) => {
     }
   };
 
-  const toggleWishlist = (e) => {
+  const toggleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    await onToggleWishlist(product);
   };
 
   return (
@@ -42,6 +48,7 @@ const ProductCard = ({ product, index, handleAddToCart }) => {
         <div className="space-y-4">
           <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)]">
             <button
+              type="button"
               onClick={toggleWishlist}
               className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-90 shadow-sm"
             >
@@ -227,6 +234,7 @@ export const CatalogPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { handleAddToCart } = useCart();
+  const { wishlistIds, handleToggleWishlist } = useWishlist();
 
   const activeCategory = normalizeCategory(searchParams.get("category"));
   const activeFilterParam = normalizeFilter(searchParams.get("collection"));
@@ -581,7 +589,9 @@ export const CatalogPage = () => {
                 key={item._id}
                 product={item}
                 index={index}
+                isLiked={wishlistIds.has(String(item._id))}
                 handleAddToCart={handleAddToCart}
+                onToggleWishlist={handleToggleWishlist}
               />
             ))
           )}
