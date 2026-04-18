@@ -70,7 +70,7 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
   if (!Number.isInteger(normalizedQuantity) || normalizedQuantity < 1) {
     throw new Error("Quantity must be at least 1");
   }
-  
+
   // 🔹 2. Get product
   const product = await Product.findById(productId);
 
@@ -151,8 +151,25 @@ exports.getCart = async (userId) => {
     };
   }
 
+  // 🔥 STEP 1: Remove invalid/deleted products
+  const validItems = cart.items.filter(
+    (item) => item.product && item.product._id,
+  );
+
+  const isChanged = validItems.length !== cart.items.length;
+
+  if (isChanged) {
+    cart.items = validItems;
+  }
+
   syncSnapshotsFromProducts(cart);
+
   recalculateCart(cart);
+
+  if (isChanged) {
+    await cart.save();
+  }
+
   return cart;
 };
 
