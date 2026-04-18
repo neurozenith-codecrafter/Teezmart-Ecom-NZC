@@ -28,7 +28,9 @@ const ProductPage = () => {
 
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/${slug}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/products/${slug}`,
+        );
         setProduct(response.data.data);
         setProductImages(response.data.data.images);
         setSelectedImg(0);
@@ -302,7 +304,10 @@ const ProductPage = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <RatingSummary />
+            <RatingSummary
+              ratingData={product?.ratings}
+              reviewCount={product?.numReviews}
+            />
           </Motion.div>
         </div>
       </main>

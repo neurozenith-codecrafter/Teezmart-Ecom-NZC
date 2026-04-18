@@ -1,31 +1,38 @@
 import React from "react";
 import { Star } from "lucide-react";
 
-const RatingSummary = () => {
-  const distribution = [
-    { stars: 5, width: "w-[85%]" },
-    { stars: 4, width: "w-[30%]" },
-    { stars: 3, width: "w-[12%]" },
-    { stars: 2, width: "w-[5%]" },
-    { stars: 1, width: "w-[2%]" },
-  ];
+const RatingSummary = ({ ratingData, reviewCount }) => {
+  // 1. Fallback data structure if backend hasn't loaded yet or data is missing
+  // Expecting ratingData to look like: { 1: 2, 2: 5, 3: 10, 4: 50, 5: 100, average: 4.5 }
+  const stats = ratingData || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, average: 0 };
+  const totalReviews = reviewCount || 0;
+
+  // 2. Generate the breakdown dynamically
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = stats[star] || 0;
+    // Calculate percentage width; if no reviews, width is 0%
+    const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+
+    return {
+      stars: star,
+      width: `${percentage}%`,
+      count: count,
+    };
+  });
 
   return (
     <section className="w-full pt-16 pb-8 border-t border-zinc-100 animate-in fade-in duration-1000">
-      {/* 'justify-center' centers the two columns horizontally.
-          'items-center' keeps them aligned vertically in the center.
-      */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-32 max-w-screen-xl mx-auto">
-        {/* --- LEFT SIDE: THE RATING --- */}
+        {/* --- LEFT SIDE: THE AVERAGE --- */}
         <div className="flex flex-col items-center md:items-start shrink-0 text-center md:text-left">
           <div className="flex items-baseline justify-center md:justify-start">
             <span className="text-8xl font-bold tracking-tighter text-black leading-none">
-              4.5
+              {stats.average > 0 ? stats.average.toFixed(1) : "0"}
             </span>
             <span className="text-2xl font-light text-zinc-400 ml-2">/5</span>
           </div>
           <p className="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
-            (50 New Reviews)
+            ({totalReviews} Total Reviews)
           </p>
         </div>
 
@@ -40,10 +47,14 @@ const RatingSummary = () => {
               <div className="flex items-center gap-2 w-8 shrink-0">
                 <Star
                   size={12}
-                  className="fill-black text-black"
+                  className={
+                    item.count > 0 ? "fill-black text-black" : "text-zinc-200"
+                  }
                   strokeWidth={1}
                 />
-                <span className="text-[11px] font-bold text-black">
+                <span
+                  className={`text-[11px] font-bold ${item.count > 0 ? "text-black" : "text-zinc-300"}`}
+                >
                   {item.stars}
                 </span>
               </div>
@@ -51,7 +62,8 @@ const RatingSummary = () => {
               {/* Progress Bar Track */}
               <div className="flex-grow h-[3px] bg-zinc-100 rounded-full relative overflow-hidden">
                 <div
-                  className={`absolute top-0 left-0 h-full bg-black rounded-full transition-all duration-700 ease-out group-hover:bg-zinc-800 ${item.width}`}
+                  className="absolute top-0 left-0 h-full bg-black rounded-full transition-all duration-1000 ease-out group-hover:bg-zinc-800"
+                  style={{ width: item.width }} // Dynamic Width from calculation
                 />
               </div>
             </div>
