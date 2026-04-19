@@ -19,15 +19,24 @@ const orderItemSchema = new mongoose.Schema(
 
 const shippingAddressSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+
     phone: { type: String, required: true },
-    addressLine: { type: String, required: true },
+
+    addressLine1: { type: String, required: true }, // house/building
+    addressLine2: { type: String }, // street/locality
+
+    landmark: { type: String },
+
     city: { type: String, required: true },
     state: { type: String, required: true },
+
     pincode: { type: String, required: true },
-    country: { type: String, required: true },
+
+    country: { type: String, default: "India" },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const orderSchema = new mongoose.Schema(

@@ -2,14 +2,29 @@ const mongoose = require("mongoose");
 
 const addressSchema = new mongoose.Schema(
   {
-    street: { type: String, required: true, trim: true },
+    firstName: { type: String, required: true, trim: true },
+    lastName: { type: String, required: true, trim: true },
+
+    phone: { type: String, required: true, trim: true },
+
+    addressLine1: { type: String, required: true, trim: true }, 
+    // House no, Building, Apartment
+
+    addressLine2: { type: String, trim: true }, 
+    // Street, Locality, Area
+
+    landmark: { type: String, trim: true },
+
     city: { type: String, required: true, trim: true },
     state: { type: String, required: true, trim: true },
+
     pincode: { type: String, required: true, trim: true },
+
     country: { type: String, default: "India" },
+
     isDefault: { type: Boolean, default: false },
   },
-  { _id: true },
+  { _id: true }
 );
 
 const userSchema = new mongoose.Schema(

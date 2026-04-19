@@ -1,4 +1,5 @@
 const orderService = require("../Services/OrderServices");
+const { isAddressValidationErrorMessage } = require("../Utils/validation");
 
 const getUserId = (req) => req.user?._id || req.user?.id;
 
@@ -8,12 +9,11 @@ const isAdminUser = (req) =>
 const getErrorStatusCode = (error) => {
   if (
     error.name === "ValidationError" ||
-    error.message?.startsWith("Missing field:") ||
     error.message?.startsWith("Invalid ") ||
     error.message?.startsWith("Quantity must be greater than 0") ||
     error.message?.startsWith("Each item must be an object") ||
     error.message?.startsWith("Selected size not available") ||
-    error.message === "Shipping address is required" ||
+    isAddressValidationErrorMessage(error.message) ||
     error.message === "At least one item is required" ||
     error.message === "Invalid order status" ||
     error.message === "Order status cannot move backwards"

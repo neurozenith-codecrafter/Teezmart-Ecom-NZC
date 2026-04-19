@@ -1,7 +1,7 @@
 const userService = require("../Services/userServices");
 const {
   ADDRESS_ROUTE_MESSAGE,
-  PHONE_ERROR_MESSAGE,
+  isAddressValidationErrorMessage,
 } = require("../Utils/validation");
 
 const resolveUserProfileErrorStatus = (error) => {
@@ -9,39 +9,21 @@ const resolveUserProfileErrorStatus = (error) => {
     return 400;
   }
 
-  const badRequestMessages = new Set([
-    "Invalid user ID",
-    "Addresses must be an array",
-    "Addresses are required",
-    "You can add up to 5 addresses only",
-    "Only one address can be default",
-    "Only name, phone and avatar can be updated in profile",
-    "Name must be at least 2 characters long",
-    "Name must be a string",
-    "Name cannot exceed 50 characters",
-    "Avatar must be a string",
-    "Avatar cannot exceed 500 characters",
-    "Street is required",
-    "City is required",
-    "State is required",
-    "Pincode is required",
-    "Country is required",
-    "Pincode must be a valid 6-digit Indian postal code",
-    "Pincode must be 3 to 10 characters and contain only letters, numbers, spaces or hyphens",
-    ADDRESS_ROUTE_MESSAGE,
-    PHONE_ERROR_MESSAGE,
-  ]);
-
   if (
-    badRequestMessages.has(error.message) ||
-    /^Address at index \d+ must be an object$/.test(error.message) ||
-    / must be a string$/.test(error.message) ||
-    / cannot exceed \d+ characters$/.test(error.message)
+    error.message === "Invalid user ID" ||
+    error.message === "Only name, phone and avatar can be updated in profile" ||
+    error.message === "Name must be at least 2 characters long" ||
+    error.message === ADDRESS_ROUTE_MESSAGE ||
+    isAddressValidationErrorMessage(error.message)
   ) {
     return 400;
   }
 
   if (error.message === "User not found") {
+    return 404;
+  }
+
+  if (error.message === "Address not found") {
     return 404;
   }
 

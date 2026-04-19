@@ -2,41 +2,10 @@ const mongoose = require("mongoose");
 const Order = require("../Models/OrderSchema");
 const Product = require("../Models/ProductSchema");
 const { ORDER_STATUSES } = require("../Constants/constant");
-
-const requiredAddressFields = [
-  "fullName",
-  "phone",
-  "addressLine",
-  "city",
-  "state",
-  "pincode",
-  "country"
-];
-
-const normalizeShippingAddress = (shippingAddress) => {
-  if (!shippingAddress || typeof shippingAddress !== "object") {
-    throw new Error("Shipping address is required");
-  }
-
-  for (const field of requiredAddressFields) {
-    if (
-      typeof shippingAddress[field] !== "string" ||
-      shippingAddress[field].trim() === ""
-    ) {
-      throw new Error(`Missing field: ${field}`);
-    }
-  }
-
-  return Object.fromEntries(
-    requiredAddressFields.map((field) => [field, shippingAddress[field].trim()])
-  );
-};
-
-const ensureValidObjectId = (id, fieldName) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error(`Invalid ${fieldName}`);
-  }
-};
+const {
+  ensureValidObjectId,
+  normalizeShippingAddress,
+} = require("../Utils/validation");
 
 const applySession = (query, session) => (session ? query.session(session) : query);
 

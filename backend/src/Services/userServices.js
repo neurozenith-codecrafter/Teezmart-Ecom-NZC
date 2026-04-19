@@ -2,11 +2,13 @@ const User = require("../Models/UserSchema");
 const {
   ensureValidObjectId,
   ADDRESS_ROUTE_MESSAGE,
+  INVALID_ADDRESS_PAYLOAD_MESSAGE,
   validateAndNormalizeAddresses,
   validateAndNormalizeAddress,
   validateAndNormalizeAvatar,
   validateAndNormalizeName,
   validateAndNormalizePhone,
+  splitFullName,
 } = require("../Utils/validation");
 const { buildSafeUser } = require("../Utils/userResponse");
 
@@ -79,38 +81,112 @@ const updateUserProfile = async (userId, payload) => {
   return buildSafeUser(user);
 };
 
+const buildAddressFallbacks = (user, preferredAddress = {}) => {
+  const fallbackName = splitFullName(user?.name);
+
+  return {
+    fallbackFirstName:
+      preferredAddress.firstName || fallbackName.firstName || undefined,
+    fallbackLastName:
+      preferredAddress.lastName || fallbackName.lastName || undefined,
+    fallbackPhone: preferredAddress.phone || user?.phone || undefined,
+  };
+};
+
+const normalizeExistingAddresses = (user, preferredAddress = {}) => {
+  const existingAddresses = Array.isArray(user?.addresses) ? user.addresses : [];
+
+  if (existingAddresses.length === 0) {
+    return [];
+  }
+
+  return validateAndNormalizeAddresses(
+    existingAddresses.map((address) =>
+      typeof address?.toObject === "function" ? address.toObject() : address,
+    ),
+    buildAddressFallbacks(user, preferredAddress),
+  );
+};
+
+const coerceAddressPayload = (payload) => {
+  if (Array.isArray(payload)) {
+    return { mode: "replace", addresses: payload };
+  }
+
+  if (!payload || typeof payload !== "object") {
+    throw new Error(INVALID_ADDRESS_PAYLOAD_MESSAGE);
+  }
+
+  if (payload.addresses !== undefined) {
+    if (!Array.isArray(payload.addresses)) {
+      throw new Error("Addresses must be an array");
+    }
+
+    return { mode: "replace", addresses: payload.addresses };
+  }
+
+  return { mode: "upsert", address: payload };
+};
+
 const updateUserAddresses = async (currentUser, targetUserId, payload) => {
   ensureValidObjectId(targetUserId, "user ID");
   ensureCanManageUser(currentUser, targetUserId);
 
   const user = await getUserOrThrow(targetUserId);
-  if (!payload || (typeof payload !== "object" && !Array.isArray(payload))) {
-    throw new Error("Invalid payload");
+  const normalizedPayload = coerceAddressPayload(payload);
+  let finalAddresses = [];
+
+  if (normalizedPayload.mode === "replace") {
+    finalAddresses = validateAndNormalizeAddresses(
+      normalizedPayload.addresses,
+      buildAddressFallbacks(user),
+    );
+  } else {
+    const incomingAddress = validateAndNormalizeAddress(
+      normalizedPayload.address,
+      0,
+      buildAddressFallbacks(user, normalizedPayload.address),
+    );
+
+    const existingAddresses = normalizeExistingAddresses(user, incomingAddress);
+    const targetAddressId = String(
+      normalizedPayload.address?._id || normalizedPayload.address?.id || "",
+    );
+    const hasTargetId = Boolean(targetAddressId);
+    let incomingAddressIndex = existingAddresses.length;
+
+    if (hasTargetId) {
+      ensureValidObjectId(targetAddressId, "address ID");
+    }
+
+    let nextAddresses = hasTargetId
+      ? existingAddresses.map((address, index) => {
+          if (String(address._id || "") !== targetAddressId) {
+            return address;
+          }
+
+          incomingAddressIndex = index;
+          return { ...incomingAddress, _id: address._id };
+        })
+      : [...existingAddresses, incomingAddress];
+
+    if (hasTargetId && incomingAddressIndex === existingAddresses.length) {
+      throw new Error("Address not found");
+    }
+
+    if (incomingAddress.isDefault) {
+      nextAddresses = nextAddresses.map((address) => ({
+        ...address,
+        isDefault: nextAddresses.indexOf(address) === incomingAddressIndex,
+      }));
+    }
+
+    finalAddresses = validateAndNormalizeAddresses(
+      nextAddresses,
+      buildAddressFallbacks(user, incomingAddress),
+    );
   }
 
-  const rawAddresses = Array.isArray(payload) ? payload : payload?.addresses;
-
-  if (
-    !rawAddresses ||
-    (Array.isArray(rawAddresses) && rawAddresses.length === 0)
-  ) {
-    throw new Error("At least one address is required");
-  }
-
-  // Step 1: Normalize ONLY incoming addresses (without limit logic conflict)
-  const incomingAddresses = rawAddresses.map((addr, index) =>
-    validateAndNormalizeAddress(addr, index),
-  );
-
-  const existingAddresses = user.addresses || [];
-
-  // Step 2: Merge
-  const combinedAddresses = [...existingAddresses, ...incomingAddresses];
-
-  // Step 3: Validate FINAL state (this enforces max 5 + default rules)
-  const finalAddresses = validateAndNormalizeAddresses(combinedAddresses);
-
-  // Step 4: Save
   user.addresses = finalAddresses;
   await user.save();
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from 'axios';
 import { useAuth } from "../Hooks/useAuth";
 import PaymentPage from "./PaymentPage";
 
@@ -71,7 +72,7 @@ const AddressCard = ({ address, isSelected, onSelect, onEdit }) => (
       {address.city}, {address.state}
     </p>
     <p className="mt-1.5 text-gray-900 font-semibold text-[10px] tracking-wide">
-      {address.mobile}
+      {address.phone}
     </p>
   </div>
 );
@@ -88,41 +89,22 @@ const CheckoutPage = () => {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    mobile: "",
+    phone: "",
     house: "",
     street: "",
     landmark: "",
     pincode: "",
     city: "",
     state: "",
+    country: "",
   });
-  const [saveInfo, setSaveInfo] = useState(false);
+
+  // const [saveInfo, setSaveInfo] = useState(false);
+
   const [errors, setErrors] = useState({});
 
-  const [savedAddresses] = useState([
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Isaac",
-      mobile: "92343 21234",
-      house: "123 Main St",
-      street: "Anna Nagar",
-      city: "Chennai",
-      state: "Tamilnadu",
-      pincode: "600040",
-    },
-    {
-      id: 2,
-      firstName: "John",
-      lastName: "Isaac",
-      mobile: "98765 43210",
-      house: "Flat 4B, Skyview",
-      street: "OMR Road",
-      city: "Chennai",
-      state: "Tamilnadu",
-      pincode: "600119",
-    },
-  ]);
+  const [savedAddresses, setSavedAddresses] = useState(user.addresses);
+  console.log(savedAddresses);
 
   useEffect(() => {
     if (user?.name) {
@@ -141,7 +123,7 @@ const CheckoutPage = () => {
       setForm({
         firstName: "",
         lastName: "",
-        mobile: "",
+        phone: "",
         house: "",
         street: "",
         landmark: "",
@@ -303,29 +285,13 @@ const CheckoutPage = () => {
                   <PremiumInput
                     label="Phone Number"
                     placeholder="+91 XXXX-XXXXXX"
-                    value={form.mobile}
+                    value={form.phone}
                     onChange={(e) =>
-                      setForm({ ...form, mobile: e.target.value })
+                      setForm({ ...form, phone: e.target.value })
                     }
-                    error={errors.mobile}
+                    error={errors.phone}
                     className="col-span-2"
                   />
-                </div>
-
-                <div className="flex items-center space-x-2.5 mt-8 p-3 bg-gray-50 rounded-xl">
-                  <input
-                    type="checkbox"
-                    id="save-info"
-                    checked={saveInfo}
-                    onChange={(e) => setSaveInfo(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black accent-black cursor-pointer"
-                  />
-                  <label
-                    htmlFor="save-info"
-                    className="text-[12px] font-medium text-gray-500 cursor-pointer"
-                  >
-                    Save this information for next time
-                  </label>
                 </div>
 
                 <div className="mt-10 flex justify-end">

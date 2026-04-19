@@ -52,9 +52,14 @@ const generateOrder = (userId) => {
     items,
 
     shippingAddress: {
-      fullName: faker.person.fullName(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
       phone: faker.phone.number("9#########"),
-      addressLine: faker.location.streetAddress(),
+      addressLine1: faker.location.buildingNumber(),
+      addressLine2: faker.location.streetAddress(),
+      landmark: faker.helpers.maybe(() => faker.location.secondaryAddress(), {
+        probability: 0.35,
+      }),
       city: faker.location.city(),
       state: "Tamil Nadu",
       pincode: faker.location.zipCode("6#####"),
