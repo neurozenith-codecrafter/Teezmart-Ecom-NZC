@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Star, SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
+import { SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
+import RatingComponent from "../components/RatingComponent"
 
 const ProductCard = ({
   product,
@@ -14,7 +15,7 @@ const ProductCard = ({
   onToggleWishlist,
 }) => {
   const [isAdded, setIsAdded] = useState(false);
-
+  
   const onAdd = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -116,19 +117,9 @@ const ProductCard = ({
               {product.title}
             </h3>
             <div className="flex items-center gap-1.5">
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={10}
-                    fill={i < 4 ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  />
-                ))}
-              </div>
+              <RatingComponent rating={product.rating} />
               <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
-                4.5
+                {product.rating}
               </span>
             </div>
             <div className="flex items-center gap-2 pt-0.5">

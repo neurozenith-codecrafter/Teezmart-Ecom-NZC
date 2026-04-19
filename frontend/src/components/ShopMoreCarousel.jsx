@@ -1,11 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Star, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, useMotionValue, animate } from "framer-motion";
 import Loader from "../components/Loader";
+import RatingComponent from "../components/RatingComponent"
 
-// --- PROFESSIONAL DUMMY DATA ---
 
 const ProductCard = ({ product }) => {
   return (
@@ -26,19 +26,9 @@ const ProductCard = ({ product }) => {
             {product.title}
           </h3>
           <div className="flex items-center gap-1">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={10}
-                  fill={i < 4 ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth={2}
-                />
-              ))}
-            </div>
+            <RatingComponent rating={product.rating} />
             <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
-              4.5
+              {product.rating}
             </span>
           </div>
           <div className="flex items-center gap-2 pt-0.5">
