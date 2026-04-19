@@ -1,5 +1,5 @@
 const orderService = require("../Services/AdminOrderServices");
-const Order = require("../Models/OrderSchema");
+const { updateOrderStatus: updateOrderFulfillmentStatus } = require("../Services/OrderServices");
 const { ORDER_STATUSES } = require("../Constants/constant");
 
 exports.getAllOrders = async (req, res) => {
@@ -26,7 +26,6 @@ exports.getAllOrders = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { id } = req.params;
     const { status } = req.body;
 
     if (!status || !ORDER_STATUSES.includes(status)) {
@@ -36,22 +35,7 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const order = await Order.findById(id);
-    if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
-    }
-
-    order.status = status;
-
-    // Auto-set timestamps
-    if (status === "shipped" && !order.shippedAt) {
-      order.shippedAt = new Date();
-    }
-    if (status === "delivered" && !order.deliveredAt) {
-      order.deliveredAt = new Date();
-    }
-
-    await order.save();
+    const order = await updateOrderFulfillmentStatus(req.params.id, status);
 
     res.status(200).json({
       success: true,
@@ -65,9 +49,22 @@ exports.updateOrderStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Order Status Error:", error);
-    res.status(500).json({
+    const statusCode =
+      error.message === "Order not found"
+        ? 404
+        : [
+            "Invalid order status",
+            "Order status cannot move backwards",
+            "Only paid orders can enter fulfillment flow",
+            "Invalid fulfillment status transition",
+            "Invalid order ID",
+          ].includes(error.message)
+          ? 400
+          : 500;
+
+    res.status(statusCode).json({
       success: false,
-      message: "Failed to update order status",
+      message: error.message || "Failed to update order status",
     });
   }
 };

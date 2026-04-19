@@ -58,10 +58,17 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    checkoutFingerprint: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
+
     status: {
       type: String,
       enum: ORDER_STATUSES,
-      default: "order placed",
+      default: "pending",
     },
 
     payment: {
@@ -77,6 +84,24 @@ const orderSchema = new mongoose.Schema(
       },
       razorpayOrderId: String,
       razorpayPaymentId: String,
+      razorpaySignature: String,
+      failureReason: String,
+      lastAttemptAt: Date,
+    },
+
+    stockReservedAt: {
+      type: Date,
+      default: null,
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+
+    failedAt: {
+      type: Date,
+      default: null,
     },
 
     shippedAt: {
@@ -103,5 +128,26 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+orderSchema.index(
+  { user: 1, checkoutFingerprint: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: "pending",
+      "payment.status": "pending",
+    },
+  },
+);
+
+orderSchema.index(
+  { "payment.razorpayPaymentId": 1 },
+  {
+    unique: true,
+    sparse: true,
+  },
+);
+
+orderSchema.index({ status: 1, "payment.status": 1, createdAt: -1 });
 
 module.exports = mongoose.models.Order || mongoose.model("Order", orderSchema);

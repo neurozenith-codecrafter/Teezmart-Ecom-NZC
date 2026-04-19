@@ -16,7 +16,10 @@ const getErrorStatusCode = (error) => {
     isAddressValidationErrorMessage(error.message) ||
     error.message === "At least one item is required" ||
     error.message === "Invalid order status" ||
-    error.message === "Order status cannot move backwards"
+    error.message === "Order status cannot move backwards" ||
+    error.message === "Order is not awaiting payment" ||
+    error.message === "Invalid fulfillment status transition" ||
+    error.message === "Only paid orders can enter fulfillment flow"
   ) {
     return 400;
   }
@@ -38,8 +41,17 @@ const getErrorStatusCode = (error) => {
     return 404;
   }
 
-  if (error.message?.startsWith("Insufficient stock")) {
+  if (
+    error.message?.startsWith("Insufficient stock") ||
+    error.message === "Cannot confirm payment for a failed order" ||
+    error.message === "Failed to confirm payment" ||
+    error.message === "Duplicate payment reference"
+  ) {
     return 409;
+  }
+
+  if (error.message === "Access denied") {
+    return 403;
   }
 
   return 500;
@@ -109,6 +121,70 @@ exports.getMyOrders = async (req, res) => {
     res.status(getErrorStatusCode(error)).json({
       success: false,
       message: error.message || "Failed to fetch orders"
+    });
+  }
+};
+
+exports.markOrderPaymentSucceeded = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    const order = await orderService.markOrderPaymentSucceeded(
+      userId,
+      req.params.id,
+      req.body || {}
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Payment confirmed successfully",
+      order
+    });
+  } catch (error) {
+    console.error("Mark Order Payment Succeeded Error:", error);
+
+    res.status(getErrorStatusCode(error)).json({
+      success: false,
+      message: error.message || "Failed to confirm payment"
+    });
+  }
+};
+
+exports.markOrderPaymentFailed = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    const order = await orderService.markOrderPaymentFailed(
+      userId,
+      req.params.id,
+      req.body || {}
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Payment failure recorded",
+      order
+    });
+  } catch (error) {
+    console.error("Mark Order Payment Failed Error:", error);
+
+    res.status(getErrorStatusCode(error)).json({
+      success: false,
+      message: error.message || "Failed to record payment failure"
     });
   }
 };

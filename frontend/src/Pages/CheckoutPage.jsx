@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 import { useAuth } from "../Hooks/useAuth";
 import PaymentPage from "./PaymentPage";
+import Loader from "../components/Loader";
+import { useCart } from "../Hooks/useCart";
 
 // ─── Reusable Premium Components ──────────────────
 
@@ -66,10 +68,10 @@ const AddressCard = ({ address, isSelected, onSelect, onEdit }) => (
       {address.firstName} {address.lastName}
     </h4>
     <p className="text-gray-500 text-[11px] leading-relaxed truncate">
-      {address.house}, {address.street}
+      {address.addressLine1}, {address.addressLine2}
     </p>
     <p className="text-gray-500 text-[11px] leading-relaxed">
-      {address.city}, {address.state}
+      {address.city}, {address.state}, {address.pincode}.
     </p>
     <p className="mt-1.5 text-gray-900 font-semibold text-[10px] tracking-wide">
       {address.phone}
@@ -79,9 +81,10 @@ const AddressCard = ({ address, isSelected, onSelect, onEdit }) => (
 
 const CheckoutPage = () => {
   const { user, token } = useAuth();
+  const { cartItems } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
-  const cartItems = location.state?.cartItems;
+  // const cartItems = location.state?.cartItems;
   const totalPrice = location.state?.totalPrice;
 
   const [step, setStep] = useState(1);
@@ -90,68 +93,155 @@ const CheckoutPage = () => {
     firstName: "",
     lastName: "",
     phone: "",
-    house: "",
-    street: "",
+    addressLine1: "",
+    addressLine2: "",
     landmark: "",
     pincode: "",
     city: "",
     state: "",
-    country: "",
+    country: "India",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // const [saveInfo, setSaveInfo] = useState(false);
+  // const [defaultAddress, setDefaultAddress] = useState(false);
 
   const [errors, setErrors] = useState({});
 
-  const [savedAddresses, setSavedAddresses] = useState(user.addresses);
-  console.log(savedAddresses);
-
-  useEffect(() => {
-    if (user?.name) {
-      const parts = user.name.split(" ");
-      setForm((prev) => ({
-        ...prev,
-        firstName: prev.firstName || parts[0],
-        lastName: prev.lastName || parts.slice(1).join(" "),
-      }));
-    }
-  }, [user]);
+  const [savedAddresses] = useState(user.addresses);
 
   const handleSelectAddress = (addr) => {
-    if (selectedAddressId === addr.id) {
+    if (selectedAddressId === addr._id) {
       setSelectedAddressId(null);
+
       setForm({
         firstName: "",
         lastName: "",
         phone: "",
-        house: "",
-        street: "",
+        addressLine1: "",
+        addressLine2: "",
         landmark: "",
         pincode: "",
         city: "",
         state: "",
+        country: "India",
       });
     } else {
-      setSelectedAddressId(addr.id);
-      setForm({ ...addr, landmark: addr.landmark || "" });
+      setSelectedAddressId(addr._id);
+
+      // ✅ map only required fields
+      setForm({
+        firstName: addr.firstName,
+        lastName: addr.lastName,
+        phone: addr.phone,
+        addressLine1: addr.addressLine1,
+        addressLine2: addr.addressLine2 || "",
+        landmark: addr.landmark || "",
+        pincode: addr.pincode,
+        city: addr.city,
+        state: addr.state,
+        country: addr.country || "India",
+      });
     }
+
     setErrors({});
   };
 
   const handleNext = async () => {
-    const e = {};
-    Object.keys(form).forEach((key) => {
-      if (!form[key] && key !== "landmark") e[key] = "Required";
-    });
-    if (Object.keys(e).length > 0) return setErrors(e);
+    if (isLoading) return;
+
+    // ✅ Validate only if new address
+    if (!selectedAddressId) {
+      const newErrors = {};
+
+      for (const [key, value] of Object.entries(form)) {
+        if (!value && key !== "landmark") {
+          newErrors[key] = "Required";
+        }
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+
+        const firstErrorKey = Object.keys(newErrors)[0];
+        const el = document.querySelector(`[name="${firstErrorKey}"]`);
+        if (el) el.focus();
+
+        return;
+      }
+    }
+
+    setErrors({});
+
+    // 🔥 Create order BEFORE switching UI
+    const order = await handlePlaceOrder();
+
+    if (!order) return; // safety
+
+    // ✅ Now move to payment step
+    // setOrderId(order._id);
     setStep(2);
+
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handlePlaceOrder = async () => {
+    try {
+      setIsLoading(true);
+
+      let finalAddress;
+
+      if (selectedAddressId) {
+        finalAddress = user.addresses.find(
+          (addr) => addr._id === selectedAddressId,
+        );
+      } else {
+        finalAddress = form;
+
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}/address`,
+          form,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+      }
+
+      const formattedItems = cartItems.map((item) => ({
+        productId: item.product._id,
+        quantity: item.quantity,
+        size: item.size,
+      }));
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/orders/`,
+        {
+          shippingAddress: finalAddress,
+          items: formattedItems,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      return res.data; // 🔥 IMPORTANT
+    } catch (err) {
+      console.error("Order failed:", err);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBack = () => {
     if (step === 2) return setStep(1);
     navigate(-1);
   };
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-black selection:text-white pb-16">
@@ -194,9 +284,9 @@ const CheckoutPage = () => {
                 <div className="flex flex-row overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar lg:flex-col lg:max-h-[450px] lg:overflow-y-auto lg:pr-2">
                   {savedAddresses.map((addr) => (
                     <AddressCard
-                      key={addr.id}
+                      key={addr._id}
                       address={addr}
-                      isSelected={selectedAddressId === addr.id}
+                      isSelected={selectedAddressId === addr._id}
                       onSelect={handleSelectAddress}
                       onEdit={() => {}}
                     />
@@ -233,20 +323,20 @@ const CheckoutPage = () => {
                   <PremiumInput
                     label="Address"
                     placeholder="House no, Building, Apartment"
-                    value={form.house}
+                    value={form.addressLine1}
                     onChange={(e) =>
                       setForm({ ...form, house: e.target.value })
                     }
-                    error={errors.house}
+                    error={errors.addressLine1}
                     className="col-span-2"
                   />
                   <PremiumInput
                     label="Street / Locality"
-                    value={form.street}
+                    value={form.addressLine2}
                     onChange={(e) =>
                       setForm({ ...form, street: e.target.value })
                     }
-                    error={errors.street}
+                    error={errors.addressLine2}
                     className="col-span-2"
                   />
                   <PremiumInput
@@ -297,9 +387,16 @@ const CheckoutPage = () => {
                 <div className="mt-10 flex justify-end">
                   <button
                     onClick={handleNext}
+                    disabled={isLoading}
                     className="w-full sm:w-auto group bg-black text-white flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-black/10"
                   >
-                    <span>Proceed to Payment</span>
+                    <span>
+                      {step === 1
+                        ? "Continue"
+                        : !selectedAddressId
+                          ? "Save & Proceed to Payment"
+                          : "Proceed to Payment"}
+                    </span>
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -319,6 +416,7 @@ const CheckoutPage = () => {
                 cartItems={cartItems}
                 totalPrice={totalPrice}
                 shippingDetails={form}
+                // orderId={orderId}
               />
               <button
                 onClick={() => setStep(1)}

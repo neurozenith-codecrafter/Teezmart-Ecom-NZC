@@ -4,7 +4,14 @@ const Order = require("../Models/OrderSchema");
 
 const MONGO_URI = process.env.MONGO_URI_DUMMY;
 
-const ORDER_STATUSES = ["order placed", "shipped", "delivered", "cancelled"];
+const ORDER_STATUSES = [
+  "pending",
+  "order placed",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "failed",
+];
 
 const PAYMENT_STATUSES = ["pending", "paid", "failed"];
 
@@ -34,8 +41,13 @@ const generateOrder = (userId) => {
   const shippingFee = faker.helpers.arrayElement([0, 50]);
   const total = subtotal + shippingFee;
 
-  const status = faker.helpers.arrayElement(ORDER_STATUSES);
   const paymentStatus = faker.helpers.arrayElement(PAYMENT_STATUSES);
+  const status =
+    paymentStatus === "pending"
+      ? "pending"
+      : paymentStatus === "failed"
+        ? "failed"
+        : faker.helpers.arrayElement(["order placed", "shipped", "delivered", "cancelled"]);
 
   const createdAt = faker.date.between({
     from: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
@@ -75,7 +87,16 @@ const generateOrder = (userId) => {
         paymentStatus === "paid" ? faker.string.alphanumeric(10) : undefined,
       razorpayPaymentId:
         paymentStatus === "paid" ? faker.string.alphanumeric(10) : undefined,
+      lastAttemptAt: createdAt,
+      failureReason:
+        paymentStatus === "failed" ? faker.lorem.sentence() : undefined,
     },
+
+    checkoutFingerprint: faker.string.hexadecimal({ length: 64, casing: "lower" }),
+
+    stockReservedAt: paymentStatus === "paid" ? createdAt : null,
+    paidAt: paymentStatus === "paid" ? createdAt : null,
+    failedAt: paymentStatus === "failed" ? updatedAt : null,
 
     shippedAt:
       status === "shipped" || status === "delivered"
