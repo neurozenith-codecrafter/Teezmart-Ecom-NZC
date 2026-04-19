@@ -48,12 +48,18 @@ const CartItemRow = ({
       >
         <div className="flex items-center gap-4 md:gap-8 py-6">
           <div className="aspect-[4/5] w-24 md:w-32 bg-zinc-50 rounded-xl shrink-0 flex items-center justify-center border border-zinc-100">
-            <span className="text-zinc-300 text-[10px] font-bold uppercase tracking-widest text-center px-2">No image</span>
+            <span className="text-zinc-300 text-[10px] font-bold uppercase tracking-widest text-center px-2">
+              No image
+            </span>
           </div>
           <div className="flex flex-col flex-grow gap-2">
-            <p className="text-[13px] font-medium text-zinc-400 italic">Product no longer available</p>
+            <p className="text-[13px] font-medium text-zinc-400 italic">
+              Product no longer available
+            </p>
             {item.size && (
-              <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-300 font-bold">Size: {item.size}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-300 font-bold">
+                Size: {item.size}
+              </p>
             )}
             <button
               disabled={isBusy}
@@ -262,14 +268,19 @@ const CartPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { cart, cartItems, isCartLoading, updateCartItem, removeCartItem, refreshCart } =
-    useCart();
+  const {
+    cart,
+    cartItems,
+    isCartLoading,
+    updateCartItem,
+    removeCartItem,
+    refreshCart,
+  } = useCart();
   const [busyKey, setBusyKey] = useState("");
 
-
-useEffect(() => {
-  refreshCart();
-}, [location.pathname, refreshCart]);
+  useEffect(() => {
+    refreshCart();
+  }, [location.pathname, refreshCart]);
 
   // Resolve the product ObjectId — works even when populate returns null
   // (item.product is always the raw ObjectId string/object from the DB)
@@ -279,8 +290,7 @@ useEffect(() => {
   const getProductImage = (item) =>
     item?.image || item?.product?.images?.[0]?.url || "";
 
-  const getProductName = (item) =>
-    item?.name || item?.product?.title || null; // null signals "unavailable"
+  const getProductName = (item) => item?.name || item?.product?.title || null; // null signals "unavailable"
 
   const getProductPrice = (item) =>
     Number(item?.price || item?.product?.price || 0);
