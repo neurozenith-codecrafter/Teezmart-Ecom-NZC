@@ -84,7 +84,6 @@ const Auth = () => {
               onError={() =>
                 setError("Google sign-in was cancelled or failed.")
               }
-              useOneTap
               theme="outline"
               shape="pill"
               size="large"
