@@ -123,29 +123,32 @@ export const ShopMoreCarousel = ({ productId }) => {
     };
 
     fetchRelated();
-  }, [productId, x]); // ❗ removed x
-
+  }, [productId, x]);
   useEffect(() => {
-    if (!containerRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
 
     const updateConstraints = () => {
       requestAnimationFrame(() => {
-        const scrollWidth = containerRef.current.scrollWidth;
-        const offsetWidth = containerRef.current.offsetWidth;
+        if (!el) return; // extra safety
+
+        const scrollWidth = el.scrollWidth;
+        const offsetWidth = el.offsetWidth;
         const maxDrag = Math.min(0, offsetWidth - scrollWidth - 80);
+
         setConstraints({ left: maxDrag, right: 0 });
       });
     };
 
-    // ResizeObserver watches the ACTUAL size of the element,
-    // including when it grows due to images loading.
     const resizeObserver = new ResizeObserver(() => {
       updateConstraints();
     });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(el);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [products]);
 
   useEffect(() => {

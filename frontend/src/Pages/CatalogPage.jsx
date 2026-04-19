@@ -255,6 +255,11 @@ export const CatalogPage = () => {
   const activeCategory = normalizeCategory(searchParams.get("category"));
   const activeFilterParam = normalizeFilter(searchParams.get("collection"));
   const activeSortParam = normalizeSort(searchParams.get("sort"));
+  const activeSizesParamValue = searchParams.get("sizes") || "";
+  const activeSizesParam = activeSizesParamValue
+    .split(",")
+    .map((size) => size.trim().toUpperCase())
+    .filter(Boolean);
 
   const buildFilterQuery = ({
     category,
@@ -283,25 +288,23 @@ export const CatalogPage = () => {
     return params.toString();
   };
 
-  const updateSearchParams = ({ category, filter, sort }) => {
+  const updateSearchParams = ({ category, filter, sort, sizes }) => {
     const nextParams = new URLSearchParams(searchParams);
 
-    if (category) {
-      nextParams.set("category", category);
-    } else {
-      nextParams.delete("category");
-    }
+    if (category) nextParams.set("category", category);
+    else nextParams.delete("category");
 
-    if (filter && filter !== "all") {
-      nextParams.set("collection", filter);
-    } else {
-      nextParams.delete("collection");
-    }
+    if (filter && filter !== "all") nextParams.set("collection", filter);
+    else nextParams.delete("collection");
 
-    if (sort && sort !== "new") {
-      nextParams.set("sort", sort);
+    if (sort && sort !== "new") nextParams.set("sort", sort);
+    else nextParams.delete("sort");
+
+    // ✅ ADD THIS
+    if (sizes && sizes.length > 0) {
+      nextParams.set("sizes", sizes.join(","));
     } else {
-      nextParams.delete("sort");
+      nextParams.delete("sizes");
     }
 
     setSearchParams(nextParams);
@@ -329,6 +332,7 @@ export const CatalogPage = () => {
       category: draftCategory,
       filter: draftFilter,
       sort: draftSort,
+      sizes: draftSizes,
     });
     setIsFilterOpen(false);
   };
@@ -352,7 +356,14 @@ export const CatalogPage = () => {
     setAppliedSort(activeSortParam);
     setDraftFilter(activeFilterParam);
     setDraftSort(activeSortParam);
-  }, [activeCategory, activeFilterParam, activeSortParam]);
+    setAppliedSizes(activeSizesParam);
+    setDraftSizes(activeSizesParam);
+  }, [
+    activeCategory,
+    activeFilterParam,
+    activeSortParam,
+    activeSizesParamValue,
+  ]);
 
   useEffect(() => {
     if (!isFilterOpen) {
@@ -412,12 +423,24 @@ export const CatalogPage = () => {
     };
   }, [activeCategory, appliedFilter, appliedSizes, appliedSort]);
 
+  const hasSizeDraftChanges =
+    draftSizes.length !== activeSizesParam.length ||
+    draftSizes.some((size) => !activeSizesParam.includes(size));
+
   const isDirty =
     draftCategory !== activeCategory ||
-    draftFilter !== appliedFilter ||
-    draftSort !== appliedSort ||
-    draftSizes.length !== appliedSizes.length ||
-    draftSizes.some((size) => !appliedSizes.includes(size));
+    draftFilter !== activeFilterParam ||
+    draftSort !== activeSortParam ||
+    hasSizeDraftChanges;
+
+  const activeFilterCount =
+    (activeCategory ? 1 : 0) +
+    (activeFilterParam !== "all" ? 1 : 0) +
+    (activeSortParam !== "new" ? 1 : 0) +
+    (activeSizesParam.length > 0 ? 1 : 0);
+
+  const hasActiveFilters = activeFilterCount > 0;
+  const canReset = isDirty || hasActiveFilters;
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -434,9 +457,18 @@ export const CatalogPage = () => {
         <div className="relative">
           <button
             onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm transition-all border bg-white border-zinc-200 text-zinc-600 hover:border-black hover:text-black"
+            className="group relative flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white border border-zinc-200 text-zinc-600 text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm transition-all hover:border-black hover:text-black"
           >
-            <SlidersHorizontal size={13} /> Filter & Sort
+            <SlidersHorizontal size={13} />
+
+            <span>Filter & Sort</span>
+
+            {/* The Floating Badge (Cherry on Top) */}
+            {hasActiveFilters && (
+              <span className="absolute -top-2 -right-2 flex min-h-[20px] min-w-[20px] px-1.5 items-center justify-center rounded-full bg-black text-white text-xs font-semibold ring-2 ring-white shadow-md">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
 
           <AnimatePresence>
@@ -560,13 +592,13 @@ export const CatalogPage = () => {
                   <div className="p-6 pt-2 mt-auto space-y-3 bg-white/50 backdrop-blur-sm border-t border-zinc-50">
                     <div className="flex items-center gap-3">
                       <Motion.button
-                        disabled={!isDirty}
-                        whileTap={isDirty ? { scale: 0.95 } : {}}
+                        disabled={!canReset}
+                        whileTap={canReset ? { scale: 0.95 } : {}}
                         onClick={handleReset}
                         className={`
                           flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
                           ${
-                            isDirty
+                            canReset
                               ? "bg-rose-50/50 text-rose-600 hover:bg-rose-50 cursor-pointer"
                               : "bg-zinc-50 text-zinc-300 cursor-not-allowed opacity-60"
                           }
@@ -574,7 +606,7 @@ export const CatalogPage = () => {
                       >
                         <RotateCcw
                           size={12}
-                          className={isDirty ? "animate-spin-once" : ""}
+                          className={canReset ? "animate-spin-once" : ""}
                         />
                         <span>Reset</span>
                       </Motion.button>
