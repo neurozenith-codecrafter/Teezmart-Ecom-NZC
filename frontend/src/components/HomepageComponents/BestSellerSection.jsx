@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 import { useCart } from "../../Hooks/useCart";
 import { useWishlist } from "../../Hooks/useWishlist";
+import RatingComponent  from "../RatingComponent"
 
 const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
   const [isAdded, setIsAdded] = useState(false);
@@ -94,19 +95,10 @@ const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
           </h3>
 
           <div className="flex items-center gap-1.5">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={10}
-                  fill={i < 4 ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth={2}
-                />
-              ))}
-            </div>
+            <RatingComponent rating={item.rating}/>
+
             <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
-              4.5
+              {item.rating.toFixed(1)}
             </span>
           </div>
 
@@ -135,7 +127,9 @@ export const BestSellerSection = () => {
   useEffect(() => {
     const fetchBestSellers = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products/recommended`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/products/recommended`,
+        );
         setBestSellers(response.data.data);
       } catch (error) {
         console.log(import.meta.env.VITE_API_URL);

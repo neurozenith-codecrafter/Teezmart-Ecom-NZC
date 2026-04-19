@@ -305,8 +305,9 @@ const ProductPage = () => {
             viewport={{ once: true }}
           >
             <RatingSummary
-              ratingData={product?.ratings}
+              ratingData={product?.rating}
               reviewCount={product?.numReviews}
+              ratingsBreakdown={product?.ratingsBreakdown}
             />
           </Motion.div>
         </div>

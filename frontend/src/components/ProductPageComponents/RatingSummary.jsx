@@ -1,10 +1,18 @@
 import React from "react";
 import { Star } from "lucide-react";
 
-const RatingSummary = ({ ratingData, reviewCount }) => {
+const RatingSummary = ({ ratingData, reviewCount, ratingsBreakdown }) => {
   // 1. Fallback data structure if backend hasn't loaded yet or data is missing
   // Expecting ratingData to look like: { 1: 2, 2: 5, 3: 10, 4: 50, 5: 100, average: 4.5 }
-  const stats = ratingData || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, average: 0 };
+  const stats = {
+    1: ratingsBreakdown?.[1] || ratingsBreakdown?.["1"] || 0,
+    2: ratingsBreakdown?.[2] || ratingsBreakdown?.["2"] || 0,
+    3: ratingsBreakdown?.[3] || ratingsBreakdown?.["3"] || 0,
+    4: ratingsBreakdown?.[4] || ratingsBreakdown?.["4"] || 0,
+    5: ratingsBreakdown?.[5] || ratingsBreakdown?.["5"] || 0,
+    average: ratingData || 0,
+  };
+
   const totalReviews = reviewCount || 0;
 
   // 2. Generate the breakdown dynamically

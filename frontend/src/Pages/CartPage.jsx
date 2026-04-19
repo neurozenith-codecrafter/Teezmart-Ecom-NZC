@@ -277,10 +277,12 @@ const CartPage = () => {
     refreshCart,
   } = useCart();
   const [busyKey, setBusyKey] = useState("");
-
+  
   useEffect(() => {
     refreshCart();
   }, [location.pathname, refreshCart]);
+
+
 
   // Resolve the product ObjectId — works even when populate returns null
   // (item.product is always the raw ObjectId string/object from the DB)

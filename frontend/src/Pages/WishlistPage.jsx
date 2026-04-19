@@ -1,14 +1,60 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Trash2, ArrowRight, Star } from "lucide-react";
+import { useState } from "react";
+import { Heart, Trash2, ArrowRight } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useWishlist } from "../Hooks/useWishlist";
 import { useCart } from "../Hooks/useCart";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
-import { useState } from "react";
+import RatingComponent from "../components/RatingComponent"
+
+const WishlistCardSkeleton = ({ index = 0 }) => {
+  return (
+    <Motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: (index % 4) * 0.08, duration: 0.35 }}
+      className="group animate-pulse"
+    >
+      <div className="space-y-4">
+        <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] overflow-hidden bg-[linear-gradient(145deg,#f6f6f6_0%,#ececec_100%)] border border-white/70 shadow-[0_20px_45px_-25px_rgba(0,0,0,0.18)]">
+          <div className="absolute top-5 right-5 h-11 w-11 rounded-full bg-white/80 border border-zinc-200/80 shadow-sm" />
+
+          <div className="absolute inset-x-5 top-6 h-[72%] rounded-[1.6rem] bg-gradient-to-br from-white/60 via-zinc-100/90 to-zinc-200/80" />
+
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-y-0 -left-1/3 w-1/2 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-[shimmer_1.8s_infinite]" />
+          </div>
+
+          <div className="absolute bottom-5 left-1/2 h-12 w-32 -translate-x-1/2 rounded-full bg-white/90 border border-zinc-200/70 shadow-lg" />
+        </div>
+
+        <div className="space-y-2 px-1">
+          <div className="h-4 w-3/4 rounded-full bg-zinc-200" />
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {Array.from({ length: 5 }).map((_, starIndex) => (
+                <div
+                  key={starIndex}
+                  className="h-2.5 w-2.5 rounded-full bg-zinc-200"
+                />
+              ))}
+            </div>
+            <div className="h-3 w-8 rounded-full bg-zinc-200" />
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <div className="h-4 w-16 rounded-full bg-zinc-200" />
+            <div className="h-3 w-12 rounded-full bg-zinc-100" />
+            <div className="h-5 w-10 rounded-full bg-red-50" />
+          </div>
+        </div>
+      </div>
+    </Motion.div>
+  );
+};
 
 const WishlistPage = () => {
   const navigate = useNavigate();
-  const { wishlistItems, handleToggleWishlist } = useWishlist();
+  const { wishlistItems, isWishlistLoading, handleToggleWishlist } = useWishlist();
   const { handleAddToCart } = useCart();
   const [loadingProductId, setLoadingProductId] = useState(null);
 
@@ -31,7 +77,7 @@ const WishlistPage = () => {
     }
   };
 
-  if (!validItems.length) {
+  if (!validItems.length && !isWishlistLoading) {
     return (
       <div className="min-h-[70vh] bg-[#FBFBFB] flex items-center justify-center px-4">
         <Motion.div
@@ -74,8 +120,13 @@ const WishlistPage = () => {
       <main className="w-full">
         {/* Exact Grid spacing from Img1: gap-x-6 gap-y-14 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
-          <AnimatePresence mode="popLayout">
-            {validItems.map((item) => {
+          {isWishlistLoading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <WishlistCardSkeleton key={index} index={index} />
+            ))
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {validItems.map((item) => {
               // Item has an ID but product data is gone (deleted between fetches)
               const isAvailable = !!(item.title && item.images?.length);
 
@@ -167,19 +218,7 @@ const WishlistPage = () => {
 
                       {/* RATING */}
                       <div className="flex items-center gap-1.5">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={10}
-                              fill={
-                                i < (item.rating || 4) ? "currentColor" : "none"
-                              }
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            />
-                          ))}
-                        </div>
+                        <RatingComponent rating={item.rating}/>
                         <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
                           {item.rating || "4.5"}
                         </span>
@@ -199,10 +238,11 @@ const WishlistPage = () => {
                       </div>
                     </div>
                   </div>
-                </Motion.div>
+                  </Motion.div>
               );
-            })}
-          </AnimatePresence>
+              })}
+            </AnimatePresence>
+          )}
         </div>
       </main>
     </div>

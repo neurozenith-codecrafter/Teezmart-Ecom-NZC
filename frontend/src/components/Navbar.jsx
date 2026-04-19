@@ -443,7 +443,7 @@ const Navbar = () => {
                         <ShoppingCart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:opacity-60 transition-opacity" />
                         {cartCount > 0 ? (
                           <Motion.span
-                            layoutId="cartBadge"
+                            // layoutId="cartBadge"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-zinc-900 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center"

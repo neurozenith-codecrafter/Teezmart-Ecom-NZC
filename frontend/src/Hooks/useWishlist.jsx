@@ -5,7 +5,13 @@ import { useCommerce } from "./useCommerce";
 export const useWishlist = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
-  const { wishlistItems, wishlistIds, toggleWishlist, refreshWishlist } = useCommerce();
+  const {
+    wishlistItems,
+    wishlistIds,
+    isWishlistLoading,
+    toggleWishlist,
+    refreshWishlist,
+  } = useCommerce();
 
   const handleToggleWishlist = async (product) => {
     if (!token) {
@@ -25,6 +31,7 @@ export const useWishlist = () => {
   return {
     wishlistItems,
     wishlistIds,
+    isWishlistLoading,
     refreshWishlist,
     handleToggleWishlist,
   };

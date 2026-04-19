@@ -1,11 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Star, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion, useMotionValue, animate } from "framer-motion";
 import Loader from "../components/Loader";
+import RatingComponent from "../components/RatingComponent"
 
-// --- PROFESSIONAL DUMMY DATA ---
 
 const ProductCard = ({ product }) => {
   return (
@@ -26,19 +26,9 @@ const ProductCard = ({ product }) => {
             {product.title}
           </h3>
           <div className="flex items-center gap-1">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={10}
-                  fill={i < 4 ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth={2}
-                />
-              ))}
-            </div>
+            <RatingComponent rating={product.rating} />
             <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
-              4.5
+              {product.rating}
             </span>
           </div>
           <div className="flex items-center gap-2 pt-0.5">
@@ -123,29 +113,32 @@ export const ShopMoreCarousel = ({ productId }) => {
     };
 
     fetchRelated();
-  }, [productId, x]); // ❗ removed x
-
+  }, [productId, x]);
   useEffect(() => {
-    if (!containerRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
 
     const updateConstraints = () => {
       requestAnimationFrame(() => {
-        const scrollWidth = containerRef.current.scrollWidth;
-        const offsetWidth = containerRef.current.offsetWidth;
+        if (!el) return; // extra safety
+
+        const scrollWidth = el.scrollWidth;
+        const offsetWidth = el.offsetWidth;
         const maxDrag = Math.min(0, offsetWidth - scrollWidth - 80);
+
         setConstraints({ left: maxDrag, right: 0 });
       });
     };
 
-    // ResizeObserver watches the ACTUAL size of the element,
-    // including when it grows due to images loading.
     const resizeObserver = new ResizeObserver(() => {
       updateConstraints();
     });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(el);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [products]);
 
   useEffect(() => {
