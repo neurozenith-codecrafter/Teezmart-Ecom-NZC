@@ -52,46 +52,44 @@ exports.googleAuth = async (req, res) => {
       });
     }
 
-    // ✅ Determine role dynamically
+    // ✅ Determine role
     let role = "user";
-
     if (devAdmins.includes(normalizedEmail)) {
       role = "devAdmin";
     } else if (admins.includes(normalizedEmail)) {
       role = "admin";
     }
 
-    let user = await User.findOne({ email: normalizedEmail });
+    // 🔥 SINGLE ATOMIC OPERATION
+    let user = await User.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        $set: {
+          googleId: sub,
+          role,
+        },
+        $currentDate: {
+          lastLogin: true, // ✅ better than new Date()
+        },
+        $setOnInsert: {
+          email: normalizedEmail,
+          name,
+          avatar: picture,
+          addresses: [], // only for new users
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      },
+    );
 
-    if (!user) {
-      // ✅ New user
-      user = await User.create({
-        googleId: sub,
-        email: normalizedEmail,
-        name,
-        avatar: picture,
-        role,
-        lastLogin: new Date(),
-      });
-    } else {
-      // ✅ Existing user
-      user.lastLogin = new Date();
-      user.googleId = sub;
-      user.email = normalizedEmail;
-
-      // 🔥 CRITICAL FIX → update role if changed
-      if (user.role !== role) {
-        user.role = role;
-      }
-
-      await user.save();
-    }
-
-    // ✅ Include role in JWT (optional but powerful)
+    // ✅ JWT
     const appToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     const safeUser = buildSafeUser(user);
@@ -103,9 +101,11 @@ exports.googleAuth = async (req, res) => {
       data: safeUser,
       user: safeUser,
     });
-
   } catch (err) {
     console.error("Google Auth Error:", err);
+    console.error("Error code:", err.code);
+    console.error("Error message:", err.message);
+
     res.status(500).json({
       success: false,
       message: "Authentication failed",

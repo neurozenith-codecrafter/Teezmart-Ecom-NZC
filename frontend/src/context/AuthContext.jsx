@@ -11,7 +11,7 @@ const extractAuthUser = (payload) => {
     return null;
   }
 
-  const { cartCount, wishlistCount, ...pureUser } = userData;
+  const { ...pureUser } = userData;
   return pureUser;
 };
 
