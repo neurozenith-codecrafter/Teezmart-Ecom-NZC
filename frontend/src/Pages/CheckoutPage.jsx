@@ -7,8 +7,28 @@ import Loader from "../components/Loader";
 import { useCart } from "../Hooks/useCart";
 
 // ─── Reusable Premium Components ──────────────────
+const DEFAULT_ADDRESS_FORM = {
+  firstName: "",
+  lastName: "",
+  phone: "",
+  addressLine1: "",
+  addressLine2: "",
+  landmark: "",
+  pincode: "",
+  city: "",
+  state: "",
+  country: "India",
+};
 
-const PremiumInput = ({ label, id, error, className = "", ...props }) => (
+const PremiumInput = ({
+  label,
+  id,
+  error,
+  className = "",
+  selectedAddressId,
+  editMode,
+  ...props
+}) => (
   <div className={`flex flex-col space-y-1 w-full ${className}`}>
     <label
       htmlFor={id}
@@ -19,6 +39,8 @@ const PremiumInput = ({ label, id, error, className = "", ...props }) => (
     <input
       id={id}
       {...props}
+      name={props.name || id}
+      disabled={Boolean(selectedAddressId) && !editMode}
       className={`w-full px-3.5 py-2.5 text-[13px] text-gray-800 bg-gray-50/50 border rounded-lg 
                   outline-none transition-all duration-200 ease-in-out
                   ${error ? "border-red-400 bg-red-50/30" : "border-gray-200 focus:border-black focus:bg-white focus:ring-2 focus:ring-black/5"}`}
@@ -89,21 +111,11 @@ const CheckoutPage = () => {
 
   const [step, setStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    addressLine1: "",
-    addressLine2: "",
-    landmark: "",
-    pincode: "",
-    city: "",
-    state: "",
-    country: "India",
-  });
+  const [form, setForm] = useState(DEFAULT_ADDRESS_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [pendingOrder, setPendingOrder] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   // const [defaultAddress, setDefaultAddress] = useState(false);
 
@@ -111,22 +123,15 @@ const CheckoutPage = () => {
 
   const savedAddresses = user?.addresses || [];
 
-  const handleSelectAddress = (addr) => {
-    if (selectedAddressId === addr._id) {
-      setSelectedAddressId(null);
+  const handleSelectAddress = (addr, options = {}) => {
+    const { enableEdit = false } = options;
+    const isSameAddress = selectedAddressId === addr._id;
 
-      setForm({
-        firstName: "",
-        lastName: "",
-        phone: "",
-        addressLine1: "",
-        addressLine2: "",
-        landmark: "",
-        pincode: "",
-        city: "",
-        state: "",
-        country: "India",
-      });
+    setEditMode(enableEdit);
+
+    if (isSameAddress && !enableEdit) {
+      setSelectedAddressId(null);
+      setForm(DEFAULT_ADDRESS_FORM);
     } else {
       setSelectedAddressId(addr._id);
 
@@ -146,6 +151,18 @@ const CheckoutPage = () => {
     }
 
     setErrors({});
+  };
+
+  const handleEditAddress = (addr) => {
+    handleSelectAddress(addr, { enableEdit: true });
+  };
+
+  const handleAddNewAddress = () => {
+    setSelectedAddressId(null);
+    setEditMode(true);
+    setCheckoutError("");
+    setErrors({});
+    setForm(DEFAULT_ADDRESS_FORM);
   };
 
   const handleNext = async () => {
@@ -199,10 +216,23 @@ const CheckoutPage = () => {
 
       let finalAddress;
 
-      if (selectedAddressId) {
-        finalAddress = user.addresses.find(
-          (addr) => addr._id === selectedAddressId,
+      if (selectedAddressId && editMode) {
+        const updatedAddressRes = await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}/address`,
+          { ...form, _id: selectedAddressId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
+
+        const updatedUser = updatedAddressRes.data?.data;
+        finalAddress =
+          updatedUser?.addresses?.find((addr) => addr._id === selectedAddressId) ||
+          { ...form, _id: selectedAddressId };
+      } else if (selectedAddressId) {
+        finalAddress = user.addresses.find((addr) => addr._id === selectedAddressId);
       } else {
         finalAddress = form;
 
@@ -303,14 +333,19 @@ const CheckoutPage = () => {
                 <div className="flex flex-row overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar lg:flex-col lg:max-h-[450px] lg:overflow-y-auto lg:pr-2">
                   {savedAddresses.map((addr) => (
                     <AddressCard
+                      setEditMode={setEditMode}
+                      editMode={editMode}
                       key={addr._id}
                       address={addr}
                       isSelected={selectedAddressId === addr._id}
                       onSelect={handleSelectAddress}
-                      onEdit={() => {}}
+                      onEdit={handleEditAddress}
                     />
                   ))}
-                  <button className="flex-shrink-0 w-[140px] lg:w-full py-4 lg:py-4 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-[11px] font-bold hover:border-gray-200 transition-all flex items-center justify-center">
+                  <button
+                    onClick={handleAddNewAddress}
+                    className="flex-shrink-0 w-[140px] lg:w-full py-4 lg:py-4 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-[11px] font-bold hover:border-gray-200 transition-all flex items-center justify-center"
+                  >
                     + New
                   </button>
                 </div>
@@ -322,6 +357,10 @@ const CheckoutPage = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="firstName"
+                    name="firstName"
                     label="First Name"
                     value={form.firstName}
                     onChange={(e) =>
@@ -331,6 +370,10 @@ const CheckoutPage = () => {
                     className="col-span-1"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="lastName"
+                    name="lastName"
                     label="Last Name"
                     value={form.lastName}
                     onChange={(e) =>
@@ -340,7 +383,11 @@ const CheckoutPage = () => {
                     className="col-span-1"
                   />
                   <PremiumInput
-                    label="Address"
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="addressLine1"
+                    name="addressLine1"
+                    label="Flat/ House No/ Building"
                     placeholder="House no, Building, Apartment"
                     value={form.addressLine1}
                     onChange={(e) =>
@@ -353,6 +400,10 @@ const CheckoutPage = () => {
                     className="col-span-2"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="addressLine2"
+                    name="addressLine2"
                     label="Street / Locality"
                     value={form.addressLine2}
                     onChange={(e) =>
@@ -365,6 +416,10 @@ const CheckoutPage = () => {
                     className="col-span-2"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="landmark"
+                    name="landmark"
                     label="Landmark (Optional)"
                     value={form.landmark}
                     onChange={(e) =>
@@ -373,6 +428,10 @@ const CheckoutPage = () => {
                     className="col-span-2"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="pincode"
+                    name="pincode"
                     label="PIN Code"
                     value={form.pincode}
                     onChange={(e) =>
@@ -382,6 +441,10 @@ const CheckoutPage = () => {
                     className="col-span-1"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="city"
+                    name="city"
                     label="City"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -389,6 +452,10 @@ const CheckoutPage = () => {
                     className="col-span-1"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="state"
+                    name="state"
                     label="State"
                     value={form.state}
                     onChange={(e) =>
@@ -398,6 +465,10 @@ const CheckoutPage = () => {
                     className="col-span-2"
                   />
                   <PremiumInput
+                    editMode={editMode}
+                    selectedAddressId={selectedAddressId}
+                    id="phone"
+                    name="phone"
                     label="Phone Number"
                     placeholder="+91 XXXX-XXXXXX"
                     value={form.phone}
