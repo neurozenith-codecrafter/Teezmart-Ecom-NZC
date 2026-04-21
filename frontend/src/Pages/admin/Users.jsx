@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
+import { useAuth } from "../../Hooks/useAuth";
 
 /**
  * PREMIUM ROLE BADGE
@@ -24,8 +25,8 @@ const RoleBadge = ({ role }) => {
       .join(" ");
 
   const styles = {
-    DEV_ADMIN: "bg-indigo-500/5 text-indigo-600 border-indigo-500/10",
-    PRODUCT_ADMIN: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
+    admin: "bg-indigo-500/5 text-indigo-600 border-indigo-500/10",
+    devAdmin: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
   };
 
   return (
@@ -42,11 +43,20 @@ const RoleBadge = ({ role }) => {
 export const Users = () => {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchAdmins = async () => {
+      if (!token) return;
       try {
-        const res = await axios.get("/api/admin/users");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/admin/users`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
         setAdmins(res.data);
       } catch (err) {
         console.log("Error fetching admins:", err);
@@ -55,7 +65,7 @@ export const Users = () => {
       }
     };
     fetchAdmins();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return (
@@ -127,9 +137,9 @@ export const Users = () => {
             </thead>
 
             <tbody className="divide-y divide-zinc-50">
-              {admins.map((user) => (
+              {admins.map((admin) => (
                 <tr
-                  key={user.id}
+                  key={admin._id}
                   className="group hover:bg-[#F8FBFA]/50 transition-colors duration-500"
                 >
                   <td className="pl-10 pr-4 py-6">
@@ -137,7 +147,7 @@ export const Users = () => {
                       {/* Premium Avatar */}
                       <div className="relative flex items-center justify-center w-11 h-11 bg-white rounded-full border border-zinc-100 shadow-inner group-hover:border-emerald-200 transition-colors duration-500">
                         <span className="text-[11px] font-black text-zinc-900">
-                          {user.name
+                          {admin.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -146,26 +156,26 @@ export const Users = () => {
                       </div>
                       <div>
                         <p className="text-[14px] font-semibold text-zinc-900 tracking-tight flex items-center gap-1.5">
-                          {user.name}
+                          {admin.name}
                           <ArrowUpRight
                             size={10}
                             className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"
                           />
                         </p>
                         <p className="text-[11px] text-zinc-400 font-medium lowercase tracking-tight">
-                          {user.email}
+                          {admin.email}
                         </p>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-4 py-6">
-                    <RoleBadge role={user.role} />
+                    <RoleBadge role={admin.role} />
                   </td>
 
                   <td className="px-4 py-6">
                     <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-tighter bg-zinc-50 px-2 py-1 rounded-lg border border-zinc-100">
-                      {user.joined}
+                      {new Date(admin.createdAt).toLocaleDateString()}
                     </span>
                   </td>
 
