@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   UserPlus,
   ShieldCheck,
@@ -7,7 +8,9 @@ import {
   ChevronRight,
   Users as UsersIcon,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "../../Hooks/useAuth";
 
 /**
  * PREMIUM ROLE BADGE
@@ -22,8 +25,8 @@ const RoleBadge = ({ role }) => {
       .join(" ");
 
   const styles = {
-    DEV_ADMIN: "bg-indigo-500/5 text-indigo-600 border-indigo-500/10",
-    PRODUCT_ADMIN: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
+    admin: "bg-indigo-500/5 text-indigo-600 border-indigo-500/10",
+    devAdmin: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
   };
 
   return (
@@ -38,29 +41,53 @@ const RoleBadge = ({ role }) => {
 };
 
 export const Users = () => {
-  const [users] = useState([
-    {
-      id: 1,
-      name: "Arjun Sharma",
-      email: "arjun@teezmart.com",
-      role: "DEV_ADMIN",
-      joined: "12 Jan 2025",
-    },
-    {
-      id: 2,
-      name: "Sanya Malhotra",
-      email: "sanya@teezmart.com",
-      role: "PRODUCT_ADMIN",
-      joined: "04 Mar 2025",
-    },
-    {
-      id: 3,
-      name: "Rahul Verma",
-      email: "rahul@teezmart.com",
-      role: "PRODUCT_ADMIN",
-      joined: "18 Apr 2026",
-    },
-  ]);
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      if (!token) return;
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/admin/users`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        setAdmins(res.data);
+      } catch (err) {
+        console.log("Error fetching admins:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdmins();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 animate-pulse">
+        {/* Visual placeholder for the "Add" button area */}
+        <button
+          disabled
+          className="bg-zinc-100 text-zinc-400 flex items-center gap-3 px-6 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest border border-zinc-200 cursor-wait"
+        >
+          <Loader2 size={14} strokeWidth={2.5} className="animate-spin" />
+          Initializing Directory...
+        </button>
+
+        {/* Optional: Matching Skeleton for the Table Body */}
+        <div className="w-full max-w-7xl h-64 bg-zinc-50/50 border border-zinc-100 rounded-[2.5rem] flex items-center justify-center">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-300">
+            Loading Security Protocol
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -110,9 +137,9 @@ export const Users = () => {
             </thead>
 
             <tbody className="divide-y divide-zinc-50">
-              {users.map((user) => (
+              {admins.map((admin) => (
                 <tr
-                  key={user.id}
+                  key={admin._id}
                   className="group hover:bg-[#F8FBFA]/50 transition-colors duration-500"
                 >
                   <td className="pl-10 pr-4 py-6">
@@ -120,7 +147,7 @@ export const Users = () => {
                       {/* Premium Avatar */}
                       <div className="relative flex items-center justify-center w-11 h-11 bg-white rounded-full border border-zinc-100 shadow-inner group-hover:border-emerald-200 transition-colors duration-500">
                         <span className="text-[11px] font-black text-zinc-900">
-                          {user.name
+                          {admin.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -129,26 +156,26 @@ export const Users = () => {
                       </div>
                       <div>
                         <p className="text-[14px] font-semibold text-zinc-900 tracking-tight flex items-center gap-1.5">
-                          {user.name}
+                          {admin.name}
                           <ArrowUpRight
                             size={10}
                             className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"
                           />
                         </p>
                         <p className="text-[11px] text-zinc-400 font-medium lowercase tracking-tight">
-                          {user.email}
+                          {admin.email}
                         </p>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-4 py-6">
-                    <RoleBadge role={user.role} />
+                    <RoleBadge role={admin.role} />
                   </td>
 
                   <td className="px-4 py-6">
                     <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-tighter bg-zinc-50 px-2 py-1 rounded-lg border border-zinc-100">
-                      {user.joined}
+                      {new Date(admin.createdAt).toLocaleDateString()}
                     </span>
                   </td>
 
