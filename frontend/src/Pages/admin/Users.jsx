@@ -17,12 +17,16 @@ import { useAuth } from "../../Hooks/useAuth";
  * Matches the StatusBadge style with emerald and indigo high-end accents
  */
 const RoleBadge = ({ role }) => {
-  const formatRole = (r) =>
-    r
-      .toLowerCase()
-      .split("_")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
+  const formatRole = (r) => {
+    switch (r) {
+      case "admin":
+        return "ADMIN";
+      case "devAdmin":
+        return "DEV ADMIN";
+      default:
+        return r.toUpperCase();
+    }
+  }
 
   const styles = {
     admin: "bg-indigo-500/5 text-indigo-600 border-indigo-500/10",
@@ -50,7 +54,8 @@ export const Users = () => {
       if (!token) return;
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/admin/users`,
+          // ${import.meta.env.VITE_API_URL}
+          `http://localhost:5000/api/admin/admin-users`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -170,7 +175,7 @@ export const Users = () => {
                   </td>
 
                   <td className="px-4 py-6">
-                    <RoleBadge role={admin.role} />
+                    <RoleBadge role={admin.role === "devAdmin" ? "DEV ADMIN" : "ADMIN"} />
                   </td>
 
                   <td className="px-4 py-6">

@@ -5,7 +5,7 @@ const User = require("../../Models/UserSchema");
 
 const router = express.Router();
 
-router.get("/users", async (req, res) => {
+router.get("/admin-users", async (req, res) => {
   try {
     const admins = await User.find({
       role: { $in: ["admin", "devAdmin"] },
