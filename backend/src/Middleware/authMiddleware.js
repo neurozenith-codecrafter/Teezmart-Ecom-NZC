@@ -70,7 +70,9 @@ exports.authorizeRoles = (...roles) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user._id }).select("totalQuantity");
+    const cart = await Cart.findOne({ user: req.user._id }).select(
+      "totalQuantity",
+    );
     const safeUser = buildSafeUser(req.user);
 
     res.status(200).json({
