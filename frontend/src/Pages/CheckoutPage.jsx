@@ -240,7 +240,6 @@ const CheckoutPage = () => {
         },
       );
 
-
       return res.data?.order; // 🔥 IMPORTANT
     } catch (err) {
       const message =
@@ -345,7 +344,10 @@ const CheckoutPage = () => {
                     placeholder="House no, Building, Apartment"
                     value={form.addressLine1}
                     onChange={(e) =>
-                      setForm({ ...form, addressLine1: e.target.value })
+                      setForm((prev) => ({
+                        ...prev,
+                        addressLine1: e.target.value,
+                      }))
                     }
                     error={errors.addressLine1}
                     className="col-span-2"
@@ -354,7 +356,10 @@ const CheckoutPage = () => {
                     label="Street / Locality"
                     value={form.addressLine2}
                     onChange={(e) =>
-                      setForm({ ...form, addressLine2: e.target.value })
+                      setForm((prev) => ({
+                        ...prev,
+                        addressLine2: e.target.value,
+                      }))
                     }
                     error={errors.addressLine2}
                     className="col-span-2"
