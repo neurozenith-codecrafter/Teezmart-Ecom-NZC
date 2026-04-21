@@ -206,7 +206,7 @@ const CheckoutPage = () => {
       } else {
         finalAddress = form;
 
-        await axios.post(
+        await axios.put(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}/address`,
           form,
           {
