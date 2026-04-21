@@ -1,5 +1,8 @@
 const cartService = require("../Services/cartServices");
 
+const getCartErrorStatus = (error) =>
+  error.message?.startsWith("Insufficient stock") ? 409 : 400;
+
 exports.addItem = async (req, res) => {
   try {
     const cart = await cartService.addToCart(req.user.id, req.body);
@@ -27,7 +30,7 @@ exports.addItem = async (req, res) => {
   } catch (error) {
     console.error("Add to Cart Error:", error);
 
-    res.status(400).json({
+    res.status(getCartErrorStatus(error)).json({
       success: false,
       message: error.message || "Failed to add to cart",
       data: null,
@@ -69,7 +72,7 @@ exports.updateItem = async (req, res) => {
       data: cart,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(getCartErrorStatus(error)).json({
       success: false,
       message: error.message,
       data: null,

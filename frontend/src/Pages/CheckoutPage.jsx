@@ -102,12 +102,14 @@ const CheckoutPage = () => {
     country: "India",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [pendingOrder, setPendingOrder] = useState(null);
 
   // const [defaultAddress, setDefaultAddress] = useState(false);
 
   const [errors, setErrors] = useState({});
 
-  const [savedAddresses] = useState(user.addresses);
+  const savedAddresses = user?.addresses || [];
 
   const handleSelectAddress = (addr) => {
     if (selectedAddressId === addr._id) {
@@ -148,6 +150,12 @@ const CheckoutPage = () => {
 
   const handleNext = async () => {
     if (isLoading) return;
+    setCheckoutError("");
+
+    if (!cartItems.length) {
+      setCheckoutError("Your cart is empty. Add an item before checkout.");
+      return;
+    }
 
     // ✅ Validate only if new address
     if (!selectedAddressId) {
@@ -177,8 +185,9 @@ const CheckoutPage = () => {
 
     if (!order) return; // safety
 
+    setPendingOrder(order);
+
     // ✅ Now move to payment step
-    // setOrderId(order._id);
     setStep(2);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -209,10 +218,14 @@ const CheckoutPage = () => {
       }
 
       const formattedItems = cartItems.map((item) => ({
-        productId: item.product._id,
+        productId: item.product?._id || item.product,
         quantity: item.quantity,
         size: item.size,
       }));
+
+      if (formattedItems.some((item) => !item.productId)) {
+        throw new Error("One or more cart items are no longer available.");
+      }
 
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/orders/`,
@@ -227,9 +240,16 @@ const CheckoutPage = () => {
         },
       );
 
-      return res.data; // 🔥 IMPORTANT
+
+      return res.data?.order; // 🔥 IMPORTANT
     } catch (err) {
-      console.error("Order failed:", err);
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Unable to create order. Please try again.";
+
+      setCheckoutError(message);
+      console.error("Order failed:", err.response?.data || err.message);
       return null;
     } finally {
       setIsLoading(false);
@@ -325,7 +345,7 @@ const CheckoutPage = () => {
                     placeholder="House no, Building, Apartment"
                     value={form.addressLine1}
                     onChange={(e) =>
-                      setForm({ ...form, house: e.target.value })
+                      setForm({ ...form, addressLine1: e.target.value })
                     }
                     error={errors.addressLine1}
                     className="col-span-2"
@@ -334,7 +354,7 @@ const CheckoutPage = () => {
                     label="Street / Locality"
                     value={form.addressLine2}
                     onChange={(e) =>
-                      setForm({ ...form, street: e.target.value })
+                      setForm({ ...form, addressLine2: e.target.value })
                     }
                     error={errors.addressLine2}
                     className="col-span-2"
@@ -385,28 +405,35 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="mt-10 flex justify-end">
-                  <button
-                    onClick={handleNext}
-                    disabled={isLoading}
-                    className="w-full sm:w-auto group bg-black text-white flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-black/10"
-                  >
-                    <span>
-                      {step === 1
-                        ? "Continue"
-                        : !selectedAddressId
-                          ? "Save & Proceed to Payment"
-                          : "Proceed to Payment"}
-                    </span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                  <div className="w-full sm:w-auto">
+                    {checkoutError && (
+                      <p className="mb-3 text-[11px] font-semibold text-red-500 text-right">
+                        {checkoutError}
+                      </p>
+                    )}
+                    <button
+                      onClick={handleNext}
+                      disabled={isLoading}
+                      className="w-full sm:w-auto group bg-black text-white flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-black/10 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                      <span>
+                        {step === 1
+                          ? "Continue"
+                          : !selectedAddressId
+                            ? "Save & Proceed to Payment"
+                            : "Proceed to Payment"}
+                      </span>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -416,7 +443,8 @@ const CheckoutPage = () => {
                 cartItems={cartItems}
                 totalPrice={totalPrice}
                 shippingDetails={form}
-                // orderId={orderId}
+                order={pendingOrder}
+                orderId={pendingOrder?._id}
               />
               <button
                 onClick={() => setStep(1)}

@@ -3,7 +3,7 @@ const Product = require("../Models/ProductSchema");
 const { ensureValidObjectId } = require("../Utils/validation");
 
 const populateCartProducts = (query) =>
-  query.populate("items.product", "title price images slug sizes category");
+  query.populate("items.product", "title price images slug sizes category stock");
 
 // Ensure snapshot fields reflect the latest Product data.
 // This keeps cart UI consistent after admin edits.
@@ -82,10 +82,9 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
     throw new Error("Selected size not available");
   }
 
-  // 🔹 (Optional but recommended)
-  // if (product.stock < quantity) {
-  //   throw new Error("Not enough stock");
-  // }
+  if (!Number.isInteger(product.stock) || product.stock < normalizedQuantity) {
+    throw new Error(`Insufficient stock for product: ${product.title}`);
+  }
 
   // 🔹 3. Get or create cart
   let cart = await Cart.findOne({ user: userId });
@@ -103,8 +102,14 @@ exports.addToCart = async (userId, { productId, quantity = 1, size }) => {
   );
 
   if (existingItem) {
+    const nextQuantity = existingItem.quantity + normalizedQuantity;
+
+    if (product.stock < nextQuantity) {
+      throw new Error(`Insufficient stock for product: ${product.title}`);
+    }
+
     // ✅ Update quantity
-    existingItem.quantity += normalizedQuantity;
+    existingItem.quantity = nextQuantity;
     // Always use latest price/title/image when product was edited
     existingItem.name = product.title;
     existingItem.price = product.price;
@@ -202,9 +207,15 @@ exports.updateCartItem = async (userId, { productId, quantity, size }) => {
     // if the product has been deleted — never throw for a missing product here
     const product = await Product.findById(productId).catch(() => null);
     if (product) {
+      if (!Number.isInteger(product.stock) || product.stock < normalizedQuantity) {
+        throw new Error(`Insufficient stock for product: ${product.title}`);
+      }
+
       item.name = product.title;
       item.price = product.price;
       item.image = product.images?.[0]?.url || "";
+    } else {
+      throw new Error("Product not found");
     }
     // Always update quantity using whatever price is current (live or snapshot)
     item.quantity = normalizedQuantity;

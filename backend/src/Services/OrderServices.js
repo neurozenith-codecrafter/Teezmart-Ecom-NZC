@@ -39,7 +39,8 @@ const buildCheckoutFingerprint = ({ userId, shippingAddress, items }) => {
     firstName: shippingAddress.firstName?.trim().toLowerCase(),
     lastName: shippingAddress.lastName?.trim().toLowerCase(),
     phone: shippingAddress.phone,
-    addressLine: shippingAddress.addressLine?.trim().toLowerCase(),
+    addressLine1: shippingAddress.addressLine1?.trim().toLowerCase(),
+    addressLine2: shippingAddress.addressLine2?.trim().toLowerCase() || null,
     city: shippingAddress.city?.trim().toLowerCase(),
     state: shippingAddress.state?.trim().toLowerCase(),
     pincode: shippingAddress.pincode,
@@ -320,6 +321,7 @@ const createPendingOrder = async (userId, { shippingAddress, items = [], buyNowI
   const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
   const normalizedItems = normalizeCheckoutItems({ items, buyNowItem });
   const checkoutFingerprint = buildCheckoutFingerprint({
+    userId,
     shippingAddress: normalizedShippingAddress,
     items: normalizedItems,
   });
