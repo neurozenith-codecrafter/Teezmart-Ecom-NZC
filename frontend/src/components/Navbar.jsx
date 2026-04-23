@@ -347,6 +347,10 @@ const Navbar = () => {
       }
 
       if (triggered) sidebarX.set(Math.min(0, Math.max(-280, -280 + deltaX)));
+
+      if(deltaX > absDeltaY){
+        e.preventDefault();
+      }
     };
 
     const onUp = (e) => {
@@ -369,8 +373,8 @@ const Navbar = () => {
       active = false; triggered = false;
     };
 
-    window.addEventListener("pointerdown", onDown, { passive: true });
-    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
     return () => {
@@ -494,7 +498,8 @@ const Navbar = () => {
                 transition={{ delay: 0.2 }}
                 className="hover:opacity-60 transition-opacity cursor-pointer"
               >
-                Blogs
+                BlOG
+
               </Motion.a>
               <Motion.a
                 href="#why-us"
