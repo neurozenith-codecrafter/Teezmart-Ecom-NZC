@@ -9,7 +9,7 @@ const FooterBrandBlock = () => (
       TeezMart<span className="text-[#32F18F]">.</span>
     </h2>
     <p className="text-slate-500 text-sm leading-relaxed max-w-sm font-medium">
-      At MartTeez, we don&apos;t just make T-shirts — We craft oversized comfort
+      At TeezMart, we don&apos;t just make T-shirts — We craft oversized comfort
       with attitude. Premium fabrics, unique vibes.
     </p>
 

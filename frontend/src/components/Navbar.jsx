@@ -49,6 +49,7 @@ const Navbar = () => {
   const sidebarDragControls = useDragControls();
   const sidebarX = useMotionValue(-280);
   const overlayOpacity = useTransform(sidebarX, [-280, 0], [0, 1]);
+  const EDGE_SWIPE_ACTIVATION_RATIO = 0.7;
   const trendingSearches = [
     "Oversized Tees",
     "Graphic Hoodies",
@@ -323,67 +324,142 @@ const Navbar = () => {
 
     let startX = 0, startY = 0, lastX = 0, lastTime = 0;
     let velocity = 0, active = false, triggered = false;
+    let activePointerId = null;
 
-    const onDown = (e) => {
-      if (e.clientX > window.innerWidth * 0.55) return;
-      active = true; triggered = false;
-      startX = e.clientX; startY = e.clientY;
-      lastX = e.clientX; lastTime = Date.now(); velocity = 0;
+    const resetGesture = () => {
+      active = false;
+      triggered = false;
+      activePointerId = null;
     };
 
-    const onMove = (e) => {
+    const beginGesture = (x, y) => {
+      if (x > window.innerWidth * EDGE_SWIPE_ACTIVATION_RATIO) return;
+      active = true;
+      triggered = false;
+      startX = x;
+      startY = y;
+      lastX = x;
+      lastTime = Date.now();
+      velocity = 0;
+    };
+
+    const updateGesture = (x, y) => {
       if (!active) return;
-      const deltaX = e.clientX - startX;
-      const absDeltaY = Math.abs(e.clientY - startY);
-      const now = Date.now(); const dt = now - lastTime;
-      if (dt > 0) velocity = ((e.clientX - lastX) / dt) * 1000;
-      lastX = e.clientX; lastTime = now;
+      const deltaX = x - startX;
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(y - startY);
+      const now = Date.now();
+      const dt = now - lastTime;
+      if (dt > 0) velocity = ((x - lastX) / dt) * 1000;
+      lastX = x;
+      lastTime = now;
 
       if (!triggered) {
-        // Vertical scroll dominates — cancel gesture
-        if (absDeltaY > Math.max(deltaX, 8) && absDeltaY > 8) { active = false; return; }
-        // Confirmed horizontal swipe intent
-        if (deltaX > 15 && deltaX > absDeltaY) triggered = true;
+        // Vertical intent wins only when clearly dominant.
+        if (absDeltaY > 26 && absDeltaY > absDeltaX * 1.15) {
+          resetGesture();
+          return;
+        }
+        // Horizontal intent requires both minimum travel and dominance.
+        if (deltaX > 10 && absDeltaX > absDeltaY * 1.1) {
+          triggered = true;
+        }
       }
 
-      if (triggered) sidebarX.set(Math.min(0, Math.max(-280, -280 + deltaX)));
-
-      if(deltaX > absDeltaY){
-        e.preventDefault();
+      if (triggered) {
+        sidebarX.set(Math.max(-280, Math.min(0, -280 + deltaX)));
       }
     };
 
-    const onUp = (e) => {
+    const endGesture = (x) => {
       if (!active) return;
       if (triggered) {
-        const deltaX = e.clientX - startX;
-        if (velocity > 400 || deltaX > 120) {
+        const deltaX = x - startX;
+        if (velocity > 260 || deltaX > 64) {
           setIsMenuOpen(true);
           animate(sidebarX, 0, { type: "spring", stiffness: 300, damping: 30 });
         } else {
           animate(sidebarX, -280, { type: "spring", stiffness: 300, damping: 30 });
         }
       }
-      active = false; triggered = false;
+      resetGesture();
     };
 
-    const onCancel = () => {
-      if (active && triggered)
+    const onPointerDown = (e) => {
+      if (e.pointerType === "touch") return;
+      beginGesture(e.clientX, e.clientY);
+    };
+
+    const onPointerMove = (e) => {
+      if (e.pointerType === "touch") return;
+      updateGesture(e.clientX, e.clientY);
+    };
+
+    const onPointerUp = (e) => {
+      if (e.pointerType === "touch") return;
+      endGesture(e.clientX);
+    };
+
+    const onPointerCancel = () => {
+      if (active && triggered) {
         animate(sidebarX, -280, { type: "spring", stiffness: 300, damping: 30 });
-      active = false; triggered = false;
+      }
+      resetGesture();
     };
 
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onCancel);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onCancel);
+    const onTouchStart = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      beginGesture(touch.clientX, touch.clientY);
+      activePointerId = touch.identifier;
     };
-  }, [isMenuOpen, sidebarX]);
+
+    const onTouchMove = (e) => {
+      if (!active) return;
+      const touch = Array.from(e.touches).find((t) => t.identifier === activePointerId);
+      if (!touch) return;
+      updateGesture(touch.clientX, touch.clientY);
+      if (triggered) {
+        // Lock browser scroll once horizontal swipe is confirmed.
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      const touch = Array.from(e.changedTouches).find(
+        (t) => t.identifier === activePointerId
+      );
+      if (!touch) return;
+      endGesture(touch.clientX);
+    };
+
+    const onTouchCancel = () => {
+      if (active && triggered) {
+        animate(sidebarX, -280, { type: "spring", stiffness: 300, damping: 30 });
+      }
+      resetGesture();
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [isMenuOpen, sidebarX, EDGE_SWIPE_ACTIVATION_RATIO]);
 
   const menuItems = [
     { name: "Home", icon: Home },
@@ -440,6 +516,7 @@ const Navbar = () => {
     damping: 20,
     mass: 0.8,
   };
+
 
   return (
     <>
@@ -883,7 +960,7 @@ const Navbar = () => {
 
       {/* Sidebar — always mounted, position driven by sidebarX motion value */}
       <Motion.aside
-        drag="x"
+        drag={isMenuOpen ? "x" : false}
         dragDirectionLock
         dragControls={sidebarDragControls}
         dragListener={false}

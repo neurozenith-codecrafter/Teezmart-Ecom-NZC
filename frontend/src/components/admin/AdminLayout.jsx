@@ -35,6 +35,7 @@ export const AdminLayout = () => {
   const [hasImgError, setHasImgError] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+  const EDGE_SWIPE_ACTIVATION_RATIO = 0.7;
 
   // --- Scroll Logic ---
   useEffect(() => {
@@ -59,6 +60,140 @@ export const AdminLayout = () => {
   useEffect(() => {
     setHasImgError(false);
   }, [admin]);
+
+  // Mobile edge swipe to open admin side nav.
+  useEffect(() => {
+    if (isMobileMenuOpen) return;
+
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocity = 0;
+    let active = false;
+    let triggered = false;
+    let activeTouchId = null;
+
+    const resetGesture = () => {
+      active = false;
+      triggered = false;
+      activeTouchId = null;
+    };
+
+    const beginGesture = (x, y) => {
+      if (x > window.innerWidth * EDGE_SWIPE_ACTIVATION_RATIO) return;
+      active = true;
+      triggered = false;
+      startX = x;
+      startY = y;
+      lastX = x;
+      lastTime = Date.now();
+      velocity = 0;
+    };
+
+    const updateGesture = (x, y) => {
+      if (!active) return;
+      const deltaX = x - startX;
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(y - startY);
+      const now = Date.now();
+      const dt = now - lastTime;
+
+      if (dt > 0) velocity = ((x - lastX) / dt) * 1000;
+      lastX = x;
+      lastTime = now;
+
+      if (!triggered) {
+        if (absDeltaY > 26 && absDeltaY > absDeltaX * 1.15) {
+          resetGesture();
+          return;
+        }
+        if (deltaX > 10 && absDeltaX > absDeltaY * 1.1) {
+          triggered = true;
+        }
+      }
+    };
+
+    const endGesture = (x) => {
+      if (!active) return;
+      if (triggered) {
+        const deltaX = x - startX;
+        if (velocity > 260 || deltaX > 64) {
+          setIsMobileMenuOpen(true);
+        }
+      }
+      resetGesture();
+    };
+
+    const onPointerDown = (e) => {
+      if (e.pointerType === "touch") return;
+      beginGesture(e.clientX, e.clientY);
+    };
+
+    const onPointerMove = (e) => {
+      if (e.pointerType === "touch") return;
+      updateGesture(e.clientX, e.clientY);
+    };
+
+    const onPointerUp = (e) => {
+      if (e.pointerType === "touch") return;
+      endGesture(e.clientX);
+    };
+
+    const onPointerCancel = () => {
+      resetGesture();
+    };
+
+    const onTouchStart = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      beginGesture(touch.clientX, touch.clientY);
+      activeTouchId = touch.identifier;
+    };
+
+    const onTouchMove = (e) => {
+      if (!active) return;
+      const touch = Array.from(e.touches).find((t) => t.identifier === activeTouchId);
+      if (!touch) return;
+      updateGesture(touch.clientX, touch.clientY);
+      if (triggered) {
+        // Prevent vertical page scroll from cancelling a confirmed horizontal swipe.
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      const touch = Array.from(e.changedTouches).find(
+        (t) => t.identifier === activeTouchId
+      );
+      if (!touch) return;
+      endGesture(touch.clientX);
+    };
+
+    const onTouchCancel = () => {
+      resetGesture();
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [isMobileMenuOpen, EDGE_SWIPE_ACTIVATION_RATIO]);
 
   const externalImage = useMemo(() => {
     if (!admin?.avatar) return null;
