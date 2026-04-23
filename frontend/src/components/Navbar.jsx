@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Home,
 } from "lucide-react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence, useMotionValue, useTransform, animate, useDragControls } from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import DropDown from "../components/HomepageComponents/DropDown";
 
@@ -39,7 +39,9 @@ const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const searchContainerRef = useRef(null);
-  const dragControls = useRef(0);
+  const sidebarDragControls = useDragControls();
+  const sidebarX = useMotionValue(-280);
+  const overlayOpacity = useTransform(sidebarX, [-280, 0], [0, 1]);
   const trendingSearches = [
     "Oversized Tees",
     "Graphic Hoodies",
@@ -277,12 +279,32 @@ const Navbar = () => {
     }
   };
 
-  const sidebarVariants = {
-    closed: {
-      x: "-100%",
-      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-    },
-    open: { x: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+  // Sync isMenuOpen state → sidebar spring animation
+  useEffect(() => {
+    animate(sidebarX, isMenuOpen ? 0 : -280, {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+    });
+  }, [isMenuOpen, sidebarX]);
+
+  const handleSidebarDragEnd = (_, info) => {
+    const threshold = 120;
+    const shouldOpen = !isMenuOpen && (info.velocity.x > 400 || info.offset.x > threshold);
+    const shouldClose = isMenuOpen && (info.velocity.x < -400 || info.offset.x < -threshold);
+
+    if (shouldOpen) {
+      setIsMenuOpen(true);
+    } else if (shouldClose) {
+      setIsMenuOpen(false);
+    } else {
+      // snap back to current logical state
+      animate(sidebarX, isMenuOpen ? 0 : -280, {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      });
+    }
   };
 
   const menuItems = [
@@ -343,15 +365,7 @@ const Navbar = () => {
 
   return (
     <>
-      {!isMenuOpen && (
-        <div
-          className="fixed inset-y-0 left-0 w-10 z-[59] touch-none"
-          onPointerDown={(e) => {
-            dragControls.current = e.clientX;
-            // This keeps the edge area available for horizontal swipe gestures.
-          }}
-        />
-      )}
+
 
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
         <div
@@ -780,119 +794,107 @@ const Navbar = () => {
         </div>
       </Motion.div>
 
-      <AnimatePresence>
-        {isMenuOpen && (
-          <>
-            <Motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-zinc-900/20 backdrop-blur-[2px] z-[100]"
-            />
-            <Motion.aside
-              variants={sidebarVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              drag="x"
-              dragDirectionLock
-              dragConstraints={{ left: -280, right: 0 }}
-              dragElastic={0.05}
-              onDragEnd={(e, info) => {
-                if (info.offset.x < -100 || info.velocity.x < -500) {
-                  setIsMenuOpen(false);
-                }
-              }}
-              style={{ willChange: "transform" }}
-              className="fixed top-0 left-0 h-full w-[280px] bg-white z-[101] shadow-[20px_0_60px_-15px_rgba(0,0,0,0.05)] flex flex-col"
-            >
-              <div className="p-8 pb-4 flex justify-between items-center">
-                <span className="text-[20px] font-semibold tracking-tight text-zinc-900">
-                  TeezMart
-                </span>
-                <X
-                  size={20}
-                  className="cursor-pointer text-zinc-400 hover:text-black transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                />
-              </div>
-              <div className="flex-1 px-4 py-6 space-y-1 relative">
-                {menuItems.map((item) => {
-                  if (item.isMobileOnly && !isMobileSidebar) return null;
-                  const isActive = activeItem === item.name;
-                  return (
-                    <div
-                      key={item.name}
-                      onClick={() => {
-                        setActiveItem(item.name);
-                        if (item.isContact) {
-                          isMobileSidebar
-                            ? redirectToHomeContact()
-                            : scrollToContact();
-                        } else if (item.name === "Home") {
-                          navigate("/");
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                          setIsMenuOpen(false);
-                        } else if (item.name === "Wishlist") {
-                          navigate("/wishlist");
-                          setIsMenuOpen(false);
-                        } else if (item.name === "Products") {
-                          navigateToCatalog();
-                        } else {
-                          setIsMenuOpen(false);
-                        }
-                      }}
-                      className="relative px-4 py-3.5 rounded-2xl transition-all cursor-pointer group"
-                    >
-                      {isActive && (
-                        <Motion.div
-                          layoutId="activePill"
-                          className="absolute inset-0 bg-rose-50 rounded-2xl z-0"
-                          transition={{
-                            type: "spring",
-                            bounce: 0.2,
-                            duration: 0.6,
-                          }}
-                        />
-                      )}
-                      <div className="relative z-10 flex items-center gap-4">
-                        <item.icon
-                          className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-rose-500" : "text-zinc-400 group-hover:text-zinc-900"}`}
-                          strokeWidth={1.5}
-                        />
-                        <span
-                          className={`text-[15px] transition-colors duration-300 ${isActive ? "text-rose-500 font-semibold" : "text-zinc-500"}`}
-                        >
-                          {item.name}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="p-8 border-t border-zinc-100">
-                <div className="flex items-center gap-3 text-zinc-400 text-[10px] font-bold tracking-[0.3em] uppercase">
-                  © NeuroZenith 2026
+      {/* Overlay — always mounted, opacity driven by sidebarX motion value */}
+      <Motion.div
+        style={{
+          opacity: overlayOpacity,
+          pointerEvents: isMenuOpen ? "auto" : "none",
+        }}
+        onClick={() => setIsMenuOpen(false)}
+        className="fixed inset-0 bg-zinc-900/20 backdrop-blur-[2px] z-[100]"
+      />
+
+      {/* Sidebar — always mounted, position driven by sidebarX motion value */}
+      <Motion.aside
+        drag="x"
+        dragDirectionLock
+        dragControls={sidebarDragControls}
+        dragListener={true}
+        dragConstraints={{ left: -280, right: 0 }}
+        dragElastic={0.12}
+        onDragEnd={handleSidebarDragEnd}
+        style={{ x: sidebarX, willChange: "transform" }}
+        className="fixed top-0 left-0 h-full w-[280px] bg-white z-[101] shadow-[20px_0_60px_-15px_rgba(0,0,0,0.05)] flex flex-col"
+      >
+        <div className="p-8 pb-4 flex justify-between items-center">
+          <span className="text-[20px] font-semibold tracking-tight text-zinc-900">
+            TeezMart
+          </span>
+          <X
+            size={20}
+            className="cursor-pointer text-zinc-400 hover:text-black transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        </div>
+        <div className="flex-1 px-4 py-6 space-y-1 relative">
+          {menuItems.map((item) => {
+            if (item.isMobileOnly && !isMobileSidebar) return null;
+            const isActive = activeItem === item.name;
+            return (
+              <div
+                key={item.name}
+                onClick={() => {
+                  setActiveItem(item.name);
+                  if (item.isContact) {
+                    isMobileSidebar
+                      ? redirectToHomeContact()
+                      : scrollToContact();
+                  } else if (item.name === "Home") {
+                    navigate("/");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setIsMenuOpen(false);
+                  } else if (item.name === "Wishlist") {
+                    navigate("/wishlist");
+                    setIsMenuOpen(false);
+                  } else if (item.name === "Products") {
+                    navigateToCatalog();
+                  } else {
+                    setIsMenuOpen(false);
+                  }
+                }}
+                className="relative px-4 py-3.5 rounded-2xl transition-all cursor-pointer group"
+              >
+                {isActive && (
+                  <Motion.div
+                    layoutId="activePill"
+                    className="absolute inset-0 bg-rose-50 rounded-2xl z-0"
+                    transition={{
+                      type: "spring",
+                      bounce: 0.2,
+                      duration: 0.6,
+                    }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center gap-4">
+                  <item.icon
+                    className={`w-5 h-5 transition-colors duration-300 ${isActive ? "text-rose-500" : "text-zinc-400 group-hover:text-zinc-900"}`}
+                    strokeWidth={1.5}
+                  />
+                  <span
+                    className={`text-[15px] transition-colors duration-300 ${isActive ? "text-rose-500 font-semibold" : "text-zinc-500"}`}
+                  >
+                    {item.name}
+                  </span>
                 </div>
               </div>
-            </Motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+            );
+          })}
+        </div>
+        <div className="p-8 border-t border-zinc-100">
+          <div className="flex items-center gap-3 text-zinc-400 text-[10px] font-bold tracking-[0.3em] uppercase">
+            © NeuroZenith 2026
+          </div>
+        </div>
+      </Motion.aside>
 
+      {/* Edge trigger — 20px strip at left edge hands pointer to sidebar via dragControls */}
       {!isMenuOpen && (
-        <Motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 280 }}
-          style={{ x: -280 }}
-          onDrag={(e, info) => {
-            dragControls.current = info.offset.x;
-            if (info.offset.x > 80) {
-              setIsMenuOpen(true);
-            }
+        <div
+          className="fixed inset-y-0 left-0 w-5 z-[102]"
+          onPointerDown={(e) => {
+            sidebarX.set(-280);
+            sidebarDragControls.start(e);
           }}
-          className="fixed inset-y-0 left-0 w-10 z-[58] touch-none"
         />
       )}
 
