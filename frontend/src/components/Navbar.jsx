@@ -316,6 +316,71 @@ const Navbar = () => {
     }
   };
 
+  // Wide swipe-to-open: window-level pointer tracking covering left 55vw.
+  // Uses no blocking div — zero interference with taps, clicks, or vertical scroll.
+  useEffect(() => {
+    if (isMenuOpen) return;
+
+    let startX = 0, startY = 0, lastX = 0, lastTime = 0;
+    let velocity = 0, active = false, triggered = false;
+
+    const onDown = (e) => {
+      if (e.clientX > window.innerWidth * 0.55) return;
+      active = true; triggered = false;
+      startX = e.clientX; startY = e.clientY;
+      lastX = e.clientX; lastTime = Date.now(); velocity = 0;
+    };
+
+    const onMove = (e) => {
+      if (!active) return;
+      const deltaX = e.clientX - startX;
+      const absDeltaY = Math.abs(e.clientY - startY);
+      const now = Date.now(); const dt = now - lastTime;
+      if (dt > 0) velocity = ((e.clientX - lastX) / dt) * 1000;
+      lastX = e.clientX; lastTime = now;
+
+      if (!triggered) {
+        // Vertical scroll dominates — cancel gesture
+        if (absDeltaY > Math.max(deltaX, 8) && absDeltaY > 8) { active = false; return; }
+        // Confirmed horizontal swipe intent
+        if (deltaX > 15 && deltaX > absDeltaY) triggered = true;
+      }
+
+      if (triggered) sidebarX.set(Math.min(0, Math.max(-280, -280 + deltaX)));
+    };
+
+    const onUp = (e) => {
+      if (!active) return;
+      if (triggered) {
+        const deltaX = e.clientX - startX;
+        if (velocity > 400 || deltaX > 120) {
+          setIsMenuOpen(true);
+          animate(sidebarX, 0, { type: "spring", stiffness: 300, damping: 30 });
+        } else {
+          animate(sidebarX, -280, { type: "spring", stiffness: 300, damping: 30 });
+        }
+      }
+      active = false; triggered = false;
+    };
+
+    const onCancel = () => {
+      if (active && triggered)
+        animate(sidebarX, -280, { type: "spring", stiffness: 300, damping: 30 });
+      active = false; triggered = false;
+    };
+
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+    };
+  }, [isMenuOpen, sidebarX]);
+
   const menuItems = [
     { name: "Home", icon: Home },
     { name: "Live Orders", icon: LayoutGrid },
@@ -894,18 +959,7 @@ const Navbar = () => {
         </div>
       </Motion.aside>
 
-      {/* Edge trigger — 20px strip at left edge hands pointer to sidebar via dragControls */}
-      {!isMenuOpen && (
-        <div
-          className="fixed inset-y-0 left-0 w-12 z-[999] bg-red-500/20"
-          style={{ touchAction: "none" }}
-          onPointerDown={(e) => {
-            console.log("Edge Triggered");
-            sidebarX.set(-280);
-            sidebarDragControls.start(e);
-          }}
-        />
-      )}
+      {/* Edge swipe handled by window-level pointer listeners above */}
 
       <AnimatePresence>
         {isProfilePopupOpen ? (
