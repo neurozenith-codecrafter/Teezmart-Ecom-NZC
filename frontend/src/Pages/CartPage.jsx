@@ -105,7 +105,7 @@ const CartItemRow = ({
         </Motion.div>
       </Motion.div>
 
-      {/* 👕 MAIN PRODUCT CARD */}
+      {/*  MAIN PRODUCT CARD */}
       <Motion.div
         drag="x"
         dragDirectionLock

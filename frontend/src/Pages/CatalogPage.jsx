@@ -640,13 +640,6 @@ export const CatalogPage = () => {
             ))
           )}
         </div>
-
-        <div className="mt-24 flex flex-col items-center gap-6">
-          <div className="w-px h-12 bg-zinc-200" />
-          <button className="px-12 py-4 bg-zinc-900 text-white text-[11px] font-black uppercase tracking-[0.4em] rounded-full hover:bg-black transition-all shadow-2xl active:scale-95">
-            View All Products
-          </button>
-        </div>
       </main>
     </div>
   );

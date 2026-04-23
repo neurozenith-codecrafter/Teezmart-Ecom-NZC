@@ -39,6 +39,7 @@ const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const searchContainerRef = useRef(null);
+  const dragControls = useRef(0);
   const trendingSearches = [
     "Oversized Tees",
     "Graphic Hoodies",
@@ -342,6 +343,16 @@ const Navbar = () => {
 
   return (
     <>
+      {!isMenuOpen && (
+        <div
+          className="fixed inset-y-0 left-0 w-10 z-[59] touch-none"
+          onPointerDown={(e) => {
+            dragControls.current = e.clientX;
+            // This keeps the edge area available for horizontal swipe gestures.
+          }}
+        />
+      )}
+
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
         <div
           className={`${PAGE_CONTAINER_CLASS} h-[55px] md:h-[68px] flex items-center justify-between relative`}
@@ -779,11 +790,21 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
               className="fixed inset-0 bg-zinc-900/20 backdrop-blur-[2px] z-[100]"
             />
-            <Motion.div
+            <Motion.aside
               variants={sidebarVariants}
               initial="closed"
               animate="open"
               exit="closed"
+              drag="x"
+              dragDirectionLock
+              dragConstraints={{ left: -280, right: 0 }}
+              dragElastic={0.05}
+              onDragEnd={(e, info) => {
+                if (info.offset.x < -100 || info.velocity.x < -500) {
+                  setIsMenuOpen(false);
+                }
+              }}
+              style={{ willChange: "transform" }}
               className="fixed top-0 left-0 h-full w-[280px] bg-white z-[101] shadow-[20px_0_60px_-15px_rgba(0,0,0,0.05)] flex flex-col"
             >
               <div className="p-8 pb-4 flex justify-between items-center">
@@ -855,10 +876,25 @@ const Navbar = () => {
                   © NeuroZenith 2026
                 </div>
               </div>
-            </Motion.div>
+            </Motion.aside>
           </>
         )}
       </AnimatePresence>
+
+      {!isMenuOpen && (
+        <Motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 280 }}
+          style={{ x: -280 }}
+          onDrag={(e, info) => {
+            dragControls.current = info.offset.x;
+            if (info.offset.x > 80) {
+              setIsMenuOpen(true);
+            }
+          }}
+          className="fixed inset-y-0 left-0 w-10 z-[58] touch-none"
+        />
+      )}
 
       <AnimatePresence>
         {isProfilePopupOpen ? (
