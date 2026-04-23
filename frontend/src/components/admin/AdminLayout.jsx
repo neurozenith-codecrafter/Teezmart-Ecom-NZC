@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -6,7 +6,6 @@ import {
   Users,
   LogOut,
   Bell,
-  Menu,
   Home,
   X,
 } from "lucide-react";
@@ -30,8 +29,32 @@ export const AdminLayout = () => {
   const { admin } = useAdmin();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  
+  // --- States & Refs ---
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasImgError, setHasImgError] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  // --- Scroll Logic ---
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const threshold = 10;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > threshold) {
+        // Scrolling Down
+        setShowHeader(false);
+      } else {
+        // Scrolling Up
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     setHasImgError(false);
@@ -69,14 +92,8 @@ export const AdminLayout = () => {
 
   // --- Animation Variants ---
   const sidebarVariants = {
-    closed: {
-      x: "-100%",
-      transition: { type: "spring", stiffness: 400, damping: 40 },
-    },
-    open: {
-      x: 0,
-      transition: { type: "spring", stiffness: 400, damping: 40 },
-    },
+    closed: { x: "-100%", transition: { type: "spring", stiffness: 400, damping: 40 } },
+    open: { x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } },
   };
 
   const overlayVariants = {
@@ -94,11 +111,9 @@ export const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-white flex font-sans text-slate-900 overflow-hidden">
-      {/* GLOBAL HAMBURGER SIDEBAR LOGIC (Drawer for all breakpoints) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            {/* Backdrop Overlay */}
             <motion.div
               initial="closed"
               animate="open"
@@ -108,7 +123,6 @@ export const AdminLayout = () => {
               className="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-md"
             />
 
-            {/* Sidebar Drawer */}
             <motion.aside
               initial="closed"
               animate="open"
@@ -127,10 +141,14 @@ export const AdminLayout = () => {
         )}
       </AnimatePresence>
 
-      {/* CONTENT WRAPPER */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="h-24 px-8 lg:px-12 flex items-center justify-between">
-          {/* PREMIUM, LIGHT HAMBURGER TRIGGER (Visible on all screens) */}
+        {/* ANIMATED HEADER */}
+        <motion.header 
+          initial={{ y: 0 }}
+          animate={{ y: showHeader ? 0 : "-100%" }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="fixed top-0 left-0 right-0 z-[50] h-24 px-8 lg:px-12 flex items-center justify-between bg-white/80 backdrop-blur-md"
+        >
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-1.5 -ml-1.5 flex flex-col gap-1 cursor-pointer group outline-none"
@@ -147,7 +165,6 @@ export const AdminLayout = () => {
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#86C19F] rounded-full border-2 border-white" />
             </button>
 
-            {/* PROFILE UI */}
             <div className="flex items-center justify-end gap-3.5 bg-white py-1 pl-6 pr-1 rounded-full border border-slate-100/70 shadow-[0_2px_15px_-4px_rgba(238,242,246,0.6)]">
               <div className="flex flex-col text-right">
                 <span className="text-xs font-bold text-slate-900 leading-tight">
@@ -176,7 +193,10 @@ export const AdminLayout = () => {
               </div>
             </div>
           </div>
-        </header>
+        </motion.header>
+
+        {/* SPACER: Prevents layout shift because header is fixed */}
+        <div className="h-24 w-full flex-shrink-0" />
 
         <main className="px-8 pb-8 lg:px-12 flex-1 overflow-y-auto no-scrollbar">
           <Outlet />
@@ -190,9 +210,6 @@ export const AdminLayout = () => {
   );
 };
 
-/**
- * Sidebar Inner Content
- */
 const SidebarContent = ({ setIsMobileMenuOpen, menuItems, admin, handleLogout }) => (
   <>
     <div className="mb-12 px-2 flex justify-between items-center">
