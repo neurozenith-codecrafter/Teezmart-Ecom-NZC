@@ -21,8 +21,11 @@ import { Users } from "./Pages/admin/Users";
 import CartPage from "./Pages/CartPage";
 import WishlistPage from "./Pages/WishlistPage";
 import { useAuth } from "./Hooks/useAuth";
+import { useCommerce } from "./Hooks/useCommerce";
 import CatalogPage from "./Pages/CatalogPage";
 import CheckoutPage from "./Pages/CheckoutPage";
+import PaymentPage from "./Pages/PaymentPage";
+
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -62,6 +65,31 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// Guards unauthenticated access to any page that requires login
+const PrivateRoute = ({ children }) => {
+  const { isLoggedIn, loading } = useAuth();
+
+  if (loading) return null;
+
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+
+  return children;
+};
+
+// Guards /checkout — requires login AND a non-empty cart
+const CheckoutRoute = ({ children }) => {
+  const { isLoggedIn, loading } = useAuth();
+  const { cartItems, isCartLoading } = useCommerce();
+
+  if (loading || isCartLoading) return null;
+
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
+
+  if (cartItems.length === 0) return <Navigate to="/cart" replace />;
+
+  return children;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -76,7 +104,22 @@ const AnimatedRoutes = () => {
           <Route path="/catalog" element={<CatalogPage />} />
         </Route>
         <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <CheckoutRoute>
+              <CheckoutPage />
+            </CheckoutRoute>
+          }
+        />
+        <Route
+          path="/payment/:id"
+          element={
+            <PrivateRoute>
+              <PaymentPage />
+            </PrivateRoute>
+          }
+        />
 
         <Route
           path="/admin"

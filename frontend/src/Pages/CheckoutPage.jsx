@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../Hooks/useAuth";
-import PaymentPage from "./PaymentPage";
 import Loader from "../components/Loader";
 import { useCart } from "../Hooks/useCart";
 
@@ -109,12 +108,10 @@ const CheckoutPage = () => {
   // const cartItems = location.state?.cartItems;
   const totalPrice = location.state?.totalPrice;
 
-  const [step, setStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [form, setForm] = useState(DEFAULT_ADDRESS_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [pendingOrder, setPendingOrder] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
   // const [defaultAddress, setDefaultAddress] = useState(false);
@@ -200,12 +197,9 @@ const CheckoutPage = () => {
     // 🔥 Create order BEFORE switching UI
     const order = await handlePlaceOrder();
 
-    if (!order) return; // safety
+    if (!order) return;
 
-    setPendingOrder(order);
-
-    // ✅ Now move to payment step
-    setStep(2);
+    navigate(`/payment/${order._id}`);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -228,11 +222,13 @@ const CheckoutPage = () => {
         );
 
         const updatedUser = updatedAddressRes.data?.data;
-        finalAddress =
-          updatedUser?.addresses?.find((addr) => addr._id === selectedAddressId) ||
-          { ...form, _id: selectedAddressId };
+        finalAddress = updatedUser?.addresses?.find(
+          (addr) => addr._id === selectedAddressId,
+        ) || { ...form, _id: selectedAddressId };
       } else if (selectedAddressId) {
-        finalAddress = user.addresses.find((addr) => addr._id === selectedAddressId);
+        finalAddress = user.addresses.find(
+          (addr) => addr._id === selectedAddressId,
+        );
       } else {
         finalAddress = form;
 
@@ -286,8 +282,7 @@ const CheckoutPage = () => {
   };
 
   const handleBack = () => {
-    if (step === 2) return setStep(1);
-    navigate(-1);
+    navigate("/cart");
   };
 
   if (isLoading) return <Loader />;
@@ -324,196 +319,185 @@ const CheckoutPage = () => {
         </div>
 
         <div className="relative">
-          {step === 1 ? (
-            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-10 animate-in fade-in slide-in-from-bottom-3 duration-500">
-              <div className="order-1 lg:order-2 lg:col-span-5">
-                <h2 className="text-[14px] font-bold mb-4 lg:mb-6 text-gray-800">
-                  Saved Addresses
-                </h2>
-                <div className="flex flex-row overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar lg:flex-col lg:max-h-[450px] lg:overflow-y-auto lg:pr-2">
-                  {savedAddresses.map((addr) => (
-                    <AddressCard
-                      setEditMode={setEditMode}
-                      editMode={editMode}
-                      key={addr._id}
-                      address={addr}
-                      isSelected={selectedAddressId === addr._id}
-                      onSelect={handleSelectAddress}
-                      onEdit={handleEditAddress}
-                    />
-                  ))}
+          <div className="flex flex-col lg:grid lg:grid-cols-12 gap-10 animate-in fade-in slide-in-from-bottom-3 duration-500">
+            <div className="order-1 lg:order-2 lg:col-span-5">
+              <h2 className="text-[14px] font-bold mb-4 lg:mb-6 text-gray-800">
+                Saved Addresses
+              </h2>
+              <div className="flex flex-row overflow-x-auto gap-4 pb-4 snap-x custom-scrollbar lg:flex-col lg:max-h-[450px] lg:overflow-y-auto lg:pr-2">
+                {savedAddresses.map((addr) => (
+                  <AddressCard
+                    setEditMode={setEditMode}
+                    editMode={editMode}
+                    key={addr._id}
+                    address={addr}
+                    isSelected={selectedAddressId === addr._id}
+                    onSelect={handleSelectAddress}
+                    onEdit={handleEditAddress}
+                  />
+                ))}
+                <button
+                  onClick={handleAddNewAddress}
+                  className="flex-shrink-0 w-[140px] lg:w-full py-4 lg:py-4 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-[11px] font-bold hover:border-gray-200 transition-all flex items-center justify-center"
+                >
+                  + New
+                </button>
+              </div>
+            </div>
+
+            <div className="order-2 lg:order-1 lg:col-span-7 bg-white p-6 border border-gray-100 rounded-[20px] shadow-sm">
+              <h2 className="text-[14px] font-bold mb-6 text-gray-800">
+                Shipping Information
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="firstName"
+                  name="firstName"
+                  label="First Name"
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm({ ...form, firstName: e.target.value })
+                  }
+                  error={errors.firstName}
+                  className="col-span-1"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="lastName"
+                  name="lastName"
+                  label="Last Name"
+                  value={form.lastName}
+                  onChange={(e) =>
+                    setForm({ ...form, lastName: e.target.value })
+                  }
+                  error={errors.lastName}
+                  className="col-span-1"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="addressLine1"
+                  name="addressLine1"
+                  label="Flat/ House No/ Building"
+                  placeholder="House no, Building, Apartment"
+                  value={form.addressLine1}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      addressLine1: e.target.value,
+                    }))
+                  }
+                  error={errors.addressLine1}
+                  className="col-span-2"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="addressLine2"
+                  name="addressLine2"
+                  label="Street / Locality"
+                  value={form.addressLine2}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      addressLine2: e.target.value,
+                    }))
+                  }
+                  error={errors.addressLine2}
+                  className="col-span-2"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="landmark"
+                  name="landmark"
+                  label="Landmark (Optional)"
+                  value={form.landmark}
+                  onChange={(e) =>
+                    setForm({ ...form, landmark: e.target.value })
+                  }
+                  className="col-span-2"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="pincode"
+                  name="pincode"
+                  label="PIN Code"
+                  value={form.pincode}
+                  onChange={(e) =>
+                    setForm({ ...form, pincode: e.target.value })
+                  }
+                  error={errors.pincode}
+                  className="col-span-1"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="city"
+                  name="city"
+                  label="City"
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  error={errors.city}
+                  className="col-span-1"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="state"
+                  name="state"
+                  label="State"
+                  value={form.state}
+                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                  error={errors.state}
+                  className="col-span-2"
+                />
+                <PremiumInput
+                  editMode={editMode}
+                  selectedAddressId={selectedAddressId}
+                  id="phone"
+                  name="phone"
+                  label="Phone Number"
+                  placeholder="+91 XXXX-XXXXXX"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  error={errors.phone}
+                  className="col-span-2"
+                />
+              </div>
+
+              <div className="mt-10 flex justify-end">
+                <div className="w-full sm:w-auto">
+                  {checkoutError && (
+                    <p className="mb-3 text-[11px] font-semibold text-red-500 text-right">
+                      {checkoutError}
+                    </p>
+                  )}
                   <button
-                    onClick={handleAddNewAddress}
-                    className="flex-shrink-0 w-[140px] lg:w-full py-4 lg:py-4 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-[11px] font-bold hover:border-gray-200 transition-all flex items-center justify-center"
+                    onClick={handleNext}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto group bg-black text-white flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-black/10 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    + New
+                    <span>continue</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                   </button>
                 </div>
               </div>
-
-              <div className="order-2 lg:order-1 lg:col-span-7 bg-white p-6 border border-gray-100 rounded-[20px] shadow-sm">
-                <h2 className="text-[14px] font-bold mb-6 text-gray-800">
-                  Shipping Information
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="firstName"
-                    name="firstName"
-                    label="First Name"
-                    value={form.firstName}
-                    onChange={(e) =>
-                      setForm({ ...form, firstName: e.target.value })
-                    }
-                    error={errors.firstName}
-                    className="col-span-1"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="lastName"
-                    name="lastName"
-                    label="Last Name"
-                    value={form.lastName}
-                    onChange={(e) =>
-                      setForm({ ...form, lastName: e.target.value })
-                    }
-                    error={errors.lastName}
-                    className="col-span-1"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="addressLine1"
-                    name="addressLine1"
-                    label="Flat/ House No/ Building"
-                    placeholder="House no, Building, Apartment"
-                    value={form.addressLine1}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        addressLine1: e.target.value,
-                      }))
-                    }
-                    error={errors.addressLine1}
-                    className="col-span-2"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="addressLine2"
-                    name="addressLine2"
-                    label="Street / Locality"
-                    value={form.addressLine2}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        addressLine2: e.target.value,
-                      }))
-                    }
-                    error={errors.addressLine2}
-                    className="col-span-2"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="landmark"
-                    name="landmark"
-                    label="Landmark (Optional)"
-                    value={form.landmark}
-                    onChange={(e) =>
-                      setForm({ ...form, landmark: e.target.value })
-                    }
-                    className="col-span-2"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="pincode"
-                    name="pincode"
-                    label="PIN Code"
-                    value={form.pincode}
-                    onChange={(e) =>
-                      setForm({ ...form, pincode: e.target.value })
-                    }
-                    error={errors.pincode}
-                    className="col-span-1"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="city"
-                    name="city"
-                    label="City"
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    error={errors.city}
-                    className="col-span-1"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="state"
-                    name="state"
-                    label="State"
-                    value={form.state}
-                    onChange={(e) =>
-                      setForm({ ...form, state: e.target.value })
-                    }
-                    error={errors.state}
-                    className="col-span-2"
-                  />
-                  <PremiumInput
-                    editMode={editMode}
-                    selectedAddressId={selectedAddressId}
-                    id="phone"
-                    name="phone"
-                    label="Phone Number"
-                    placeholder="+91 XXXX-XXXXXX"
-                    value={form.phone}
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
-                    error={errors.phone}
-                    className="col-span-2"
-                  />
-                </div>
-
-                <div className="mt-10 flex justify-end">
-                  <div className="w-full sm:w-auto">
-                    {checkoutError && (
-                      <p className="mb-3 text-[11px] font-semibold text-red-500 text-right">
-                        {checkoutError}
-                      </p>
-                    )}
-                    <button
-                      onClick={handleNext}
-                      disabled={isLoading}
-                      className="w-full sm:w-auto group bg-black text-white flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-black/10 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      <span>
-                        {step === 1
-                          ? "Continue"
-                          : !selectedAddressId
-                            ? "Save & Proceed to Payment"
-                            : "Proceed to Payment"}
-                      </span>
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
-          ) : (
+          </div>
+          {/* ) : (
             <div className="animate-in fade-in slide-in-from-right-3 duration-500">
               <PaymentPage
                 cartItems={cartItems}
@@ -529,7 +513,7 @@ const CheckoutPage = () => {
                 ← Back to Shipping
               </button>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
