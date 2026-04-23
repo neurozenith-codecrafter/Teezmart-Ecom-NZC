@@ -897,9 +897,10 @@ const Navbar = () => {
       {/* Edge trigger — 20px strip at left edge hands pointer to sidebar via dragControls */}
       {!isMenuOpen && (
         <div
-          className="fixed inset-y-0 left-0 w-5 z-[102]"
+          className="fixed inset-y-0 left-0 w-12 z-[999] bg-red-500/20"
           style={{ touchAction: "none" }}
           onPointerDown={(e) => {
+            console.log("Edge Triggered");
             sidebarX.set(-280);
             sidebarDragControls.start(e);
           }}
