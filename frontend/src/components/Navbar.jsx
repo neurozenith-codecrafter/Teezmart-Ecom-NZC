@@ -20,7 +20,14 @@ import {
   TrendingUp,
   Home,
 } from "lucide-react";
-import { motion as Motion, AnimatePresence, useMotionValue, useTransform, animate, useDragControls } from "framer-motion";
+import {
+  motion as Motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  animate,
+  useDragControls,
+} from "framer-motion";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import DropDown from "../components/HomepageComponents/DropDown";
 
@@ -290,8 +297,10 @@ const Navbar = () => {
 
   const handleSidebarDragEnd = (_, info) => {
     const threshold = 120;
-    const shouldOpen = !isMenuOpen && (info.velocity.x > 400 || info.offset.x > threshold);
-    const shouldClose = isMenuOpen && (info.velocity.x < -400 || info.offset.x < -threshold);
+    const shouldOpen =
+      !isMenuOpen && (info.velocity.x > 400 || info.offset.x > threshold);
+    const shouldClose =
+      isMenuOpen && (info.velocity.x < -400 || info.offset.x < -threshold);
 
     if (shouldOpen) {
       setIsMenuOpen(true);
@@ -365,8 +374,6 @@ const Navbar = () => {
 
   return (
     <>
-
-
       <nav className="fixed top-0 left-0 w-full z-[60] bg-white/95 backdrop-blur-md border-b border-[#f5f5f5]">
         <div
           className={`${PAGE_CONTAINER_CLASS} h-[55px] md:h-[68px] flex items-center justify-between relative`}
@@ -809,7 +816,7 @@ const Navbar = () => {
         drag="x"
         dragDirectionLock
         dragControls={sidebarDragControls}
-        dragListener={true}
+        dragListener={false}
         dragConstraints={{ left: -280, right: 0 }}
         dragElastic={0.12}
         onDragEnd={handleSidebarDragEnd}
@@ -891,6 +898,7 @@ const Navbar = () => {
       {!isMenuOpen && (
         <div
           className="fixed inset-y-0 left-0 w-5 z-[102]"
+          style={{ touchAction: "none" }}
           onPointerDown={(e) => {
             sidebarX.set(-280);
             sidebarDragControls.start(e);
