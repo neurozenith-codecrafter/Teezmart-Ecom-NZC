@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../Hooks/useAuth";
 import Loader from "../components/Loader";
@@ -104,9 +104,9 @@ const CheckoutPage = () => {
   const { user, token } = useAuth();
   const { cartItems } = useCart();
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   // const cartItems = location.state?.cartItems;
-  const totalPrice = location.state?.totalPrice;
+  // const totalPrice = location.state?.totalPrice;
 
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [form, setForm] = useState(DEFAULT_ADDRESS_FORM);
@@ -164,14 +164,16 @@ const CheckoutPage = () => {
 
   const handleNext = async () => {
     if (isLoading) return;
+
+    setIsLoading(true);
     setCheckoutError("");
 
     if (!cartItems.length) {
       setCheckoutError("Your cart is empty. Add an item before checkout.");
+      setIsLoading(false);
       return;
     }
 
-    // ✅ Validate only if new address
     if (!selectedAddressId) {
       const newErrors = {};
 
@@ -185,40 +187,36 @@ const CheckoutPage = () => {
         setErrors(newErrors);
 
         const firstErrorKey = Object.keys(newErrors)[0];
-        const el = document.querySelector(`[name="${firstErrorKey}"]`);
-        if (el) el.focus();
+        document.querySelector(`[name="${firstErrorKey}"]`)?.focus();
 
+        setIsLoading(false);
         return;
       }
     }
 
     setErrors({});
 
-    // 🔥 Create order BEFORE switching UI
     const order = await handlePlaceOrder();
 
-    if (!order) return;
+    if (!order) {
+      setIsLoading(false);
+      return;
+    }
 
+    // 🔥 DO NOT set loading false here
+    // Navigate immediately
     navigate(`/payment/${order._id}`);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePlaceOrder = async () => {
     try {
-      setIsLoading(true);
-
       let finalAddress;
 
       if (selectedAddressId && editMode) {
         const updatedAddressRes = await axios.put(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}/address`,
           { ...form, _id: selectedAddressId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         const updatedUser = updatedAddressRes.data?.data;
@@ -235,11 +233,7 @@ const CheckoutPage = () => {
         await axios.put(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}/address`,
           form,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
       }
 
@@ -259,14 +253,10 @@ const CheckoutPage = () => {
           shippingAddress: finalAddress,
           items: formattedItems,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      return res.data?.order; // 🔥 IMPORTANT
+      return res.data?.order;
     } catch (err) {
       const message =
         err.response?.data?.message ||
@@ -276,8 +266,6 @@ const CheckoutPage = () => {
       setCheckoutError(message);
       console.error("Order failed:", err.response?.data || err.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -285,10 +273,14 @@ const CheckoutPage = () => {
     navigate("/cart");
   };
 
-  if (isLoading) return <Loader />;
-
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-black selection:text-white pb-16">
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <Loader />
+        </div>
+      )}
+
       <div className="max-w-[1000px] mx-auto px-6 pt-8">
         {/* --- REFINED HEADER: Back Button beside Title --- */}
         <div className="mb-10">
