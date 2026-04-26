@@ -120,7 +120,6 @@ const AnimatedRoutes = () => {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/admin"
           element={
