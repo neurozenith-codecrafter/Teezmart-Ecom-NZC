@@ -340,7 +340,13 @@ const CartPage = () => {
       <div className="max-w-[1300px] w-full mx-auto px-5 md:px-10 lg:px-16 py-8">
         <header className="relative flex items-center justify-center mb-8 md:mb-14 py-1">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (location.state?.from === "checkout") {
+                navigate("/"); // escape loop
+              } else {
+                navigate(-1);
+              }
+            }}
             className="absolute left-0 p-2.5 text-zinc-900 hover:bg-zinc-100 rounded-full transition-all active:scale-90"
           >
             <ChevronLeft size={22} strokeWidth={2} />

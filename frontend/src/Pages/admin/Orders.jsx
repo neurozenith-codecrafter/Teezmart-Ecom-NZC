@@ -238,7 +238,7 @@ export const Orders = () => {
                     </td>
                     <td className="px-4 py-6">
                       <div className="text-[13px] font-semibold text-zinc-900">
-                        {order.customerName || "External User"}
+                        {order.shippingAddress?.firstName + " " + order.shippingAddress?.lastName}
                       </div>
                       <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider mt-0.5">
                         Verified Payer

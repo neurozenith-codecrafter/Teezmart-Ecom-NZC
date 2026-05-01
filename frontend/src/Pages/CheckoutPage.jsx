@@ -270,7 +270,7 @@ const CheckoutPage = () => {
   };
 
   const handleBack = () => {
-    navigate("/cart");
+    navigate("/cart", { state: { from: "checkout" }, replace: true });
   };
 
   return (
