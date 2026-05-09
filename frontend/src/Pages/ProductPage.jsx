@@ -10,6 +10,7 @@ import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
 import { ShopMoreCarousel } from "../components/ShopMoreCarousel";
 import useAnimations from "../Hooks/useAnimation";
+import { Toasts } from "../components/Toasts";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -25,6 +26,13 @@ const ProductPage = () => {
   const [imageDirection, setImageDirection] = useState(1);
   const swipeStartXRef = useRef(null);
   const swipeStartYRef = useRef(null);
+
+  const [toast, setToast] = useState({ show: false, type: 'cart', msg: '' });
+
+  const triggerToast = (type, msg) => {
+    setToast({ show: true, type, msg });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   useEffect(() => {
     // Fetch product details using the slug from the URL
@@ -304,7 +312,7 @@ const ProductPage = () => {
                       productId: product._id,
                       quantity: 1,
                       size: selectedSize,
-                    })
+                    }).then(() => triggerToast('cart', 'Added to cart!'))
                   }
                 >
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
@@ -313,7 +321,7 @@ const ProductPage = () => {
                 </Motion.button>
 
                 <Motion.button
-                  onClick={() => handleToggleWishlist(product)}
+                  onClick={() => handleToggleWishlist(product).then(() => triggerToast('wishlist', isLiked ? 'Removed from wishlist' : 'Added to wishlist'))}
                   // Bouncy hover and tap
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -390,6 +398,12 @@ const ProductPage = () => {
           </Motion.div>
         </div>
       </main>
+      <Toasts 
+        type={toast.type}
+        message={toast.msg}
+        isVisible={toast.show}
+        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+      />
     </Motion.div>
   );
 };
