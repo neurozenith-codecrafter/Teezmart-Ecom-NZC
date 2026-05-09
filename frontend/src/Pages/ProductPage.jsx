@@ -89,55 +89,60 @@ const ProductPage = () => {
               </div>
             )}
 
-            <Motion.div
-              variants={subtleReveal}
-              className="lg:col-span-8 flex gap-6 justify-start"
-            >
-              <div className="hidden lg:flex flex-col gap-3 shrink-0">
-                {productImages.map((image, idx) => (
-                  <Motion.button
-                    key={image._id}
-                    onClick={() => setSelectedImg(idx)}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 35,
-                    }}
-                    className={`relative w-14 h-18 md:w-16 md:h-20 rounded-lg overflow-hidden ${
-                      selectedImg === idx
-                        ? "ring-1 ring-black"
-                        : "opacity-40 hover:opacity-70"
-                    }`}
-                  >
-                    <img
-                      src={image.url} // ✅ FIXED
-                      alt="product thumbnail"
-                      className="w-full h-full object-cover"
-                    />
-                  </Motion.button>
-                ))}
-              </div>
+            {productImages?.length > 0 && (
+              <Motion.div
+                variants={subtleReveal}
+                className="lg:col-span-8 flex flex-col lg:flex-row gap-4 lg:gap-6 justify-start"
+              >
+                <div className="order-2 lg:order-1 flex lg:flex-col gap-3 shrink-0 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                  {productImages?.length > 0 &&
+                    productImages.map((image, idx) => (
+                      <Motion.button
+                        key={image._id || idx}
+                        onClick={() => setSelectedImg(idx)}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 35,
+                        }}
+                        className={`relative w-14 h-18 md:w-16 md:h-20 rounded-lg overflow-hidden transition-all ${
+                          selectedImg === idx
+                            ? "ring-1 ring-black"
+                            : "opacity-40 hover:opacity-70"
+                        }`}
+                      >
+                        <img
+                          src={image.url}
+                          alt={`product thumbnail ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </Motion.button>
+                    ))}
+                </div>
 
-              <div className="flex-grow aspect-[4/5] max-w-[480px] rounded-xl overflow-hidden bg-white border border-zinc-100 shadow-sm">
-                <AnimatePresence mode="wait">
-                  <Motion.img
-                    key={productImages[selectedImg]?.url}
-                    src={productImages[selectedImg]?.url}
-                    alt="Main Product"
-                    className="w-full h-full object-cover"
-                    initial={{ opacity: 0, scale: 1.005 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.998 }}
-                    transition={{
-                      duration: 0.22,
-                      ease: [0.33, 1, 0.68, 1], // smooth, natural easing
-                    }}
-                  />
-                </AnimatePresence>
-              </div>
-            </Motion.div>
+                {productImages?.[selectedImg]?.url && (
+                  <div className="order-1 lg:order-2 flex-grow aspect-[4/5] max-w-[480px] rounded-xl overflow-hidden bg-white border border-zinc-100 shadow-sm scrollbar-hide">
+                    <AnimatePresence mode="wait">
+                      <Motion.img
+                        key={selectedImg}
+                        src={productImages[selectedImg].url}
+                        alt="Product display"
+                        className="w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.005 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.998 }}
+                        transition={{
+                          duration: 0.22,
+                          ease: [0.33, 1, 0.68, 1],
+                        }}
+                      />
+                    </AnimatePresence>
+                  </div>
+                )}
+              </Motion.div>
+            )}
 
             {/* RIGHT: INFO (Elements appear one by one) */}
             <Motion.div
