@@ -55,18 +55,25 @@ const HeroSection = () => {
           {/* 1. Main Text with Staggered Letter Animation */}
           <div className="flex overflow-hidden pb-2">
             {isMobile ? (
-              // ✅ SINGLE animation (smooth on mobile)
+              // ✅ Mobile Version
               <Motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="font-light drop-shadow-2xl"
+                className="font-light drop-shadow-2xl flex items-center"
               >
                 TeezStyles
-                {/* <span className="text-green-400 font-bold">.</span> */}
+                <Motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.25, delay: 0.2 }}
+                  className="text-green-400 font-bold"
+                >
+                  .
+                </Motion.span>
               </Motion.div>
             ) : (
-              // 💻 Keep fancy animation for desktop
+              // 💻 Desktop Version
               <div className="flex overflow-hidden pb-2">
                 {"TeezStyles".split("").map((char, index) => (
                   <Motion.span
@@ -83,22 +90,23 @@ const HeroSection = () => {
                     {char}
                   </Motion.span>
                 ))}
+
+                {/* Desktop Dot */}
+                <Motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 10,
+                    delay: 0.8,
+                  }}
+                  className="inline-block text-green-400 font-bold"
+                >
+                  .
+                </Motion.span>
               </div>
             )}
-            {/* 2. The "Signature" Dot */}
-            <Motion.span
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 10,
-                delay: 0.8,
-              }}
-              className="inline-block text-green-400 font-bold"
-            >
-              .
-            </Motion.span>
           </div>
 
           {/* 3. Underline Decorative Flow */}
