@@ -296,7 +296,9 @@ const ProductPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <ShopMoreCarousel productId={product?._id} />
+            <div data-no-swipe>
+              <ShopMoreCarousel productId={product?._id} />
+            </div>
           </Motion.div>
 
           <Motion.div
