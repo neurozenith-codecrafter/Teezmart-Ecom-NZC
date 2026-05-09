@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,18 +7,38 @@ import { motion as Motion } from "framer-motion";
 const heroSpring = { type: "spring", stiffness: 100, damping: 20 };
 
 const HeroSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile(); // run once on mount
+
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <Motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
+      initial={isMobile ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
+      transition={
+        isMobile ? { duration: 0.4 } : { duration: 1.2, ease: "easeOut" }
+      }
       className="relative h-[380px] md:h-[580px] w-full rounded-lg md:rounded-xl overflow-hidden shadow-2xl bg-gray-100"
     >
       {/* 1. Background Image - "The Slow Breath" Zoom */}
       <Motion.img
-        initial={{ scale: 1.08, opacity: 0 }}
+        initial={isMobile ? { opacity: 0 } : { scale: 1.08, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 60, damping: 20 }}
+        transition={
+          isMobile
+            ? { duration: 0.5 }
+            : { type: "spring", stiffness: 60, damping: 20 }
+        }
         src="https://res.cloudinary.com/dnypxpkvl/image/upload/v1776099103/bst4.jpg_zwtc6t.jpg"
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -34,24 +54,37 @@ const HeroSection = () => {
         >
           {/* 1. Main Text with Staggered Letter Animation */}
           <div className="flex overflow-hidden pb-2">
-            {"TeezStyles".split("").map((char, index) => (
-              <Motion.span
-                key={index}
-                variants={{
-                  initial: { y: "100%", opacity: 0 },
-                  animate: { y: 0, opacity: 1 },
-                }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.2, 1, 0.3, 1],
-                  delay: 0.2 + index * 0.03,
-                }}
-                className="inline-block font-light drop-shadow-2xl"
+            {isMobile ? (
+              // ✅ SINGLE animation (smooth on mobile)
+              <Motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="font-light drop-shadow-2xl"
               >
-                {char}
-              </Motion.span>
-            ))}
-
+                TeezStyles
+                {/* <span className="text-green-400 font-bold">.</span> */}
+              </Motion.div>
+            ) : (
+              // 💻 Keep fancy animation for desktop
+              <div className="flex overflow-hidden pb-2">
+                {"TeezStyles".split("").map((char, index) => (
+                  <Motion.span
+                    key={index}
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{
+                      duration: 0.8,
+                      ease: [0.2, 1, 0.3, 1],
+                      delay: 0.2 + index * 0.03,
+                    }}
+                    className="inline-block font-light drop-shadow-2xl"
+                  >
+                    {char}
+                  </Motion.span>
+                ))}
+              </div>
+            )}
             {/* 2. The "Signature" Dot */}
             <Motion.span
               initial={{ scale: 0, opacity: 0 }}
@@ -70,8 +103,8 @@ const HeroSection = () => {
 
           {/* 3. Underline Decorative Flow */}
           <Motion.div
-            initial={{ scaleX: 0, originX: 0 }}
-            animate={{ scaleX: 1 }}
+            initial={isMobile ? false : { scaleX: 0, originX: 0 }}
+            animate={isMobile ? false : { scaleX: 1 }}
             transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
             className="h-[1px] md:h-[2px] w-32 md:w-64 bg-gradient-to-r from-white/80 to-transparent mt-[-4px]"
           />
@@ -109,31 +142,51 @@ const HeroSection = () => {
         {/* --- NEW OFFER TAG --- */}
         {/* --- BIG, EYE-CATCHING OFFER CARD --- */}
         <Motion.div
-          // 1. Entrance: Start blurry, slightly lower, and "tucked" back (scale 0.9)
-          initial={{ opacity: 0, scale: 0.9, y: 30, filter: "blur(10px)" }}
-          animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-          // 2. Physics: Heavy mass spring for a "luxurious" settle
+          initial={isMobile ? false : { opacity: 0, scale: 0.94, y: 30 }}
+          animate={isMobile ? false : { opacity: 1, scale: 1, y: 0 }}
           transition={{
             type: "spring",
-            stiffness: 120, // Lower stiffness for a smoother ride
+            stiffness: 120,
             damping: 20,
             mass: 1.2,
           }}
-          // 3. Interaction: Magnetic lift with a light flare
-          whileHover={{
-            scale: 1.03,
-            y: -4, // Physical lift
-            rotate: -0.5, // Very slight natural tilt
-            backgroundColor: "rgba(255, 255, 255, 0.15)", // Subtle highlight
-            transition: {
-              type: "spring",
-              stiffness: 400,
-              damping: 25,
-            },
-          }}
-          whileTap={{ scale: 0.98, y: 0 }} // Click feedback
-          style={{ willChange: "transform, filter" }}
-          className="mt-6 md:mt-10 mb-6 md:mb-8 inline-flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 md:px-6 md:py-4 rounded-2xl md:rounded-3xl shadow-2xl cursor-pointer max-w-[90vw] md:max-w-none transition-colors duration-300"
+          whileHover={
+            isMobile
+              ? {}
+              : {
+                  scale: 1.03,
+                  y: -4,
+                  rotate: -0.5,
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  transition: {
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25,
+                  },
+                }
+          }
+          whileTap={isMobile ? {} : { scale: 0.98, y: 0 }}
+          style={{ willChange: "transform" }}
+          className="
+            mt-6 md:mt-10
+            mb-6 md:mb-8
+            inline-flex items-center gap-3 md:gap-4
+
+            bg-white/10
+            backdrop-blur-xl
+
+            border border-white/20
+
+            p-4 md:px-6 md:py-4
+            rounded-2xl md:rounded-3xl
+
+            shadow-2xl
+
+            cursor-pointer
+            max-w-[90vw] md:max-w-none
+
+            transition-colors duration-300
+          "
         >
           {/* Icon */}
           <div className="flex items-center justify-center p-2 md:p-3 bg-green-500 rounded-xl md:rounded-2xl shrink-0">
@@ -147,7 +200,9 @@ const HeroSection = () => {
                 Special Offer
               </span>
               <div className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                {!isMobile && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                )}
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500"></span>
               </div>
             </div>
@@ -167,20 +222,33 @@ const HeroSection = () => {
       <div className="absolute bottom-6 md:bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-5 z-10 w-full px-4">
         <Link to={"/catalog"}>
           <Motion.button
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: isMobile ? 20 : 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...heroSpring, delay: 1.2 }}
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-            }}
-            whileTap={{ scale: 0.95 }}
+            transition={
+              isMobile
+                ? { duration: 0.4, delay: 0.3 }
+                : { ...heroSpring, delay: 1.2 }
+            }
+            whileHover={
+              isMobile
+                ? {}
+                : {
+                    scale: 1.05,
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+                  }
+            }
+            whileTap={isMobile ? {} : { scale: 0.95 }}
             className="group flex items-center gap-2 bg-white text-black px-5 py-3 md:px-8 md:py-4 rounded-full font-medium shadow-xl hover:bg-black hover:text-white transition-all duration-300 cursor-pointer whitespace-nowrap"
           >
             <span className="text-sm md:text-lg">Start shopping</span>
+
             <ArrowUpRight
               size={18}
-              className="md:size-[22px] transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
+              className={`md:size-[22px] transition-transform duration-300 ${
+                !isMobile
+                  ? "transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  : ""
+              }`}
               strokeWidth={2.5}
             />
           </Motion.button>
