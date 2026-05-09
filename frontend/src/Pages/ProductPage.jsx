@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { motion as Motion, AnimatePresence } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Heart, Percent, Box, Truck, Calendar } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
@@ -22,6 +22,9 @@ const ProductPage = () => {
 
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedImg, setSelectedImg] = useState(0);
+  const [imageDirection, setImageDirection] = useState(1);
+  const swipeStartXRef = useRef(null);
+  const swipeStartYRef = useRef(null);
 
   useEffect(() => {
     // Fetch product details using the slug from the URL
@@ -61,6 +64,58 @@ const ProductPage = () => {
 
   const isLiked = product?._id ? wishlistIds.has(String(product._id)) : false;
 
+  const paginateImage = (direction) => {
+    if (!productImages?.length) return;
+
+    setImageDirection(direction === "next" ? 1 : -1);
+    setSelectedImg((prev) => {
+      if (direction === "next") {
+        return (prev + 1) % productImages.length;
+      }
+
+      return (prev - 1 + productImages.length) % productImages.length;
+    });
+  };
+
+  const handleSelectImage = (index) => {
+    if (index === selectedImg) return;
+
+    setImageDirection(index > selectedImg ? 1 : -1);
+    setSelectedImg(index);
+  };
+
+  const handleSwipeStart = (clientX, clientY) => {
+    swipeStartXRef.current = clientX;
+    swipeStartYRef.current = clientY;
+  };
+
+  const handleSwipeEnd = (clientX, clientY) => {
+    if (swipeStartXRef.current === null || swipeStartYRef.current === null) {
+      return;
+    }
+
+    const deltaX = clientX - swipeStartXRef.current;
+    const deltaY = clientY - swipeStartYRef.current;
+    const threshold = 50;
+
+    swipeStartXRef.current = null;
+    swipeStartYRef.current = null;
+
+    if (
+      Math.abs(deltaX) < threshold ||
+      Math.abs(deltaX) <= Math.abs(deltaY)
+    ) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      paginateImage("next");
+      return;
+    }
+
+    paginateImage("prev");
+  };
+
   return (
     <Motion.div
       initial="hidden"
@@ -93,13 +148,14 @@ const ProductPage = () => {
               <Motion.div
                 variants={subtleReveal}
                 className="lg:col-span-8 flex flex-col lg:flex-row gap-4 lg:gap-6 justify-start"
+                data-no-swipe
               >
-                <div className="order-2 lg:order-1 flex lg:flex-col gap-3 shrink-0 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+                <div className="order-2 lg:order-1 flex lg:flex-col gap-3 shrink-0 pb-2 lg:pb-0 justify-center">
                   {productImages?.length > 0 &&
                     productImages.map((image, idx) => (
                       <Motion.button
                         key={image._id || idx}
-                        onClick={() => setSelectedImg(idx)}
+                        onClick={() => handleSelectImage(idx)}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                         transition={{
@@ -123,22 +179,37 @@ const ProductPage = () => {
                 </div>
 
                 {productImages?.[selectedImg]?.url && (
-                  <div className="order-1 lg:order-2 flex-grow aspect-[4/5] max-w-[480px] rounded-xl overflow-hidden bg-white border border-zinc-100 shadow-sm scrollbar-hide">
-                    <AnimatePresence mode="wait">
-                      <Motion.img
-                        key={selectedImg}
+                  <div
+                    className="order-1 lg:order-2 overflow-hidden rounded-xl border border-zinc-100 shadow-sm max-w-[480px] bg-white touch-pan-y"
+                    data-no-swipe
+                    onTouchStart={(e) => {
+                      const touch = e.touches[0];
+                      if (!touch) return;
+                      handleSwipeStart(touch.clientX, touch.clientY);
+                    }}
+                    onTouchEnd={(e) => {
+                      const touch = e.changedTouches[0];
+                      if (!touch) return;
+                      handleSwipeEnd(touch.clientX, touch.clientY);
+                    }}
+                  >
+                    <Motion.div
+                      key={productImages[selectedImg]._id || selectedImg}
+                      className="aspect-[4/5]"
+                      initial={{ opacity: 0.75, x: imageDirection * 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: 0.12,
+                        ease: "easeOut",
+                      }}
+                    >
+                      <img
                         src={productImages[selectedImg].url}
-                        alt="Product display"
-                        className="w-full h-full object-cover"
-                        initial={{ opacity: 0, scale: 1.005 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.998 }}
-                        transition={{
-                          duration: 0.22,
-                          ease: [0.33, 1, 0.68, 1],
-                        }}
+                        alt={`product ${selectedImg}`}
+                        className="w-full h-full object-cover pointer-events-none"
+                        draggable={false}
                       />
-                    </AnimatePresence>
+                    </Motion.div>
                   </div>
                 )}
               </Motion.div>
