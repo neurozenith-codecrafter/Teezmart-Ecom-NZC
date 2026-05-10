@@ -3,7 +3,7 @@ import HeroSection from "../components/HomepageComponents/HeroSection";
 import { BestSellerSection } from "../components/HomepageComponents/BestSellerSection";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { WhyUsSection } from "../components/HomepageComponents/WhyUsSection";
-import TShirtShowcase from "../components/HomepageComponents/TshirtShowCase";
+import TShirtShowcase from "../components/HomepageComponents/TShirtShowcase";
 
 const Home = () => {
 
