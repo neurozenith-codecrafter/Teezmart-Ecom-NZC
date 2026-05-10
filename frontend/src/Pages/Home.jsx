@@ -3,6 +3,7 @@ import HeroSection from "../components/HomepageComponents/HeroSection";
 import { BestSellerSection } from "../components/HomepageComponents/BestSellerSection";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { WhyUsSection } from "../components/HomepageComponents/WhyUsSection";
+import TShirtShowcase from "../components/HomepageComponents/TshirtShowCase";
 
 const Home = () => {
 
@@ -19,6 +20,7 @@ const Home = () => {
       </div>
       <BestSellerSection />
       <WhyUsSection />
+      <TShirtShowcase />
     </main>
   );
 };
