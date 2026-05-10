@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, Trash2, ArrowRight } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useWishlist } from "../Hooks/useWishlist";
 import { useCart } from "../Hooks/useCart";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
-import RatingComponent from "../components/RatingComponent"
+import RatingComponent from "../components/RatingComponent";
+import { Toasts } from "../components/Toasts";
 
 const WishlistCardSkeleton = ({ index = 0 }) => {
   return (
@@ -57,21 +58,45 @@ const WishlistPage = () => {
   const { wishlistItems, isWishlistLoading, handleToggleWishlist } = useWishlist();
   const { handleAddToCart } = useCart();
   const [loadingProductId, setLoadingProductId] = useState(null);
+  const toastTimeoutRef = useRef(null);
+  const [toast, setToast] = useState({
+    type: "cart",
+    message: "",
+    isVisible: false,
+  });
 
   // Filter out any completely null entries (shouldn't happen after backend cleanup,
   // but guards against stale cached state between delete and next fetch)
   const validItems = wishlistItems.filter((item) => item && item._id);
+
+  const triggerToast = (type, message) => {
+    setToast({ type, message, isVisible: true });
+    window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 3000);
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
 
   const handleMoveToCart = async (product) => {
     const defaultSize = product?.sizes?.[0];
     if (!defaultSize) return;
     setLoadingProductId(product._id);
     try {
-      await handleAddToCart({
+      const added = await handleAddToCart({
         productId: product._id,
         quantity: 1,
         size: defaultSize,
       });
+      if (added) {
+        triggerToast("cart", "Added to cart");
+      }
     } finally {
       setLoadingProductId(null);
     }
@@ -149,7 +174,15 @@ const WishlistPage = () => {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            handleToggleWishlist(item);
+                            handleToggleWishlist(item).then((nextState) => {
+                              if (nextState === null) return;
+                              triggerToast(
+                                "wishlist",
+                                nextState
+                                  ? "Added to wishlist"
+                                  : "Removed from wishlist",
+                              );
+                            });
                           }}
                           className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 border border-white/20 transition-all hover:scale-110 active:scale-95 shadow-sm text-rose-500"
                         >
@@ -191,7 +224,15 @@ const WishlistPage = () => {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          handleToggleWishlist(item);
+                          handleToggleWishlist(item).then((nextState) => {
+                            if (nextState === null) return;
+                            triggerToast(
+                              "wishlist",
+                              nextState
+                                ? "Added to wishlist"
+                                : "Removed from wishlist",
+                            );
+                          });
                         }}
                         className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 shadow-sm text-rose-500"
                       >
@@ -245,6 +286,12 @@ const WishlistPage = () => {
           )}
         </div>
       </main>
+      <Toasts
+        type={toast.type}
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 };

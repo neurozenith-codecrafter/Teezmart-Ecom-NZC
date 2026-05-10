@@ -16,7 +16,7 @@ export const useWishlist = () => {
   const handleToggleWishlist = async (product) => {
     if (!token) {
       navigate("/login");
-      return false;
+      return null;
     }
 
     try {
@@ -24,7 +24,7 @@ export const useWishlist = () => {
     } catch (error) {
       console.error("Wishlist update failed:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Something went wrong");
-      return false;
+      return null;
     }
   };
 

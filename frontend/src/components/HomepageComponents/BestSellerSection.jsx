@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart, Star } from "lucide-react";
@@ -6,27 +6,55 @@ import { Link } from "react-router-dom";
 import { PAGE_CONTAINER_CLASS } from "../../constants/pageLayout";
 import { useCart } from "../../Hooks/useCart";
 import { useWishlist } from "../../Hooks/useWishlist";
-import RatingComponent  from "../RatingComponent"
+import RatingComponent from "../RatingComponent";
+import { Toasts } from "../Toasts";
 
 const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
   const [isAdded, setIsAdded] = useState(false);
+  const toastTimeoutRef = useRef(null);
 
-  const onAdd = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const [toast, setToast] = useState({
+    type: "cart",
+    message: "",
+    isVisible: false,
+  });
 
-    setIsAdded(true);
+  const onAdd = async () => {
+    let added = false;
 
     try {
-      await handleAddToCart({
+      added = await handleAddToCart({
         productId: item._id,
         quantity: 1,
         size: item?.sizes?.[0],
       });
+      if (!added) return false;
+
+      setIsAdded(true);
+      triggerToast("cart", "Added to cart");
+      return true;
     } finally {
-      setTimeout(() => setIsAdded(false), 1500);
+      if (added) {
+        setTimeout(() => setIsAdded(false), 1500);
+      }
     }
   };
+
+  const triggerToast = (type, msg) => {
+    setToast({ type: type, message: msg, isVisible: true });
+    window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(
+      () => setToast((prev) => ({ ...prev, isVisible: false })),
+      3000,
+    );
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
 
   return (
     <Link to={`/product/${item.slug}`} className="block relative">
@@ -34,7 +62,16 @@ const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
         <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)]">
           <button
             type="button"
-            onClick={onLikeToggle}
+            onClick={async (e) => {
+              e.preventDefault();
+              const nextState = await onLikeToggle();
+              if (nextState === null) return;
+
+              triggerToast(
+                "wishlist",
+                nextState ? "Added to wishlist" : "Removed from wishlist",
+              );
+            }}
             className="absolute top-3 right-3 md:top-5 md:right-5 z-10 p-2 md:p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-90 shadow-sm"
           >
             <Motion.div
@@ -59,7 +96,11 @@ const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hidden md:block">
             <Motion.button
               type="button"
-              onClick={onAdd}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAdd();
+              }}
               transition={{
                 type: "spring",
                 stiffness: 400,
@@ -95,7 +136,7 @@ const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
           </h3>
 
           <div className="flex items-center gap-1.5">
-            <RatingComponent rating={item.rating}/>
+            <RatingComponent rating={item.rating} />
 
             <span className="text-[10px] text-zinc-400 font-bold tracking-tighter">
               {item.rating.toFixed(1)}
@@ -115,6 +156,12 @@ const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
           </div>
         </div>
       </div>
+      <Toasts
+        type={toast.type}
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
     </Link>
   );
 };
@@ -139,11 +186,7 @@ export const BestSellerSection = () => {
     fetchBestSellers();
   }, []);
 
-  const toggleLike = async (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await handleToggleWishlist(product);
-  };
+  const toggleLike = async (product) => handleToggleWishlist(product);
 
   return (
     <section className="bg-[#FBFBFB] pt-12 md:pt-20 pb-16 text-slate-900 font-sans w-full">
@@ -204,7 +247,7 @@ export const BestSellerSection = () => {
                 <ProductCard
                   item={item}
                   isLiked={isLiked}
-                  onLikeToggle={(e) => toggleLike(e, item)}
+                  onLikeToggle={() => toggleLike(item)}
                   handleAddToCart={handleAddToCart}
                 />
               </Motion.div>

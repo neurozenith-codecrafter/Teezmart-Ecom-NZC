@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
-import RatingComponent from "../components/RatingComponent"
+import RatingComponent from "../components/RatingComponent";
+import { Toasts } from "../components/Toasts";
 
 const ProductCard = ({
   product,
@@ -13,19 +14,24 @@ const ProductCard = ({
   isLiked,
   handleAddToCart,
   onToggleWishlist,
+  triggerToast,
 }) => {
   const [isAdded, setIsAdded] = useState(false);
   
   const onAdd = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsAdded(true);
+
     try {
-      await handleAddToCart({
+      const added = await handleAddToCart({
         productId: product._id,
         quantity: 1,
         size: product?.sizes?.[0],
       });
+      if (!added) return;
+
+      setIsAdded(true);
+      triggerToast("cart", "Added to cart");
     } finally {
       setTimeout(() => setIsAdded(false), 1500);
     }
@@ -34,7 +40,13 @@ const ProductCard = ({
   const toggleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    await onToggleWishlist(product);
+    const nextState = await onToggleWishlist(product);
+    if (nextState === null) return;
+
+    triggerToast(
+      "wishlist",
+      nextState ? "Added to wishlist" : "Removed from wishlist",
+    );
   };
 
   return (
@@ -239,6 +251,12 @@ export const CatalogPage = () => {
   const [draftSort, setDraftSort] = useState("new");
   const [productNotAvailable, setProductNotAvailable] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const toastTimeoutRef = useRef(null);
+  const [toast, setToast] = useState({
+    type: "cart",
+    message: "",
+    isVisible: false,
+  });
 
   const { handleAddToCart } = useCart();
   const { wishlistIds, handleToggleWishlist } = useWishlist();
@@ -342,13 +360,18 @@ export const CatalogPage = () => {
   };
 
   useEffect(() => {
+    const syncedSizes = activeSizesParamValue
+      .split(",")
+      .map((size) => size.trim().toUpperCase())
+      .filter(Boolean);
+
     setDraftCategory(activeCategory);
     setAppliedFilter(activeFilterParam);
     setAppliedSort(activeSortParam);
     setDraftFilter(activeFilterParam);
     setDraftSort(activeSortParam);
-    setAppliedSizes(activeSizesParam);
-    setDraftSizes(activeSizesParam);
+    setAppliedSizes(syncedSizes);
+    setDraftSizes(syncedSizes);
   }, [
     activeCategory,
     activeFilterParam,
@@ -432,6 +455,21 @@ export const CatalogPage = () => {
 
   const hasActiveFilters = activeFilterCount > 0;
   const canReset = isDirty || hasActiveFilters;
+
+  const triggerToast = (type, message) => {
+    setToast({ type, message, isVisible: true });
+    window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 3000);
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
 
   return (
     <div className="min-h-screen bg-[#FBFBFB] pt-6 md:pt-10 pb-20 px-4 md:px-10 lg:px-20">
@@ -636,11 +674,18 @@ export const CatalogPage = () => {
                 isLiked={wishlistIds.has(String(item._id))}
                 handleAddToCart={handleAddToCart}
                 onToggleWishlist={handleToggleWishlist}
+                triggerToast={triggerToast}
               />
             ))
           )}
         </div>
       </main>
+      <Toasts
+        type={toast.type}
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 };

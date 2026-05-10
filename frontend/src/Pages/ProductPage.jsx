@@ -307,13 +307,16 @@ const ProductPage = () => {
                   }}
                   // 4. Cleaned up className (removed transition and hover/active transform utilities)
                   className="group relative flex-grow bg-black text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
-                  onClick={() =>
-                    handleAddToCart({
+                  onClick={async () => {
+                    const added = await handleAddToCart({
                       productId: product._id,
                       quantity: 1,
                       size: selectedSize,
-                    }).then(() => triggerToast('cart', 'Added to cart!'))
-                  }
+                    });
+                    if (added) {
+                      triggerToast('cart', 'Added to cart!');
+                    }
+                  }}
                 >
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
 
@@ -321,7 +324,14 @@ const ProductPage = () => {
                 </Motion.button>
 
                 <Motion.button
-                  onClick={() => handleToggleWishlist(product).then(() => triggerToast('wishlist', isLiked ? 'Removed from wishlist' : 'Added to wishlist'))}
+                  onClick={async () => {
+                    const nextState = await handleToggleWishlist(product);
+                    if (nextState === null) return;
+                    triggerToast(
+                      'wishlist',
+                      nextState ? 'Added to wishlist' : 'Removed from wishlist',
+                    );
+                  }}
                   // Bouncy hover and tap
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

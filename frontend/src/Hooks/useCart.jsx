@@ -12,20 +12,22 @@ export const useCart = () => {
     // 1. Auth check
     if (!token) {
       navigate("/login");
-      return;
+      return false;
     }
 
     // 2. Size validation
     if (!size) {
       alert("Please select a size");
-      return;
+      return false;
     }
 
     try {
       await addToCart({ productId, quantity, size });
+      return true;
     } catch (error) {
       console.error("Add to cart failed:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Something went wrong");
+      return false;
     }
   };
 

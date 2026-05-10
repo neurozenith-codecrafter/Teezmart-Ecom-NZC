@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus,
@@ -17,6 +17,7 @@ import {
 } from "framer-motion";
 import Loader from "../components/Loader";
 import { useCart } from "../Hooks/useCart";
+import { Toasts } from "../components/Toasts";
 
 const CartItemRow = ({
   item,
@@ -277,10 +278,31 @@ const CartPage = () => {
     refreshCart,
   } = useCart();
   const [busyKey, setBusyKey] = useState("");
+  const toastTimeoutRef = useRef(null);
+  const [toast, setToast] = useState({
+    type: "delete",
+    message: "",
+    isVisible: false,
+  });
   
   useEffect(() => {
     refreshCart();
   }, [location.pathname, refreshCart]);
+
+  const triggerToast = (type, message) => {
+    setToast({ type, message, isVisible: true });
+    window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToast((prev) => ({ ...prev, isVisible: false }));
+    }, 3000);
+  };
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
 
 
 
@@ -324,6 +346,7 @@ const CartPage = () => {
     try {
       if (nextQty <= 0) {
         await removeCartItem({ productId, size: item.size });
+        triggerToast("delete", "Item removed from cart");
       } else {
         await updateCartItem({ productId, size: item.size, quantity: nextQty });
       }
@@ -468,6 +491,12 @@ const CartPage = () => {
           </aside>
         </div>
       </div>
+      <Toasts
+        type={toast.type}
+        message={toast.message}
+        isVisible={toast.isVisible}
+        onClose={() => setToast((prev) => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 };
