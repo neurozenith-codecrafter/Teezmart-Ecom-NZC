@@ -9,7 +9,9 @@ const heroSpring = { type: "spring", stiffness: 100, damping: 20 };
 const HeroSection = () => {
   const isMobile = useDevice();
 
-  const imageUrl = "https://res.cloudinary.com/dnypxpkvl/image/upload/v1776099103/bst4.jpg_zwtc6t.jpg";
+  const heroImage = isMobile
+    ? "https://res.cloudinary.com/dnypxpkvl/image/upload/f_auto,q_auto,w_700/v1776099103/bst4.jpg_zwtc6t.jpg"
+    : "https://res.cloudinary.com/dnypxpkvl/image/upload/f_auto,q_auto,w_1600/v1776099103/bst4.jpg_zwtc6t.jpg";
 
   return (
     <Motion.div
@@ -29,7 +31,7 @@ const HeroSection = () => {
             ? { duration: 0.5 }
             : { type: "spring", stiffness: 60, damping: 20 }
         }
-        src={imageUrl}
+        src={heroImage}
         loading="eager"
         className="absolute inset-0 w-full h-full object-cover"
       />
