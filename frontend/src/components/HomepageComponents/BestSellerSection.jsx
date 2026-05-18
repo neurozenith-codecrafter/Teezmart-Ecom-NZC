@@ -203,6 +203,8 @@ export const BestSellerSection = () => {
 
         {/* GRID SECTION - Updated spacing and layout */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-16">
+
+          {/* Skeleton loaders when bestSellers is empty or null */}
           {(!bestSellers || bestSellers.length === 0) &&
             [...Array(8)].map((_, i) => (
               <div key={i} className="block relative animate-pulse">

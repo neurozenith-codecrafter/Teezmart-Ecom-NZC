@@ -7,6 +7,7 @@ import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
 import RatingComponent from "../components/RatingComponent";
 import { Toasts } from "../components/Toasts";
+import useDevice from "../Hooks/useDevice";
 
 const ProductCard = ({
   product,
@@ -17,7 +18,9 @@ const ProductCard = ({
   triggerToast,
 }) => {
   const [isAdded, setIsAdded] = useState(false);
-  
+
+  const isMobile = useDevice();
+
   const onAdd = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -51,23 +54,24 @@ const ProductCard = ({
 
   return (
     <Motion.div
-      initial={{ opacity: 0, y: 15 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: (index % 4) * 0.1, duration: 0.5 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1.0] }} // Premium Cubic Bezier curve
       className="group"
     >
       <Link to={`/product/${product.slug}`} className="block relative">
         <div className="space-y-4">
-          <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)]">
+          <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-500 active:opacity-90 active:scale-[0.99]">
+            {/* Wishlist Button - Soft scale feedback on tap */}
             <button
               type="button"
               onClick={toggleWishlist}
-              className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/60 backdrop-blur-md border border-white/20 transition-all duration-300 hover:scale-110 active:scale-90 shadow-sm"
+              className="absolute top-5 right-5 z-10 p-3 rounded-full bg-white/80 border border-white/40 transition-transform duration-200 active:scale-90 shadow-sm"
             >
               <Motion.div
-                animate={isLiked ? { scale: [1, 1.3, 1] } : {}}
-                transition={{ duration: 0.3 }}
+                animate={isLiked ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
               >
                 <Heart
                   size={18}
@@ -76,28 +80,24 @@ const ProductCard = ({
               </Motion.div>
             </button>
 
+            {/* Product Image */}
             <img
               src={product.images?.[0]?.url}
               alt={product.title}
-              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-103"
             />
 
+            {/* Quick Add Wrap - Retained purely for desktop viewports */}
             <div
               className="
-                absolute bottom-5 left-1/2 -translate-x-1/2
-                transition-all duration-300
-
-                // MOBILE (default)
-                opacity-0 pointer-events-none
-
-                // DESKTOP base state
-                md:opacity-0 md:pointer-events-none
-
-                // DESKTOP hover state
-                md:group-hover:opacity-100
-                md:group-hover:translate-y-0
-                md:group-hover:pointer-events-auto
-              "
+            absolute bottom-5 left-1/2 -translate-x-1/2
+            transition-all duration-300
+            opacity-0 pointer-events-none
+            md:opacity-0 md:pointer-events-none
+            md:group-hover:opacity-100
+            md:group-hover:translate-y-0
+            md:group-hover:pointer-events-auto
+          "
             >
               <Motion.button
                 type="button"
@@ -105,16 +105,16 @@ const ProductCard = ({
                 animate={{
                   backgroundColor: isAdded ? "#18181b" : "#ffffff",
                   color: isAdded ? "#ffffff" : "#18181b",
-                  scale: isAdded ? 0.95 : 1,
                 }}
                 className="backdrop-blur-md text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-full shadow-2xl border border-zinc-200/50"
               >
                 <AnimatePresence mode="wait">
                   <Motion.span
                     key={isAdded ? "added" : "add"}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                     className="flex items-center gap-2"
                   >
                     {isAdded ? "Success ✓" : "Quick Add +"}
@@ -124,6 +124,7 @@ const ProductCard = ({
             </div>
           </div>
 
+          {/* Product Details */}
           <div className="space-y-1.5 px-1">
             <h3 className="text-[15px] font-medium text-zinc-900 truncate tracking-tight">
               {product.title}
