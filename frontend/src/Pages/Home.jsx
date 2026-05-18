@@ -19,8 +19,8 @@ const Home = () => {
         <HeroSection />
       </div>
       <BestSellerSection />
-      <WhyUsSection />
       <TShirtShowcase />
+      <WhyUsSection />
     </main>
   );
 };

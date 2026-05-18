@@ -31,11 +31,11 @@ const TShirtShowcase = () => {
         {/* --- Header Section: Bold & Attitude --- */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-16 md:mb-24 gap-12 relative">
           {/* 1. Background "Statement" Text - Fills the central void */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:block opacity-[0.03] select-none pointer-events-none">
+          {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:block opacity-[0.03] select-none pointer-events-none">
             <h3 className="text-[200px] font-black tracking-tighter uppercase whitespace-nowrap">
               Premium
             </h3>
-          </div>
+          </div> */}
 
           <Motion.div
             initial={{ opacity: 0, x: -30 }}
