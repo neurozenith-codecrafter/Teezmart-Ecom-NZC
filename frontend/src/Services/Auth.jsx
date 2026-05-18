@@ -13,7 +13,7 @@ const Auth = () => {
   // 🔥 Redirect if already logged in
   useEffect(() => {
     if (!loading && isLoggedIn) {
-      navigate("/", { replace: true });
+      navigate(-1 , { replace: true });
     }
   }, [isLoggedIn, loading, navigate]);
 

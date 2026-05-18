@@ -1,25 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Link } from "react-router-dom";
-
 import { motion as Motion } from "framer-motion";
+import useDevice from "../../Hooks/useDevice";
 
 const heroSpring = { type: "spring", stiffness: 100, damping: 20 };
 
 const HeroSection = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useDevice();
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile(); // run once on mount
-
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const imageUrl = "https://res.cloudinary.com/dnypxpkvl/image/upload/v1776099103/bst4.jpg_zwtc6t.jpg";
 
   return (
     <Motion.div
@@ -39,7 +29,8 @@ const HeroSection = () => {
             ? { duration: 0.5 }
             : { type: "spring", stiffness: 60, damping: 20 }
         }
-        src="https://res.cloudinary.com/dnypxpkvl/image/upload/v1776099103/bst4.jpg_zwtc6t.jpg"
+        src={imageUrl}
+        loading="eager"
         className="absolute inset-0 w-full h-full object-cover"
       />
 

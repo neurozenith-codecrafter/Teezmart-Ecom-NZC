@@ -31,6 +31,7 @@ import {
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import DropDown from "../components/HomepageComponents/DropDown";
 import { useSidebarSwipeGesture } from "../Hooks/useSidebarSwipeGesture";
+import useDevice from "../Hooks/useDevice";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -65,6 +66,7 @@ const Navbar = () => {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useDevice();
 
   // Load Recent Searches
   useEffect(() => {
@@ -440,19 +442,20 @@ const Navbar = () => {
               <Motion.a
                 href="#why-us"
                 onClick={scrollToWhyUs}
-                whileHover={{ y: -2, color: "#71717a" }}
-                initial={{ opacity: 0, y: 10 }}
+                whileHover={isMobile ? {} : { y: -2, color: "#71717a" }}
+                initial={isMobile ? { opacity: 0 } : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className="hover:opacity-60 transition-opacity cursor-pointer"
               >
-                BlOG
+                BLOG
               </Motion.a>
+
               <Motion.a
                 href="#why-us"
                 onClick={scrollToWhyUs}
-                whileHover={{ y: -2, color: "#71717a" }}
-                initial={{ opacity: 0, y: 10 }}
+                whileHover={isMobile ? {} : { y: -2, color: "#71717a" }}
+                initial={isMobile ? { opacity: 0 } : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
                 className="hover:opacity-60 transition-opacity cursor-pointer"
@@ -467,13 +470,13 @@ const Navbar = () => {
                   <div className="flex items-center space-x-3 md:space-x-5">
                     <Link to="/wishlist" className="hidden md:block relative">
                       <Motion.div
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.8 }}
+                        whileHover={isMobile ? {} : { scale: 1.2 }}
+                        whileTap={isMobile ? {} : { scale: 0.8 }}
                       >
                         <Heart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:text-rose-500 transition-colors" />
                         {wishlistCount > 0 ? (
                           <Motion.span
-                            initial={{ scale: 0 }}
+                            initial={isMobile ? { scale: 1 } : { scale: 0 }}
                             animate={{ scale: 1 }}
                             className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center"
                           >
@@ -485,16 +488,19 @@ const Navbar = () => {
 
                     <Link to="/cart" className="relative">
                       <Motion.div
-                        whileHover={{ y: -3, scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        transition={bubbleSpring}
+                        whileHover={isMobile ? {} : { y: -3, scale: 1.1 }}
+                        whileTap={isMobile ? {} : { scale: 0.9 }}
+                        transition={isMobile ? { duration: 0 } : bubbleSpring}
                       >
                         <ShoppingCart className="w-[19px] h-[19px] text-black stroke-[1.1] cursor-pointer hover:opacity-60 transition-opacity" />
                         {cartCount > 0 ? (
                           <Motion.span
                             // layoutId="cartBadge"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
+                            initial={isMobile ? { opacity: 0 } : { scale: 0 }}
+                            animate={isMobile ? { opacity: 1 } : { scale: 1 }}
+                            transition={
+                              isMobile ? { duration: 0.15, ease: "linear" } : {}
+                            }
                             className="absolute -top-2 -right-2 min-w-4 h-4 rounded-full bg-zinc-900 text-white text-[10px] leading-none px-1 inline-flex items-center justify-center"
                           >
                             {cartCount > 99 ? "99+" : cartCount}
@@ -506,8 +512,8 @@ const Navbar = () => {
                     <div className="relative ml-2 md:ml-0" ref={profileMenuRef}>
                       <Motion.button
                         type="button"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={isMobile ? {} : { scale: 1.05 }}
+                        whileTap={isMobile ? {} : { scale: 0.95 }}
                         onClick={() => setIsProfileMenuOpen((prev) => !prev)}
                         className="flex items-center justify-center transition-transform active:scale-95"
                       >
@@ -528,25 +534,41 @@ const Navbar = () => {
                       <AnimatePresence>
                         {isProfileMenuOpen && (
                           <Motion.div
-                            initial={{
-                              opacity: 0,
-                              scale: 0.8,
-                              y: 10,
-                              filter: "blur(4px)",
-                            }}
-                            animate={{
-                              opacity: 1,
-                              scale: 1,
-                              y: 0,
-                              filter: "blur(0px)",
-                            }}
-                            exit={{
-                              opacity: 0,
-                              scale: 0.8,
-                              y: 10,
-                              filter: "blur(4px)",
-                            }}
-                            transition={bubbleSpring}
+                            initial={
+                              isMobile
+                                ? { opacity: 0 }
+                                : {
+                                    opacity: 0,
+                                    scale: 0.8,
+                                    y: 10,
+                                    filter: "blur(4px)",
+                                  }
+                            }
+                            animate={
+                              isMobile
+                                ? { opacity: 1 }
+                                : {
+                                    opacity: 1,
+                                    scale: 1,
+                                    y: 0,
+                                    filter: "blur(0px)",
+                                  }
+                            }
+                            exit={
+                              isMobile
+                                ? { opacity: 0 }
+                                : {
+                                    opacity: 0,
+                                    scale: 0.8,
+                                    y: 10,
+                                    filter: "blur(4px)",
+                                  }
+                            }
+                            transition={
+                              isMobile
+                                ? { duration: 0.15, ease: "easeInOut" }
+                                : bubbleSpring
+                            }
                             className="absolute right-0 mt-3 w-48 bg-white border border-zinc-100 rounded-2xl shadow-[0_16px_40px_-20px_rgba(0,0,0,0.35)] p-2 z-[120] origin-top-right"
                           >
                             {canAccessAdmin && (
@@ -588,9 +610,11 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <Motion.button
-                    whileHover={{ scale: 1.05, backgroundColor: "#000" }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={bubbleSpring}
+                    whileHover={
+                      isMobile ? {} : { scale: 1.05, backgroundColor: "#000" }
+                    }
+                    whileTap={isMobile ? {} : { scale: 0.95 }}
+                    transition={isMobile ? { duration: 0.1 } : bubbleSpring}
                     onClick={() => navigate("/login")}
                     className="px-5 py-2 md:px-6 md:py-2.5 bg-[#18181B] text-white text-[11px] md:text-[12px] font-medium tracking-tight rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.1)] hover:bg-black transition-all duration-200 active:scale-[0.96] cursor-pointer flex items-center justify-center"
                   >
