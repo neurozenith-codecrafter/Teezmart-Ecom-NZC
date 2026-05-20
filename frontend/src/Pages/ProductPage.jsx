@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion } from "framer-motion";
 import { Heart, Percent, Box, Truck, Calendar, Share2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
@@ -122,20 +124,24 @@ const ProductPage = () => {
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product?.title,
-          text: `Some clothes change how you carry yourself. This is one of those.`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("Error sharing:", err);
+    const shareData = {
+      title: product?.title,
+      text: "Some clothes change how you carry yourself. This is one of those.",
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+
+        triggerToast("share", "Link copied to clipboard!");
       }
-    } else {
-      // Fallback for desktop browsers
-      navigator.clipboard.writeText(window.location.href);
-      triggerToast("share", "Link copied to clipboard!");
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error(err);
+      }
     }
   };
 
@@ -145,6 +151,27 @@ const ProductPage = () => {
       animate="visible"
       className="min-h-screen bg-[#FBFBFB] font-sans text-black"
     >
+      <Helmet>
+        <title>{product?.title ? `${product.title} | Teezmart` : "Product | Teezmart"}</title>
+        <meta property="og:type" content="product" />
+        <meta
+          property="og:title"
+          content={product?.title || "Product | Teezmart"}
+        />
+        <meta
+          property="og:description"
+          content={
+            product?.description ||
+            "Some clothes change how you carry yourself. This is one of those."
+          }
+        />
+        <meta
+          property="og:image"
+          content={product?.thumbnail || productImages?.[0]?.url || ""}
+        />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
       <main className="pt-12 md:pt-4 pb-20">
         <div className={`${PAGE_CONTAINER_CLASS} max-w-screen-xl mx-auto`}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-start mb-24">
