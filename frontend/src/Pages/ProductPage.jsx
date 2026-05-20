@@ -13,6 +13,7 @@ import { useWishlist } from "../Hooks/useWishlist";
 import { ShopMoreCarousel } from "../components/ShopMoreCarousel";
 import useAnimations from "../Hooks/useAnimation";
 import { Toasts } from "../components/Toasts";
+import AboutProduct from "../components/ProductPageComponents/AboutProduct";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -152,7 +153,11 @@ const ProductPage = () => {
       className="min-h-screen bg-[#FBFBFB] font-sans text-black"
     >
       <Helmet>
-        <title>{product?.title ? `${product.title} | Teezmart` : "Product | Teezmart"}</title>
+        <title>
+          {product?.title
+            ? `${product.title} | Teezmart`
+            : "Product | Teezmart"}
+        </title>
         <meta property="og:type" content="product" />
         <meta
           property="og:title"
@@ -161,13 +166,12 @@ const ProductPage = () => {
         <meta
           property="og:description"
           content={
-            product?.description ||
             "Some clothes change how you carry yourself. This is one of those."
           }
         />
         <meta
           property="og:image"
-          content={product?.thumbnail || productImages?.[0]?.url || ""}
+          content={product?.thumbnail || product?.images?.[0]?.url || ""}
         />
         <meta property="og:url" content={window.location.href} />
         <meta name="twitter:card" content="summary_large_image" />
@@ -272,7 +276,8 @@ const ProductPage = () => {
             >
               <Motion.div variants={fadeInUp} className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-900">
+                  {/* 1. Muted, sophisticated olive/amber instead of loud gold or flat grey */}
+                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-amber-800 bg-amber-50/60 px-2 py-0.5 rounded">
                     Premium Collection
                   </span>
                   <div className="h-[1px] bg-zinc-200 flex-grow"></div>
@@ -280,17 +285,21 @@ const ProductPage = () => {
 
                 {/* Flex wrapper to seamlessly host Title & Share button together */}
                 <div className="flex items-start justify-between gap-4">
-                  <h1 className="text-3xl font-medium tracking-tight text-black leading-tight flex-grow">
+                  <h1 className="text-3xl font-medium tracking-tight text-zinc-900 leading-tight flex-grow">
                     {product?.title}
                   </h1>
 
-                  {/* High-end Share Button with spring physics matching your layout style */}
+                  {/* Share Button: Soft, classy slate tint on hover */}
                   <Motion.button
-                    whileHover={{ scale: 1.05, backgroundColor: "#f4f4f5" }}
+                    whileHover={{
+                      scale: 1.05,
+                      backgroundColor: "#f4f4f5",
+                      borderColor: "#d4d4d8",
+                    }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     onClick={handleShare}
-                    className="p-2.5 border border-zinc-200 bg-white rounded-xl text-black hover:border-black transition-colors duration-300 flex-shrink-0 flex items-center justify-center"
+                    className="p-2.5 border border-zinc-200 bg-white rounded-xl text-zinc-600 hover:text-zinc-900 transition-colors duration-300 flex-shrink-0 flex items-center justify-center"
                     aria-label="Share product"
                   >
                     <Share2 size={18} strokeWidth={1.5} />
@@ -300,7 +309,9 @@ const ProductPage = () => {
                 <p className="text-[14px] text-zinc-600 leading-relaxed font-light">
                   {product?.description}
                 </p>
-                <p className="text-2xl font-bold text-black tracking-tighter">
+
+                {/* 2. Price stays dark and clear, but using a softer deep zinc-900 instead of harsh true black */}
+                <p className="text-2xl font-bold text-zinc-900 tracking-tighter">
                   ₹{product?.price}
                 </p>
               </Motion.div>
@@ -318,14 +329,14 @@ const ProductPage = () => {
                       whileTap={{ scale: 0.9 }}
                       className={`relative w-10 h-10 rounded-lg text-[11px] font-bold transition-colors duration-300 border ${
                         selectedSize === size
-                          ? "bg-black border-black text-white"
-                          : "bg-white border-zinc-200 text-zinc-400 hover:border-black hover:text-black"
+                          ? "bg-zinc-900 border-zinc-900 text-white" // 3. Back to neutral charcoal dark for active states
+                          : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-900 hover:text-zinc-900"
                       }`}
                     >
                       {selectedSize === size && (
                         <Motion.div
                           layoutId="activeSize"
-                          className="absolute inset-0 rounded-lg ring-2 ring-black ring-offset-2"
+                          className="absolute inset-0 rounded-lg ring-2 ring-zinc-900 ring-offset-2"
                           initial={false}
                           transition={{
                             type: "spring",
@@ -345,6 +356,7 @@ const ProductPage = () => {
                 variants={fadeInUp}
                 className="flex items-center gap-3 pt-2"
               >
+                {/* Main CTA: Stays premium Charcoal/Black so it never fights with T-shirt graphic colors */}
                 <Motion.button
                   transition={{
                     type: "spring",
@@ -353,13 +365,13 @@ const ProductPage = () => {
                   }}
                   whileHover={{
                     y: -4,
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    boxShadow: "0 20px 40px -12px rgba(24, 24, 27, 0.25)", // Soft neutral shadow
                   }}
                   whileTap={{
                     y: 0,
                     scale: 0.95,
                   }}
-                  className="group relative flex-grow bg-black text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
+                  className="group relative flex-grow bg-zinc-950 text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
                   onClick={async () => {
                     const added = await handleAddToCart({
                       productId: product._id,
@@ -384,10 +396,14 @@ const ProductPage = () => {
                       nextState ? "Added to wishlist" : "Removed from wishlist",
                     );
                   }}
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{
+                    scale: 1.1,
+                    borderColor: "#fda4af",
+                    boxShadow: "0 0 20px 2px rgba(244, 63, 94, 0.25)",
+                  }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={`p-3.5 border rounded-xl transition-colors duration-300 ${
+                  className={`p-3.5 border rounded-xl transition-colors duration-300 group ${
                     isLiked
                       ? "border-red-100 bg-red-50/30"
                       : "border-zinc-200 bg-white"
@@ -402,37 +418,56 @@ const ProductPage = () => {
                     <Heart
                       size={18}
                       strokeWidth={1.5}
-                      className={`transition-colors duration-300 ${
-                        isLiked ? "fill-red-500 text-red-500" : "text-black"
+                      className={`transition-colors duration-300 group-hover:text-rose-500 ${
+                        isLiked ? "fill-red-500 text-red-500" : "text-zinc-500"
                       }`}
                     />
                   </Motion.div>
                 </Motion.button>
               </Motion.div>
 
+              {/* 4. Ultra-washed earth neutrals for the bottom grid. Breaks the black & white weight without popping. */}
               <Motion.div
                 variants={fadeInUp}
-                className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-y-5"
+                className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3"
               >
-                <ShippingInfoItem Icon={Percent} label="Offer" val="27% Off" />
-                <ShippingInfoItem
-                  Icon={Box}
-                  label="Packaging"
-                  val="Secure Packaging"
-                />
-                <ShippingInfoItem
-                  Icon={Truck}
-                  label="Delivery"
-                  val="Fast Delivery"
-                />
-                <ShippingInfoItem
-                  Icon={Calendar}
-                  label="Arrival"
-                  val={getDeliveryRange()}
-                />
+                <div className="bg-amber-50/40 border border-amber-100/40 rounded-xl p-3 flex items-center">
+                  <ShippingInfoItem
+                    Icon={Percent}
+                    label="Offer"
+                    val="27% Off"
+                    className="text-amber-800"
+                  />
+                </div>
+                <div className="bg-zinc-50 border border-zinc-200/60 rounded-xl p-3 flex items-center">
+                  <ShippingInfoItem
+                    Icon={Box}
+                    label="Packaging"
+                    val="Secure Packaging"
+                    className="text-zinc-700"
+                  />
+                </div>
+                <div className="bg-stone-50 border border-stone-200/60 rounded-xl p-3 flex items-center">
+                  <ShippingInfoItem
+                    Icon={Truck}
+                    label="Delivery"
+                    val="Fast Delivery"
+                    className="text-stone-700"
+                  />
+                </div>
+                <div className="bg-emerald-50/30 border border-emerald-100/30 rounded-xl p-3 flex items-center">
+                  <ShippingInfoItem
+                    Icon={Calendar}
+                    label="Arrival"
+                    val={getDeliveryRange()}
+                    className="text-emerald-800"
+                  />
+                </div>
               </Motion.div>
             </Motion.div>
           </div>
+
+          <AboutProduct product={product} />
 
           <Motion.div
             initial={{ opacity: 0, y: 20 }}
