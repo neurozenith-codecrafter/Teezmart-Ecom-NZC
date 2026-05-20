@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { motion as Motion } from "framer-motion";
-import { Heart, Percent, Box, Truck, Calendar } from "lucide-react";
+import { Heart, Percent, Box, Truck, Calendar, Share2 } from "lucide-react";
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import RatingSummary from "../components/ProductPageComponents/RatingSummary";
 import { ShippingInfoItem } from "../components/ProductPageComponents/ShippingInfoItem";
@@ -27,11 +27,11 @@ const ProductPage = () => {
   const swipeStartXRef = useRef(null);
   const swipeStartYRef = useRef(null);
 
-  const [toast, setToast] = useState({ show: false, type: 'cart', msg: '' });
+  const [toast, setToast] = useState({ show: false, type: "cart", msg: "" });
 
   const triggerToast = (type, msg) => {
     setToast({ show: true, type, msg });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+    setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
   };
 
   useEffect(() => {
@@ -109,10 +109,7 @@ const ProductPage = () => {
     swipeStartXRef.current = null;
     swipeStartYRef.current = null;
 
-    if (
-      Math.abs(deltaX) < threshold ||
-      Math.abs(deltaX) <= Math.abs(deltaY)
-    ) {
+    if (Math.abs(deltaX) < threshold || Math.abs(deltaX) <= Math.abs(deltaY)) {
       return;
     }
 
@@ -122,6 +119,24 @@ const ProductPage = () => {
     }
 
     paginateImage("prev");
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.title,
+          text: product?.description,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      // Fallback for desktop browsers
+      navigator.clipboard.writeText(window.location.href);
+      triggerToast("share", "Link copied to clipboard!");
+    }
   };
 
   return (
@@ -235,9 +250,26 @@ const ProductPage = () => {
                   </span>
                   <div className="h-[1px] bg-zinc-200 flex-grow"></div>
                 </div>
-                <h1 className="text-3xl font-medium tracking-tight text-black leading-tight">
-                  {product?.title}
-                </h1>
+
+                {/* Flex wrapper to seamlessly host Title & Share button together */}
+                <div className="flex items-start justify-between gap-4">
+                  <h1 className="text-3xl font-medium tracking-tight text-black leading-tight flex-grow">
+                    {product?.title}
+                  </h1>
+
+                  {/* High-end Share Button with spring physics matching your layout style */}
+                  <Motion.button
+                    whileHover={{ scale: 1.05, backgroundColor: "#f4f4f5" }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    onClick={handleShare}
+                    className="p-2.5 border border-zinc-200 bg-white rounded-xl text-black hover:border-black transition-colors duration-300 flex-shrink-0 flex items-center justify-center"
+                    aria-label="Share product"
+                  >
+                    <Share2 size={18} strokeWidth={1.5} />
+                  </Motion.button>
+                </div>
+
                 <p className="text-[14px] text-zinc-600 leading-relaxed font-light">
                   {product?.description}
                 </p>
@@ -255,7 +287,6 @@ const ProductPage = () => {
                     <Motion.button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      // Interactive States
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}
                       whileTap={{ scale: 0.9 }}
                       className={`relative w-10 h-10 rounded-lg text-[11px] font-bold transition-colors duration-300 border ${
@@ -264,7 +295,6 @@ const ProductPage = () => {
                           : "bg-white border-zinc-200 text-zinc-400 hover:border-black hover:text-black"
                       }`}
                     >
-                      {/* High-end "Indicator" Dot (Optional) */}
                       {selectedSize === size && (
                         <Motion.div
                           layoutId="activeSize"
@@ -289,23 +319,19 @@ const ProductPage = () => {
                 className="flex items-center gap-3 pt-2"
               >
                 <Motion.button
-                  // 1. Define the Spring Physics
                   transition={{
                     type: "spring",
-                    stiffness: 400, // High stiffness for a snappy start
-                    damping: 15, // Low damping for more "bounce" at the end
+                    stiffness: 400,
+                    damping: 15,
                   }}
-                  // 2. Map Hover State (Replaces hover:-translate-y-0.5 and hover:shadow-2xl)
                   whileHover={{
-                    y: -4, // Sightly more exaggerated lift for the bounce feel
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)", // tailwind shadow-2xl
+                    y: -4,
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                   }}
-                  // 3. Map Click/Tap State (Replaces active:scale-95 and active:translate-y-0)
                   whileTap={{
                     y: 0,
                     scale: 0.95,
                   }}
-                  // 4. Cleaned up className (removed transition and hover/active transform utilities)
                   className="group relative flex-grow bg-black text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
                   onClick={async () => {
                     const added = await handleAddToCart({
@@ -314,12 +340,11 @@ const ProductPage = () => {
                       size: selectedSize,
                     });
                     if (added) {
-                      triggerToast('cart', 'Added to cart!');
+                      triggerToast("cart", "Added to cart!");
                     }
                   }}
                 >
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-
                   <span className="relative z-10">Add to Cart</span>
                 </Motion.button>
 
@@ -328,11 +353,10 @@ const ProductPage = () => {
                     const nextState = await handleToggleWishlist(product);
                     if (nextState === null) return;
                     triggerToast(
-                      'wishlist',
-                      nextState ? 'Added to wishlist' : 'Removed from wishlist',
+                      "wishlist",
+                      nextState ? "Added to wishlist" : "Removed from wishlist",
                     );
                   }}
-                  // Bouncy hover and tap
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -343,7 +367,6 @@ const ProductPage = () => {
                   }`}
                 >
                   <Motion.div
-                    // This makes the heart "pop" whenever isLiked changes
                     key={isLiked ? "liked" : "unliked"}
                     initial={{ scale: 1 }}
                     animate={{ scale: isLiked ? [1, 1.4, 1] : 1 }}
@@ -408,11 +431,11 @@ const ProductPage = () => {
           </Motion.div>
         </div>
       </main>
-      <Toasts 
+      <Toasts
         type={toast.type}
         message={toast.msg}
         isVisible={toast.show}
-        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+        onClose={() => setToast((prev) => ({ ...prev, show: false }))}
       />
     </Motion.div>
   );
