@@ -126,7 +126,7 @@ const ProductPage = () => {
       try {
         await navigator.share({
           title: product?.title,
-          text: product?.description,
+          text: `Some clothes change how you carry yourself. This is one of those.`,
           url: window.location.href,
         });
       } catch (err) {
