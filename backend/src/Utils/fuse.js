@@ -1,9 +1,11 @@
 const Fuse = require("fuse.js");
+
 const normalize = require("./normalize");
 
 let fuseInstance = null;
 
 const buildSearchableText = (product) => {
+
   return normalize(`
     ${product.title}
     ${product.category}
@@ -13,20 +15,43 @@ const buildSearchableText = (product) => {
   `);
 };
 
+
 const createFuseInstance = (products) => {
-  const searchableProducts = products.map((product) => ({
-    ...product,
 
-    searchableText: buildSearchableText(product),
+  const searchableProducts = products.map(product => ({
 
-    normalizedTitle: normalize(product.title),
+    _id: product._id,
 
-    normalizedCategory: normalize(product.category),
+    title: product.title,
 
-    normalizedSlug: normalize(product.slug),
+    slug: product.slug,
+
+    image: product.images?.[0],
+
+    price:
+      product.discountPrice ||
+      product.price,
+
+    rating: product.rating,
+
+    salesCount: product.salesCount,
+
+    searchableText:
+      buildSearchableText(product),
+
+    normalizedTitle:
+      normalize(product.title),
+
+    normalizedCategory:
+      normalize(product.category),
+
+    normalizedSlug:
+      normalize(product.slug),
   }));
 
+
   fuseInstance = new Fuse(searchableProducts, {
+
     includeScore: true,
 
     shouldSort: true,
@@ -42,6 +67,7 @@ const createFuseInstance = (products) => {
     distance: 100,
 
     keys: [
+
       {
         name: "normalizedTitle",
         weight: 0.5,
@@ -67,13 +93,19 @@ const createFuseInstance = (products) => {
   return fuseInstance;
 };
 
+
 const getFuse = () => {
+
   if (!fuseInstance) {
-    throw new Error("Fuse instance not initialized");
+
+    throw new Error(
+      "Fuse instance not initialized"
+    );
   }
 
   return fuseInstance;
 };
+
 
 module.exports = {
   createFuseInstance,

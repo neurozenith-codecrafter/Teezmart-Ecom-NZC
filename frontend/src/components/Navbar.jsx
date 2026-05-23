@@ -68,12 +68,6 @@ const Navbar = () => {
   const location = useLocation();
   const isMobile = useDevice();
 
-  // Load Recent Searches
-  useEffect(() => {
-    const saved = localStorage.getItem("recentSearches");
-    if (saved) setRecentSearches(JSON.parse(saved));
-  }, []);
-
   // Handle Search Outside Click & ESC
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -677,7 +671,11 @@ const Navbar = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowSuggestions(true)}
+                  onFocus={() => {
+                    setShowSuggestions(true);
+                    const saved = localStorage.getItem("recentSearches");
+                    if (saved) setRecentSearches(JSON.parse(saved));
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Search collection..."
                   className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2.5 pl-6 pr-12 rounded-full text-[14px] font-normal outline-none focus:bg-white transition-all"

@@ -2,13 +2,18 @@ const {
   searchProducts
 } = require("../Services/SearchService.js");
 
+const {
+  getSuggestions
+} = require("../Services/SearchService.js");
+
+
 const search = async (req, res) => {
 
   try {
 
     const query = req.query.q || "";
 
-    const data =
+    const products =
       await searchProducts(query);
 
     return res.status(200).json({
@@ -17,11 +22,9 @@ const search = async (req, res) => {
 
       query,
 
-      count: data.products.length,
+      count: products.length,
 
-      suggestions: data.suggestions,
-
-      products: data.products,
+      products,
     });
 
   } catch (error) {
@@ -40,6 +43,43 @@ const search = async (req, res) => {
   }
 };
 
+
+const suggestions = async (req, res) => {
+
+  try {
+
+    const query = req.query.q || "";
+
+    const suggestions =
+      await getSuggestions(query);
+
+    return res.status(200).json({
+
+      success: true,
+
+      query,
+
+      suggestions,
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Suggestions Controller Error:",
+      error
+    );
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Suggestions failed",
+    });
+  }
+};
+
+
 module.exports = {
   search,
+  suggestions,
 };

@@ -9,13 +9,16 @@ const {
   getProductSuggestions
 } = require("../Controllers/ProductControllers/getRoutes.js");
 const { filterProductsController } = require("../Controllers/ProductControllers/getFilterSortRoutes.js")
-const { search } = require("../Controllers/Search.controller.js");
+const { search, suggestions } = require("../Controllers/Search.controller.js");
 
 
 const router = express.Router();
 
 // GET /api/products
+
 router.get("/search", search);
+
+router.get("/suggestions", suggestions);
 
 // `GET /api/products` - Fetch all products with new and top-rated sections
 router.get("/", getAllProducts);

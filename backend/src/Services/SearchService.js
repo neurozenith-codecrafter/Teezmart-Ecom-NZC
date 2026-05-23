@@ -12,7 +12,6 @@ const {
 } = require("../Utils/suggestions");
 
 
-// Initialize once
 const initializeSearch = async () => {
 
   const products = await Product.find({
@@ -25,44 +24,39 @@ const initializeSearch = async () => {
 };
 
 
-// Search products
 const searchProducts = async (query) => {
 
   if (!query?.trim()) {
-
-    return {
-      suggestions: [],
-      products: []
-    };
+    return [];
   }
 
   const fuse = getFuse();
 
-  const normalizedQuery = normalize(query);
+  const normalizedQuery =
+    normalize(query);
 
-  const results = fuse.search(normalizedQuery, {
-    limit: 10
-  });
+  const results =
+    fuse.search(normalizedQuery, {
+      limit: 20
+    });
 
   const products = results
+
     .map(result => {
 
       const product = result.item;
 
-      // Fuse relevance
-      const fuseScore = 1 - (result.score || 0);
+      const fuseScore =
+        1 - (result.score || 0);
 
-      // Popularity boosting
       const popularityBoost =
         Math.log10(
           (product.salesCount || 0) + 1
         ) * 0.15;
 
-      // Rating boosting
       const ratingBoost =
         (product.rating || 0) * 0.05;
 
-      // Final score
       const relevanceScore =
         fuseScore +
         popularityBoost +
@@ -76,7 +70,7 @@ const searchProducts = async (query) => {
 
         slug: product.slug,
 
-        image: product.images?.[0],
+        image: product.image,
 
         price:
           product.discountPrice ||
@@ -96,19 +90,35 @@ const searchProducts = async (query) => {
         b.relevanceScore - a.relevanceScore
     );
 
-  const suggestions =
-    generateSuggestions(
-      results,
-      normalizedQuery
-    );
-
-  return {
-    suggestions,
-    products
-  };
+  return products;
 };
+
+
+const getSuggestions = async (query) => {
+
+  if (!query?.trim()) {
+    return [];
+  }
+
+  const fuse = getFuse();
+
+  const normalizedQuery =
+    normalize(query);
+
+  const results =
+    fuse.search(normalizedQuery, {
+      limit: 8
+    });
+
+  return generateSuggestions(
+    results,
+    normalizedQuery
+  );
+};
+
 
 module.exports = {
   initializeSearch,
-  searchProducts
+  searchProducts,
+  getSuggestions
 };
