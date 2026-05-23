@@ -9,12 +9,13 @@ const {
   getProductSuggestions
 } = require("../Controllers/ProductControllers/getRoutes.js");
 const { filterProductsController } = require("../Controllers/ProductControllers/getFilterSortRoutes.js")
-
+const { search } = require("../Controllers/Search.controller.js");
 
 
 const router = express.Router();
 
 // GET /api/products
+router.get("/search", search);
 
 // `GET /api/products` - Fetch all products with new and top-rated sections
 router.get("/", getAllProducts);
@@ -39,6 +40,7 @@ router.get("/:id/suggestions", getProductSuggestions);
 
 // `GET /api/products/:slug` - Fetch product details by slug
 router.get("/:slug", getProductBySlug);
+
 
 
 
