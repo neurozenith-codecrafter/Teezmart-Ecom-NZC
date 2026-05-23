@@ -18,6 +18,7 @@ import {
 import Loader from "../components/Loader";
 import { useCart } from "../Hooks/useCart";
 import { Toasts } from "../components/Toasts";
+import useDevice from "../Hooks/useDevice";
 
 const CartItemRow = ({
   item,
@@ -242,27 +243,82 @@ const CartItemRow = ({
 
 const EmptyCart = () => {
   const navigate = useNavigate();
-  return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-8">
-      <div className="max-w-[380px] w-full flex flex-col items-center text-center">
-        <div className="mb-8">
-          <ShoppingBag size={28} strokeWidth={1.2} className="text-zinc-300" />
-        </div>
-        <h1 className="text-xl md:text-2xl font-bold text-zinc-900 tracking-tight mb-3">
-          Nothing here yet.
-        </h1>
-        <p className="text-zinc-400 text-[13px] md:text-sm font-medium leading-relaxed mb-10 max-w-[240px]">
-          Start exploring and find something you&apos;ll actually want to wear.
-        </p>
+  const { isMobile } = useDevice();
+  const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08, // Subtle, clean drop-in cascade
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+    },
+  },
+};
+
+return (
+  <div className="min-h-screen bg-white flex items-center justify-center p-8">
+    <Motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-[380px] w-full flex flex-col items-center text-center"
+    >
+      {/* Shopping Bag Icon Container with a quiet breathing loop */}
+        <Motion.div 
+          variants={itemVariants}
+          animate={!isMobile ? {
+            y: [0, -6, 0],
+            transition: {
+              duration: 4,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }
+          } : {}}
+          className="mb-8"
+        >
+        <ShoppingBag size={28} strokeWidth={1.2} className="text-zinc-300" />
+      </Motion.div>
+
+      {/* Main Title */}
+      <Motion.h1 
+        variants={itemVariants}
+        className="text-xl md:text-2xl font-bold text-zinc-900 tracking-tight mb-3"
+      >
+        Nothing here yet.
+      </Motion.h1>
+
+      {/* Description Text */}
+      <Motion.p 
+        variants={itemVariants}
+        className="text-zinc-400 text-[13px] md:text-sm font-medium leading-relaxed mb-10 max-w-[240px]"
+      >
+        Start exploring and find something you&apos;ll actually want to wear.
+      </Motion.p>
+
+      {/* Primary Action Button */}
+      <Motion.div variants={itemVariants} className="w-full flex justify-center">
         <button
           onClick={() => navigate("/")}
-          className="w-full sm:w-auto px-8 py-3.5 bg-zinc-900 text-white rounded-full font-bold text-[12px] tracking-widest uppercase transition-all duration-300 hover:bg-zinc-800 active:scale-[0.98]"
+          className="w-full sm:w-auto px-8 py-3.5 bg-zinc-900 text-white rounded-full font-bold text-[12px] tracking-widest uppercase transition-all duration-300 hover:bg-zinc-800 active:scale-[0.98] shadow-sm hover:shadow-md"
         >
           Continue Shopping
         </button>
-      </div>
-    </div>
-  );
+      </Motion.div>
+    </Motion.div>
+  </div>
+);
 };
 
 const CartPage = () => {

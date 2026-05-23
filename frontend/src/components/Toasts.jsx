@@ -1,7 +1,11 @@
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { CheckCircle, Heart, HeartOff, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import useDevice from "../Hooks/useDevice";
 
 export const Toasts = ({ type, message, isVisible, onClose }) => {
+  const { isMobile } = useDevice();
+
   const configs = {
     cart: {
       icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
@@ -31,52 +35,79 @@ export const Toasts = ({ type, message, isVisible, onClose }) => {
 
   const currentConfig = configs[type] || configs.cart;
 
+  const handleToLinkRoute = () => {
+    switch (type) {
+      case "cart":
+        return "/cart";
+      case "wishlist":
+        return "/wishlist";
+      default:
+        return window.location.href; // Stay on the same page for 'delete' or unknown types
+    }
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] pointer-events-none px-4 w-full flex justify-center">
+        <Link
+          to={handleToLinkRoute()}
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] pointer-events-none px-4 w-full flex justify-center"
+        >
           <Motion.div
-            // Hardware-accelerated properties only (GPU-friendly)
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            // Zero movement or scaling. Just an instant/ultra-fast opacity flash.
+            initial={{ opacity: 0 }}
             animate={{
               opacity: 1,
-              scale: 1,
-              y: 0,
-              transition: {
-                type: "spring",
-                stiffness: 400,
-                damping: 30,
-              },
+              transition: isMobile
+                ? { duration: 0 }
+                : { duration: 0.1, ease: "linear" },
             }}
             exit={{
               opacity: 0,
-              scale: 0.95,
               transition: { duration: 0.1 },
             }}
-            // Using your original color logic
             className={`
-          pointer-events-auto flex items-center gap-3 px-5 py-3
-          rounded-2xl border-2 shadow-lg bg-white/95
-          ${currentConfig.bg} ${currentConfig.border}
-          w-full max-w-[340px]
-        `}
+              pointer-events-auto flex items-center gap-3.5 px-4 py-2.5
+              rounded-2xl border shadow-md bg-white
+              ${currentConfig.bg} ${currentConfig.border}
+              w-full max-w-[320px]
+            `}
           >
-            <div className="shrink-0">{currentConfig.icon}</div>
-
-            <div className="flex flex-col flex-grow min-w-0">
-              <p className="text-[13px] font-bold text-zinc-900 leading-tight">
-                {message}
-              </p>
+            {/* Grayed icon filter if it's a deletion/removal action */}
+            <div
+              className={`shrink-0 ${message.toLowerCase().includes("removed") ? "text-zinc-400 grayscale contrast-75" : ""}`}
+            >
+              {currentConfig.icon}
             </div>
 
+            {/* Content Group */}
+            <div className="flex flex-col flex-grow min-w-0">
+              <p className="text-[13px] font-semibold text-zinc-900 leading-tight">
+                {message}
+              </p>
+
+              {/* Ultra-subtle, secondary context string */}
+              {(type === "wishlist" || type === "cart" || type === "bag") && (
+                <span className="text-[10px] font-medium text-zinc-400 mt-0.5 tracking-tight">
+                  {type === "wishlist" ? "View wishlist →" : "View full bag →"}
+                </span>
+              )}
+            </div>
+
+            {/* Static Close Anchor */}
             <button
-              onClick={onClose}
-              className="p-1.5 -mr-1 rounded-full hover:bg-black/5 text-zinc-400 active:text-zinc-900"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+              className="p-1 -mr-0.5 rounded-full text-zinc-400 hover:text-zinc-900 transition-colors shrink-0"
             >
-              <X className="w-4 h-4 stroke-[3px]" />
+              <X className="w-4 h-4 stroke-[2.5px]" />
             </button>
           </Motion.div>
-        </div>
+        </Link>
       )}
     </AnimatePresence>
   );
