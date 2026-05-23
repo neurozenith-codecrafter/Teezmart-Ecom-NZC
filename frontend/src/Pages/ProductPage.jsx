@@ -270,201 +270,273 @@ const ProductPage = () => {
             )}
 
             {/* RIGHT: INFO (Elements appear one by one) */}
-            <Motion.div
-              variants={containerVariants}
-              className="lg:col-span-4 space-y-6 lg:-ml-12 px-2 lg:px-0"
-            >
-              <Motion.div variants={fadeInUp} className="space-y-4">
-                <div className="flex items-center gap-3">
-                  {/* 1. Muted, sophisticated olive/amber instead of loud gold or flat grey */}
-                  <span className="text-[9px] font-black uppercase tracking-[0.4em] text-amber-800 bg-amber-50/60 px-2 py-0.5 rounded">
-                    Premium Collection
-                  </span>
-                  <div className="h-[1px] bg-zinc-200 flex-grow"></div>
-                </div>
 
-                {/* Flex wrapper to seamlessly host Title & Share button together */}
-                <div className="flex items-start justify-between gap-4">
-                  <h1 className="text-3xl font-medium tracking-tight text-zinc-900 leading-tight flex-grow">
-                    {product?.title}
-                  </h1>
+            {product ? (
+              <Motion.div
+                variants={containerVariants}
+                className="lg:col-span-4 space-y-6 lg:-ml-12 px-2 lg:px-0"
+              >
+                <Motion.div variants={fadeInUp} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    {/* 1. Muted, sophisticated olive/amber instead of loud gold or flat grey */}
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-amber-800 bg-amber-50/60 px-2 py-0.5 rounded">
+                      Premium Collection
+                    </span>
+                    <div className="h-[1px] bg-zinc-200 flex-grow"></div>
+                  </div>
 
-                  {/* Share Button: Soft, classy slate tint on hover */}
-                  <Motion.button
-                    whileHover={{
-                      scale: 1.05,
-                      backgroundColor: "#f4f4f5",
-                      borderColor: "#d4d4d8",
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    onClick={handleShare}
-                    className="p-2.5 border border-zinc-200 bg-white rounded-xl text-zinc-600 hover:text-zinc-900 transition-colors duration-300 flex-shrink-0 flex items-center justify-center"
-                    aria-label="Share product"
-                  >
-                    <Share2 size={18} strokeWidth={1.5} />
-                  </Motion.button>
-                </div>
+                  {/* Flex wrapper to seamlessly host Title & Share button together */}
+                  <div className="flex items-start justify-between gap-4">
+                    <h1 className="text-3xl font-medium tracking-tight text-zinc-900 leading-tight flex-grow">
+                      {product?.title}
+                    </h1>
 
-                <p className="text-[14px] text-zinc-600 leading-relaxed font-light">
-                  {product?.description}
-                </p>
-
-                {/* 2. Price stays dark and clear, but using a softer deep zinc-900 instead of harsh true black */}
-                <p className="text-2xl font-bold text-zinc-900 tracking-tighter">
-                  ₹{product?.price}
-                </p>
-              </Motion.div>
-
-              <Motion.div variants={fadeInUp} className="space-y-3 pt-2">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                  Select Size
-                </h4>
-                <div className="flex flex-wrap gap-2.5">
-                  {(product?.sizes || []).map((size) => (
+                    {/* Share Button: Soft, classy slate tint on hover */}
                     <Motion.button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                      whileTap={{ scale: 0.9 }}
-                      className={`relative w-10 h-10 rounded-lg text-[11px] font-bold transition-colors duration-300 border ${
-                        selectedSize === size
-                          ? "bg-zinc-900 border-zinc-900 text-white" // 3. Back to neutral charcoal dark for active states
-                          : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-900 hover:text-zinc-900"
-                      }`}
+                      whileHover={{
+                        scale: 1.05,
+                        backgroundColor: "#f4f4f5",
+                        borderColor: "#d4d4d8",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 17,
+                      }}
+                      onClick={handleShare}
+                      className="p-2.5 border border-zinc-200 bg-white rounded-xl text-zinc-600 hover:text-zinc-900 transition-colors duration-300 flex-shrink-0 flex items-center justify-center"
+                      aria-label="Share product"
                     >
-                      {selectedSize === size && (
-                        <Motion.div
-                          layoutId="activeSize"
-                          className="absolute inset-0 rounded-lg ring-2 ring-zinc-900 ring-offset-2"
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-
-                      <span className="relative z-10">{size}</span>
+                      <Share2 size={18} strokeWidth={1.5} />
                     </Motion.button>
+                  </div>
+
+                  <p className="text-[14px] text-zinc-600 leading-relaxed font-light">
+                    {product?.description}
+                  </p>
+
+                  {/* 2. Price stays dark and clear, but using a softer deep zinc-900 instead of harsh true black */}
+                  <p className="text-2xl font-bold text-zinc-900 tracking-tighter">
+                    ₹{product?.price}
+                  </p>
+                </Motion.div>
+
+                <Motion.div variants={fadeInUp} className="space-y-3 pt-2">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                    Select Size
+                  </h4>
+                  <div className="flex flex-wrap gap-2.5">
+                    {(product?.sizes || []).map((size) => (
+                      <Motion.button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`relative w-10 h-10 rounded-lg text-[11px] font-bold transition-colors duration-300 border ${
+                          selectedSize === size
+                            ? "bg-zinc-900 border-zinc-900 text-white" // 3. Back to neutral charcoal dark for active states
+                            : "bg-white border-zinc-200 text-zinc-500 hover:border-zinc-900 hover:text-zinc-900"
+                        }`}
+                      >
+                        {selectedSize === size && (
+                          <Motion.div
+                            layoutId="activeSize"
+                            className="absolute inset-0 rounded-lg ring-2 ring-zinc-900 ring-offset-2"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 500,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+
+                        <span className="relative z-10">{size}</span>
+                      </Motion.button>
+                    ))}
+                  </div>
+                </Motion.div>
+
+                <Motion.div
+                  variants={fadeInUp}
+                  className="flex items-center gap-3 pt-2"
+                >
+                  {/* Main CTA: Stays premium Charcoal/Black so it never fights with T-shirt graphic colors */}
+                  <Motion.button
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 15,
+                    }}
+                    whileHover={{
+                      y: -4,
+                      boxShadow: "0 20px 40px -12px rgba(24, 24, 27, 0.25)", // Soft neutral shadow
+                    }}
+                    whileTap={{
+                      y: 0,
+                      scale: 0.95,
+                    }}
+                    className="group relative flex-grow bg-zinc-950 text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
+                    onClick={async () => {
+                      const added = await handleAddToCart({
+                        productId: product._id,
+                        quantity: 1,
+                        size: selectedSize,
+                      });
+                      if (added) {
+                        triggerToast("cart", "Added to cart!");
+                      }
+                    }}
+                  >
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                    <span className="relative z-10">Add to Cart</span>
+                  </Motion.button>
+
+                  <Motion.button
+                    onClick={async () => {
+                      const nextState = await handleToggleWishlist(product);
+                      if (nextState === null) return;
+                      triggerToast(
+                        "wishlist",
+                        nextState
+                          ? "Added to wishlist"
+                          : "Removed from wishlist",
+                      );
+                    }}
+                    whileHover={{
+                      scale: 1.1,
+                      borderColor: "#fda4af",
+                      boxShadow: "0 0 20px 2px rgba(244, 63, 94, 0.25)",
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className={`p-3.5 border rounded-xl transition-colors duration-300 group ${
+                      isLiked
+                        ? "border-red-100 bg-red-50/30"
+                        : "border-zinc-200 bg-white"
+                    }`}
+                  >
+                    <Motion.div
+                      key={isLiked ? "liked" : "unliked"}
+                      initial={{ scale: 1 }}
+                      animate={{ scale: isLiked ? [1, 1.4, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Heart
+                        size={18}
+                        strokeWidth={1.5}
+                        className={`transition-colors duration-300 group-hover:text-rose-500 ${
+                          isLiked
+                            ? "fill-red-500 text-red-500"
+                            : "text-zinc-500"
+                        }`}
+                      />
+                    </Motion.div>
+                  </Motion.button>
+                </Motion.div>
+
+                {/* 4. Ultra-washed earth neutrals for the bottom grid. Breaks the black & white weight without popping. */}
+                <Motion.div
+                  variants={fadeInUp}
+                  className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3"
+                >
+                  <div className="bg-amber-50/40 border border-amber-100/40 rounded-xl p-3 flex items-center">
+                    <ShippingInfoItem
+                      Icon={Percent}
+                      label="Offer"
+                      val="27% Off"
+                      className="text-amber-800"
+                    />
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-200/60 rounded-xl p-3 flex items-center">
+                    <ShippingInfoItem
+                      Icon={Box}
+                      label="Packaging"
+                      val="Secure Packaging"
+                      className="text-zinc-700"
+                    />
+                  </div>
+                  <div className="bg-stone-50 border border-stone-200/60 rounded-xl p-3 flex items-center">
+                    <ShippingInfoItem
+                      Icon={Truck}
+                      label="Delivery"
+                      val="Fast Delivery"
+                      className="text-stone-700"
+                    />
+                  </div>
+                  <div className="bg-emerald-50/30 border border-emerald-100/30 rounded-xl p-3 flex items-center">
+                    <ShippingInfoItem
+                      Icon={Calendar}
+                      label="Arrival"
+                      val={getDeliveryRange()}
+                      className="text-emerald-800"
+                    />
+                  </div>
+                </Motion.div>
+              </Motion.div>
+            ) : (
+              <div className="lg:col-span-4 space-y-6 lg:-ml-12 px-2 lg:px-0 animate-pulse">
+                {/* Premium Collection Tag Skeleton */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-28 bg-zinc-200 rounded" />
+                    <div className="h-[1px] bg-zinc-200 flex-grow" />
+                  </div>
+
+                  {/* Title & Share Button Skeleton */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2 flex-grow">
+                      <div className="h-8 w-3/4 bg-zinc-200 rounded-md" />
+                      <div className="h-8 w-1/2 bg-zinc-200 rounded-md lg:hidden" />{" "}
+                      {/* Extra block for mobile text wrapping */}
+                    </div>
+                    <div className="h-10 w-10 bg-zinc-200 rounded-xl flex-shrink-0" />
+                  </div>
+
+                  {/* Description Skeleton Lines */}
+                  <div className="space-y-2 pt-2">
+                    <div className="h-4 w-full bg-zinc-100 rounded" />
+                    <div className="h-4 w-11/12 bg-zinc-100 rounded" />
+                    <div className="h-4 w-4/5 bg-zinc-100 rounded" />
+                  </div>
+
+                  {/* Price Tag Skeleton */}
+                  <div className="h-8 w-24 bg-zinc-200 rounded-md pt-1" />
+                </div>
+
+                {/* Select Size Section Skeleton */}
+                <div className="space-y-3 pt-2">
+                  <div className="h-3 w-16 bg-zinc-200 rounded" />
+                  <div className="flex flex-wrap gap-2.5">
+                    {[1, 2, 3, 4, 5].map((index) => (
+                      <div
+                        key={index}
+                        className="w-10 h-10 bg-zinc-100 rounded-lg border border-zinc-200/50"
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Action Buttons Skeleton */}
+                <div className="flex items-center gap-3 pt-2">
+                  {/* Add to Cart Button Skeleton */}
+                  <div className="flex-grow h-[48px] bg-zinc-200 rounded-xl" />
+                  {/* Wishlist Button Skeleton */}
+                  <div className="w-[48px] h-[48px] bg-zinc-100 rounded-xl border border-zinc-200/50" />
+                </div>
+
+                {/* Shipping Metric Info Cards Skeleton */}
+                <div className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                  {[1, 2, 3, 4].map((index) => (
+                    <div
+                      key={index}
+                      className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 h-[46px]"
+                    />
                   ))}
                 </div>
-              </Motion.div>
-
-              <Motion.div
-                variants={fadeInUp}
-                className="flex items-center gap-3 pt-2"
-              >
-                {/* Main CTA: Stays premium Charcoal/Black so it never fights with T-shirt graphic colors */}
-                <Motion.button
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 15,
-                  }}
-                  whileHover={{
-                    y: -4,
-                    boxShadow: "0 20px 40px -12px rgba(24, 24, 27, 0.25)", // Soft neutral shadow
-                  }}
-                  whileTap={{
-                    y: 0,
-                    scale: 0.95,
-                  }}
-                  className="group relative flex-grow bg-zinc-950 text-white py-3.5 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg overflow-hidden"
-                  onClick={async () => {
-                    const added = await handleAddToCart({
-                      productId: product._id,
-                      quantity: 1,
-                      size: selectedSize,
-                    });
-                    if (added) {
-                      triggerToast("cart", "Added to cart!");
-                    }
-                  }}
-                >
-                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-                  <span className="relative z-10">Add to Cart</span>
-                </Motion.button>
-
-                <Motion.button
-                  onClick={async () => {
-                    const nextState = await handleToggleWishlist(product);
-                    if (nextState === null) return;
-                    triggerToast(
-                      "wishlist",
-                      nextState ? "Added to wishlist" : "Removed from wishlist",
-                    );
-                  }}
-                  whileHover={{
-                    scale: 1.1,
-                    borderColor: "#fda4af",
-                    boxShadow: "0 0 20px 2px rgba(244, 63, 94, 0.25)",
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={`p-3.5 border rounded-xl transition-colors duration-300 group ${
-                    isLiked
-                      ? "border-red-100 bg-red-50/30"
-                      : "border-zinc-200 bg-white"
-                  }`}
-                >
-                  <Motion.div
-                    key={isLiked ? "liked" : "unliked"}
-                    initial={{ scale: 1 }}
-                    animate={{ scale: isLiked ? [1, 1.4, 1] : 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Heart
-                      size={18}
-                      strokeWidth={1.5}
-                      className={`transition-colors duration-300 group-hover:text-rose-500 ${
-                        isLiked ? "fill-red-500 text-red-500" : "text-zinc-500"
-                      }`}
-                    />
-                  </Motion.div>
-                </Motion.button>
-              </Motion.div>
-
-              {/* 4. Ultra-washed earth neutrals for the bottom grid. Breaks the black & white weight without popping. */}
-              <Motion.div
-                variants={fadeInUp}
-                className="hidden sm:grid pt-6 border-t border-zinc-100 grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3"
-              >
-                <div className="bg-amber-50/40 border border-amber-100/40 rounded-xl p-3 flex items-center">
-                  <ShippingInfoItem
-                    Icon={Percent}
-                    label="Offer"
-                    val="27% Off"
-                    className="text-amber-800"
-                  />
-                </div>
-                <div className="bg-zinc-50 border border-zinc-200/60 rounded-xl p-3 flex items-center">
-                  <ShippingInfoItem
-                    Icon={Box}
-                    label="Packaging"
-                    val="Secure Packaging"
-                    className="text-zinc-700"
-                  />
-                </div>
-                <div className="bg-stone-50 border border-stone-200/60 rounded-xl p-3 flex items-center">
-                  <ShippingInfoItem
-                    Icon={Truck}
-                    label="Delivery"
-                    val="Fast Delivery"
-                    className="text-stone-700"
-                  />
-                </div>
-                <div className="bg-emerald-50/30 border border-emerald-100/30 rounded-xl p-3 flex items-center">
-                  <ShippingInfoItem
-                    Icon={Calendar}
-                    label="Arrival"
-                    val={getDeliveryRange()}
-                    className="text-emerald-800"
-                  />
-                </div>
-              </Motion.div>
-            </Motion.div>
+              </div>
+            )}
           </div>
 
           <AboutProduct product={product} />
