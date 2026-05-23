@@ -54,10 +54,26 @@ const ProductCard = ({
 
   return (
     <Motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1.0] }} // Premium Cubic Bezier curve
+      // Maintained the synchronized 20px vertical pathing
+      initial={{
+        opacity: 0,
+        y: 20,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      viewport={{
+        once: true,
+        margin: isMobile ? "-20px" : "-50px",
+      }}
+      // Extended durations slightly to create a softer, more premium pace
+      transition={{
+        delay: isMobile ? (index % 4) * 0.06 : (index % 4) * 0.1,
+        duration: isMobile ? 0.75 : 0.85, // Smoothly relaxed from 0.55s / 0.65s
+        type: isMobile ? "tween" : "spring",
+        ease: [0.215, 0.61, 0.355, 1.0],
+      }}
       className="group"
     >
       <Link to={`/product/${product.slug}`} className="block relative">
@@ -90,14 +106,14 @@ const ProductCard = ({
             {/* Quick Add Wrap - Retained purely for desktop viewports */}
             <div
               className="
-            absolute bottom-5 left-1/2 -translate-x-1/2
-            transition-all duration-300
-            opacity-0 pointer-events-none
-            md:opacity-0 md:pointer-events-none
-            md:group-hover:opacity-100
-            md:group-hover:translate-y-0
-            md:group-hover:pointer-events-auto
-          "
+                absolute bottom-5 left-1/2 -translate-x-1/2
+                transition-all duration-300
+                opacity-0 pointer-events-none
+                md:opacity-0 md:pointer-events-none
+                md:group-hover:opacity-100
+                md:group-hover:translate-y-0
+                md:group-hover:pointer-events-auto
+              "
             >
               <Motion.button
                 type="button"
