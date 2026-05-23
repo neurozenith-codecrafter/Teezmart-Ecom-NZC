@@ -1,27 +1,41 @@
-const { searchProducts } = require("../Services/SearchService.js");
+const {
+  searchProducts
+} = require("../Services/SearchService.js");
 
 const search = async (req, res) => {
+
   try {
-    const query = req.query.q;
 
-    if (!req.query.q?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Search query required",
-      });
-    }
+    const query = req.query.q || "";
 
-    const products = await searchProducts(query);
+    const data =
+      await searchProducts(query);
 
-    res.status(200).json({
+    return res.status(200).json({
+
       success: true,
-      count: products.length,
-      products,
+
+      query,
+
+      count: data.products.length,
+
+      suggestions: data.suggestions,
+
+      products: data.products,
     });
+
   } catch (error) {
-    res.status(500).json({
+
+    console.error(
+      "Search Controller Error:",
+      error
+    );
+
+    return res.status(500).json({
+
       success: false,
-      message: error.message,
+
+      message: "Search failed",
     });
   }
 };

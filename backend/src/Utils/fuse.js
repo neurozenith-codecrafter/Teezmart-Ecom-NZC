@@ -3,26 +3,30 @@ const normalize = require("./normalize");
 
 let fuseInstance = null;
 
-const createFuseInstance = (products) => {
+const buildSearchableText = (product) => {
+  return normalize(`
+    ${product.title}
+    ${product.category}
+    ${product.description}
+    ${product.slug}
+    ${product.sizes?.join(" ")}
+  `);
+};
 
-  const searchableProducts = products.map(product => ({
+const createFuseInstance = (products) => {
+  const searchableProducts = products.map((product) => ({
     ...product,
+
+    searchableText: buildSearchableText(product),
 
     normalizedTitle: normalize(product.title),
 
     normalizedCategory: normalize(product.category),
 
-    normalizedDescription: normalize(product.description),
-
-    normalizedSizes: product.sizes?.map(size =>
-      normalize(size)
-    ),
-
-    normalizedSlug: normalize(product.slug)
+    normalizedSlug: normalize(product.slug),
   }));
 
   fuseInstance = new Fuse(searchableProducts, {
-
     includeScore: true,
 
     shouldSort: true,
@@ -33,39 +37,31 @@ const createFuseInstance = (products) => {
 
     minMatchCharLength: 2,
 
-    threshold: 0.3,
+    threshold: 0.35,
 
     distance: 100,
 
-    useExtendedSearch: true,
-
     keys: [
-
       {
         name: "normalizedTitle",
-        weight: 0.5
+        weight: 0.5,
+      },
+
+      {
+        name: "searchableText",
+        weight: 0.35,
       },
 
       {
         name: "normalizedCategory",
-        weight: 0.2
-      },
-
-      {
-        name: "normalizedDescription",
-        weight: 0.15
+        weight: 0.1,
       },
 
       {
         name: "normalizedSlug",
-        weight: 0.1
+        weight: 0.05,
       },
-
-      {
-        name: "normalizedSizes",
-        weight: 0.05
-      }
-    ]
+    ],
   });
 
   return fuseInstance;
@@ -81,5 +77,5 @@ const getFuse = () => {
 
 module.exports = {
   createFuseInstance,
-  getFuse
+  getFuse,
 };

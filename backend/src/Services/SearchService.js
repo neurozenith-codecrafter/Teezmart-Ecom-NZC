@@ -7,6 +7,10 @@ const {
   getFuse
 } = require("../Utils/fuse");
 
+const {
+  generateSuggestions
+} = require("../Utils/suggestions");
+
 
 // Initialize once
 const initializeSearch = async () => {
@@ -17,7 +21,7 @@ const initializeSearch = async () => {
 
   createFuseInstance(products);
 
-  console.log("Fuse search initialized");
+  console.log("✅ Fuse search initialized");
 };
 
 
@@ -25,42 +29,83 @@ const initializeSearch = async () => {
 const searchProducts = async (query) => {
 
   if (!query?.trim()) {
-    return [];
+
+    return {
+      suggestions: [],
+      products: []
+    };
   }
 
   const fuse = getFuse();
 
   const normalizedQuery = normalize(query);
 
-  const results = fuse.search(normalizedQuery);
-
-  const formatted = results.map(result => {
-
-    const product = result.item;
-
-    // popularity boosting
-    let popularityBoost = 0;
-
-    popularityBoost += product.salesCount * 0.0005;
-
-    popularityBoost += product.rating * 0.02;
-
-    return {
-
-      ...product,
-
-      relevanceScore:
-        (1 - result.score) + popularityBoost
-    };
+  const results = fuse.search(normalizedQuery, {
+    limit: 10
   });
 
+  const products = results
+    .map(result => {
 
-  // final ranking
-  formatted.sort(
-    (a, b) => b.relevanceScore - a.relevanceScore
-  );
+      const product = result.item;
 
-  return formatted;
+      // Fuse relevance
+      const fuseScore = 1 - (result.score || 0);
+
+      // Popularity boosting
+      const popularityBoost =
+        Math.log10(
+          (product.salesCount || 0) + 1
+        ) * 0.15;
+
+      // Rating boosting
+      const ratingBoost =
+        (product.rating || 0) * 0.05;
+
+      // Final score
+      const relevanceScore =
+        fuseScore +
+        popularityBoost +
+        ratingBoost;
+
+      return {
+
+        _id: product._id,
+
+        title: product.title,
+
+        slug: product.slug,
+
+        image: product.images?.[0],
+
+        price:
+          product.discountPrice ||
+          product.price,
+
+        rating: product.rating,
+
+        relevanceScore:
+          Number(
+            relevanceScore.toFixed(3)
+          )
+      };
+    })
+
+    .sort(
+      (a, b) =>
+        b.relevanceScore - a.relevanceScore
+    );
+
+  const suggestions =
+    generateSuggestions(
+      results,
+      normalizedQuery
+    );
+
+  return {
+    suggestions,
+    products
+  };
 };
 
 module.exports = {
