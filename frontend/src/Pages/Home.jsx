@@ -4,6 +4,8 @@ import { BestSellerSection } from "../components/HomepageComponents/BestSellerSe
 import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { WhyUsSection } from "../components/HomepageComponents/WhyUsSection";
 import TShirtShowcase from "../components/HomepageComponents/TShirtShowcase";
+import HomePageCartReminder from "../components/HomepageComponents/HomepageCartReminder";
+import HomepageWishlistReminder from "../components/HomepageComponents/HomePageWishListReminder";
 
 const Home = () => {
 
@@ -18,6 +20,8 @@ const Home = () => {
       <div className={`${PAGE_CONTAINER_CLASS} py-2`}>
         <HeroSection />
       </div>
+      <HomePageCartReminder />
+      <HomepageWishlistReminder />
       <BestSellerSection />
       <TShirtShowcase />
       <WhyUsSection />

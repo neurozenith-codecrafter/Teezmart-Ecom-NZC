@@ -1,6 +1,7 @@
 import React from "react";
 import { motion as Motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TShirtShowcase = () => {
   const loomSteps = [
@@ -136,14 +137,16 @@ const TShirtShowcase = () => {
             </h4>
           </div>
 
-          <Motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 bg-zinc-950 text-white px-6 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg shadow-zinc-950/10 hover:bg-zinc-900 transition-colors"
-          >
-            <span>Enter Studio Catalog</span>
-            <ArrowUpRight size={14} strokeWidth={2} />
-          </Motion.button>
+          <Link to="/catalog">
+            <Motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-3 bg-zinc-950 text-white px-6 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] shadow-lg shadow-zinc-950/10 hover:bg-zinc-900 transition-colors"
+            >
+              <span>Enter Studio Catalog</span>
+              <ArrowUpRight size={14} strokeWidth={2} />
+            </Motion.button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { SlidersHorizontal, Heart, X, RotateCcw } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
 import RatingComponent from "../components/RatingComponent";
 import { Toasts } from "../components/Toasts";
+import Filter from "../components/Filter";
 import useDevice from "../Hooks/useDevice";
 
 const ProductCard = ({
@@ -54,7 +54,6 @@ const ProductCard = ({
 
   return (
     <Motion.div
-      // Maintained the synchronized 20px vertical pathing
       initial={{
         opacity: 0,
         y: 20,
@@ -67,10 +66,9 @@ const ProductCard = ({
         once: true,
         margin: isMobile ? "-20px" : "-50px",
       }}
-      // Extended durations slightly to create a softer, more premium pace
       transition={{
         delay: isMobile ? (index % 4) * 0.06 : (index % 4) * 0.1,
-        duration: isMobile ? 0.75 : 0.85, // Smoothly relaxed from 0.55s / 0.65s
+        duration: isMobile ? 0.75 : 0.85,
         type: isMobile ? "tween" : "spring",
         ease: [0.215, 0.61, 0.355, 1.0],
       }}
@@ -79,7 +77,6 @@ const ProductCard = ({
       <Link to={`/product/${product.slug}`} className="block relative">
         <div className="space-y-4">
           <div className="relative aspect-[4/5] rounded-[2rem] md:rounded-[2.4rem] bg-[#F3F3F3] overflow-hidden transition-all duration-500 active:opacity-90 active:scale-[0.99]">
-            {/* Wishlist Button - Soft scale feedback on tap */}
             <button
               type="button"
               onClick={toggleWishlist}
@@ -96,14 +93,12 @@ const ProductCard = ({
               </Motion.div>
             </button>
 
-            {/* Product Image */}
             <img
               src={product.images?.[0]?.url}
               alt={product.title}
               className="w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-103"
             />
 
-            {/* Quick Add Wrap - Retained purely for desktop viewports */}
             <div
               className="
                 absolute bottom-5 left-1/2 -translate-x-1/2
@@ -133,14 +128,13 @@ const ProductCard = ({
                     transition={{ duration: 0.15 }}
                     className="flex items-center gap-2"
                   >
-                    {isAdded ? "Success ✓" : "Quick Add +"}
+                    {isAdded ? "Success" : "Quick Add +"}
                   </Motion.span>
                 </AnimatePresence>
               </Motion.button>
             </div>
           </div>
 
-          {/* Product Details */}
           <div className="space-y-1.5 px-1">
             <h3 className="text-[15px] font-medium text-zinc-900 truncate tracking-tight">
               {product.title}
@@ -153,7 +147,7 @@ const ProductCard = ({
             </div>
             <div className="flex items-center gap-2 pt-0.5">
               <span className="text-[17px] font-black text-zinc-900 tracking-tighter italic">
-                ₹{product.price}
+                Rs.{product.price}
               </span>
               <span className="text-red-500 text-[10px] font-black uppercase italic">
                 -30%
@@ -204,70 +198,10 @@ const ProductCardSkeleton = ({ index = 0 }) => {
   );
 };
 
-const normalizeCategory = (value) => {
-  if (!value) return null;
-
-  const normalizedValue = value.toString().trim().toLowerCase();
-  const categoryMap = {
-    tshirt: "tshirt",
-    tshirts: "tshirt",
-    "t-shirt": "tshirt",
-    "t-shirts": "tshirt",
-    trackpant: "trackpant",
-    trackpants: "trackpant",
-    tracks: "trackpant",
-  };
-
-  return categoryMap[normalizedValue] || null;
-};
-
-const normalizeFilter = (value) => {
-  if (!value) return "all";
-
-  const normalizedValue = value.toString().trim().toLowerCase();
-  const validFilters = new Set(["all", "best", "rated"]);
-
-  return validFilters.has(normalizedValue) ? normalizedValue : "all";
-};
-
-const normalizeSort = (value) => {
-  if (!value) return "new";
-
-  const normalizedValue = value.toString().trim().toLowerCase();
-  const validSorts = new Set(["new", "rating_desc", "underrated"]);
-
-  return validSorts.has(normalizedValue) ? normalizedValue : "new";
-};
-
 export const CatalogPage = () => {
-  const categories = [
-    { label: "T-Shirt", value: "tshirt" },
-    { label: "Tracks", value: "trackpant" },
-  ];
-  const filters = [
-    { label: "All", value: "all" },
-    { label: "Top Collection", value: "best" },
-    { label: "Most Rated", value: "rated" },
-  ];
-  const sortOptions = [
-    { label: "New", value: "new" },
-    { label: "Rating (High to Low)", value: "rating_desc" },
-    { label: "Underrated", value: "underrated" },
-  ];
-  const sizes = ["S", "M", "L", "XL", "XXL"];
-
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [appliedFilter, setAppliedFilter] = useState("all");
-  const [appliedSizes, setAppliedSizes] = useState([]);
-  const [appliedSort, setAppliedSort] = useState("new");
-  const [draftCategory, setDraftCategory] = useState(null);
-  const [draftFilter, setDraftFilter] = useState("all");
-  const [draftSizes, setDraftSizes] = useState([]);
-  const [draftSort, setDraftSort] = useState("new");
   const [productNotAvailable, setProductNotAvailable] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
   const toastTimeoutRef = useRef(null);
   const [toast, setToast] = useState({
     type: "cart",
@@ -276,202 +210,7 @@ export const CatalogPage = () => {
   });
 
   const { handleAddToCart } = useCart();
-  const { wishlistIds, handleToggleWishlist } = useWishlist();
-
-  const activeCategory = normalizeCategory(searchParams.get("category"));
-  const activeFilterParam = normalizeFilter(searchParams.get("collection"));
-  const activeSortParam = normalizeSort(searchParams.get("sort"));
-  const activeSizesParamValue = searchParams.get("sizes") || "";
-  const activeSizesParam = activeSizesParamValue
-    .split(",")
-    .map((size) => size.trim().toUpperCase())
-    .filter(Boolean);
-
-  const buildFilterQuery = ({
-    category,
-    filter,
-    sizes: selectedSizes,
-    sort,
-  }) => {
-    const params = new URLSearchParams();
-
-    if (category) {
-      params.append("category", category);
-    }
-
-    if (filter !== "all") {
-      params.append("collection", filter);
-    }
-
-    if (selectedSizes?.length) {
-      params.append("sizes", selectedSizes.join(","));
-    }
-
-    if (sort !== "new") {
-      params.append("sort", sort);
-    }
-
-    return params.toString();
-  };
-
-  const updateSearchParams = ({ category, filter, sort, sizes }) => {
-    const nextParams = new URLSearchParams(searchParams);
-
-    if (category) nextParams.set("category", category);
-    else nextParams.delete("category");
-
-    if (filter && filter !== "all") nextParams.set("collection", filter);
-    else nextParams.delete("collection");
-
-    if (sort && sort !== "new") nextParams.set("sort", sort);
-    else nextParams.delete("sort");
-
-    // ✅ ADD THIS
-    if (sizes && sizes.length > 0) {
-      nextParams.set("sizes", sizes.join(","));
-    } else {
-      nextParams.delete("sizes");
-    }
-
-    setSearchParams(nextParams);
-  };
-
-  const handleCategoryChange = (value) => {
-    setDraftCategory((prev) => (prev === value ? null : value));
-  };
-
-  const toggleSize = (size) => {
-    setDraftSizes((prev) => {
-      if (prev.includes(size)) {
-        return prev.filter((s) => s !== size);
-      }
-
-      return [...prev, size];
-    });
-  };
-
-  const handleApplyFilters = () => {
-    setAppliedFilter(draftFilter);
-    setAppliedSizes(draftSizes);
-    setAppliedSort(draftSort);
-    updateSearchParams({
-      category: draftCategory,
-      filter: draftFilter,
-      sort: draftSort,
-      sizes: draftSizes,
-    });
-    setIsFilterOpen(false);
-  };
-
-  const handleReset = () => {
-    setDraftCategory(null);
-    setDraftFilter("all");
-    setDraftSizes([]);
-    setDraftSort("new");
-    setAppliedFilter("all");
-    setAppliedSizes([]);
-    setAppliedSort("new");
-    setProductNotAvailable(false);
-    setIsFilterOpen(false);
-    setSearchParams({});
-  };
-
-  useEffect(() => {
-    const syncedSizes = activeSizesParamValue
-      .split(",")
-      .map((size) => size.trim().toUpperCase())
-      .filter(Boolean);
-
-    setDraftCategory(activeCategory);
-    setAppliedFilter(activeFilterParam);
-    setAppliedSort(activeSortParam);
-    setDraftFilter(activeFilterParam);
-    setDraftSort(activeSortParam);
-    setAppliedSizes(syncedSizes);
-    setDraftSizes(syncedSizes);
-  }, [
-    activeCategory,
-    activeFilterParam,
-    activeSortParam,
-    activeSizesParamValue,
-  ]);
-
-  useEffect(() => {
-    if (!isFilterOpen) {
-      setDraftCategory(activeCategory);
-      setDraftFilter(appliedFilter);
-      setDraftSizes(appliedSizes);
-      setDraftSort(appliedSort);
-    }
-  }, [isFilterOpen, activeCategory, appliedFilter, appliedSizes, appliedSort]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchProducts = async () => {
-      const query = buildFilterQuery({
-        category: activeCategory,
-        filter: appliedFilter,
-        sizes: appliedSizes,
-        sort: appliedSort,
-      });
-
-      const url = query
-        ? `${import.meta.env.VITE_API_URL}/api/products/filter?${query}`
-        : `${import.meta.env.VITE_API_URL}/api/products/filter`;
-
-      try {
-        if (isMounted) {
-          setIsLoading(true);
-          setProductNotAvailable(false);
-        }
-
-        const res = await axios.get(url);
-
-        if (!isMounted) return;
-
-        const nextProducts = res.data.products || res.data.data || [];
-        setProducts(nextProducts);
-        setProductNotAvailable(nextProducts.length === 0);
-      } catch (error) {
-        console.error("Error fetching catalog products ->", error);
-
-        if (isMounted) {
-          setProducts([]);
-          setProductNotAvailable(true);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [activeCategory, appliedFilter, appliedSizes, appliedSort]);
-
-  const hasSizeDraftChanges =
-    draftSizes.length !== activeSizesParam.length ||
-    draftSizes.some((size) => !activeSizesParam.includes(size));
-
-  const isDirty =
-    draftCategory !== activeCategory ||
-    draftFilter !== activeFilterParam ||
-    draftSort !== activeSortParam ||
-    hasSizeDraftChanges;
-
-  const activeFilterCount =
-    (activeCategory ? 1 : 0) +
-    (activeFilterParam !== "all" ? 1 : 0) +
-    (activeSortParam !== "new" ? 1 : 0) +
-    (activeSizesParam.length > 0 ? 1 : 0);
-
-  const hasActiveFilters = activeFilterCount > 0;
-  const canReset = isDirty || hasActiveFilters;
+  const { wishlistIds, handleToggleWishlist } = useWishlist(); 
 
   const triggerToast = (type, message) => {
     setToast({ type, message, isVisible: true });
@@ -501,174 +240,16 @@ export const CatalogPage = () => {
         </div>
 
         <div className="relative">
-          <button
-            onClick={() => setIsFilterOpen(true)}
-            className="group relative flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white border border-zinc-200 text-zinc-600 text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm transition-all hover:border-black hover:text-black"
-          >
-            <SlidersHorizontal size={13} />
-
-            <span>Filter & Sort</span>
-
-            {/* The Floating Badge (Cherry on Top) */}
-            {hasActiveFilters && (
-              <span className="absolute -top-2 -right-2 flex min-h-[20px] min-w-[20px] px-1.5 items-center justify-center rounded-full bg-black text-white text-xs font-semibold ring-2 ring-white shadow-md">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-
-          <AnimatePresence>
-            {isFilterOpen && (
-              <>
-                <Motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsFilterOpen(false)}
-                  className="fixed inset-0 bg-black/20 backdrop-blur-md z-[60]"
-                />
-
-                <Motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                  className="fixed inset-0 m-auto md:absolute md:inset-auto md:right-0 md:top-full md:mt-3 w-[90%] md:w-80 h-fit max-h-[90vh] bg-white/95 border border-zinc-200 rounded-[2.5rem] shadow-2xl z-[70] overflow-hidden flex flex-col"
-                >
-                  <div className="p-6 pb-0 flex justify-between items-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                      Filter & Sort
-                    </p>
-                    <button
-                      onClick={() => setIsFilterOpen(false)}
-                      className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
-                    >
-                      <X size={16} className="text-zinc-900" />
-                    </button>
-                  </div>
-
-                  <div className="p-6 space-y-7">
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                        Category
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {categories.map((cat) => (
-                          <button
-                            key={cat.value}
-                            onClick={() => handleCategoryChange(cat.value)}
-                            className={`py-3 rounded-2xl text-[10px] font-bold transition-all border ${
-                              draftCategory === cat.value
-                                ? "bg-zinc-900 border-zinc-900 text-white shadow-lg shadow-zinc-200"
-                                : "bg-zinc-50 border-transparent text-zinc-500 hover:bg-zinc-100"
-                            }`}
-                          >
-                            {cat.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                        Collections
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {filters.map((filter) => (
-                          <button
-                            key={filter.value}
-                            onClick={() => setDraftFilter(filter.value)}
-                            className={`px-4 py-2 rounded-full text-[10px] font-bold transition-all border ${
-                              draftFilter === filter.value
-                                ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
-                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:bg-zinc-100"
-                            }`}
-                          >
-                            {filter.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                        Available Sizes
-                      </p>
-                      <div className="grid grid-cols-4 gap-2">
-                        {sizes.map((size) => (
-                          <button
-                            key={size}
-                            onClick={() => toggleSize(size)}
-                            className={`h-11 flex items-center justify-center rounded-full text-[10px] font-bold transition-all border ${
-                              draftSizes.includes(size)
-                                ? "bg-zinc-900 border-zinc-900 text-white shadow-md"
-                                : "bg-zinc-50 border-zinc-100 text-zinc-500 hover:border-zinc-900"
-                            }`}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                        Sort By
-                      </p>
-                      <div className="grid grid-cols-1 gap-1">
-                        {sortOptions.map((sortOption) => (
-                          <button
-                            key={sortOption.value}
-                            onClick={() => setDraftSort(sortOption.value)}
-                            className={`flex items-center justify-between px-4 py-3 rounded-2xl text-[11px] font-bold transition-all ${
-                              draftSort === sortOption.value
-                                ? "bg-zinc-100 text-zinc-900"
-                                : "text-zinc-500 hover:bg-zinc-50"
-                            }`}
-                          >
-                            {sortOption.label}
-                            {draftSort === sortOption.value && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 pt-2 mt-auto space-y-3 bg-white/50 backdrop-blur-sm border-t border-zinc-50">
-                    <div className="flex items-center gap-3">
-                      <Motion.button
-                        disabled={!canReset}
-                        whileTap={canReset ? { scale: 0.95 } : {}}
-                        onClick={handleReset}
-                        className={`
-                          flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
-                          ${
-                            canReset
-                              ? "bg-rose-50/50 text-rose-600 hover:bg-rose-50 cursor-pointer"
-                              : "bg-zinc-50 text-zinc-300 cursor-not-allowed opacity-60"
-                          }
-                        `}
-                      >
-                        <RotateCcw
-                          size={12}
-                          className={canReset ? "animate-spin-once" : ""}
-                        />
-                        <span>Reset</span>
-                      </Motion.button>
-
-                      <button
-                        onClick={handleApplyFilters}
-                        className="flex-[2] py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all shadow-xl active:scale-[0.98]"
-                      >
-                        Apply Filters
-                      </button>
-                    </div>
-                  </div>
-                </Motion.div>
-              </>
-            )}
-          </AnimatePresence>
+          <Filter
+            products={{
+              items: products,
+              setItems: setProducts,
+              isLoading,
+              setIsLoading,
+              productNotAvailable,
+              setProductNotAvailable,
+            }}
+          />
         </div>
       </div>
 

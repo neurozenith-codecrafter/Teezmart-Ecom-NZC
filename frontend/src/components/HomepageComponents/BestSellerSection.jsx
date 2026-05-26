@@ -12,9 +12,6 @@ import useDevice from "../../Hooks/useDevice";
 
 const ProductCard = ({ item, isLiked, onLikeToggle, handleAddToCart }) => {
 
-
-  console.log("Rendering ProductCard for:", item);
-
   const [isAdded, setIsAdded] = useState(false);
   const toastTimeoutRef = useRef(null);
 
