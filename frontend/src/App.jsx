@@ -25,6 +25,7 @@ import { useCommerce } from "./Hooks/useCommerce";
 import CatalogPage from "./Pages/CatalogPage";
 import CheckoutPage from "./Pages/CheckoutPage";
 import PaymentPage from "./Pages/PaymentPage";
+import SearchResult from "./Pages/SearchResult";
 
 import "./App.css";
 
@@ -102,6 +103,7 @@ const AnimatedRoutes = () => {
           <Route path="/product/:slug" element={<ProductPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/search" element={<SearchResult />} />
         </Route>
         <Route path="/cart" element={<CartPage />} />
         <Route
