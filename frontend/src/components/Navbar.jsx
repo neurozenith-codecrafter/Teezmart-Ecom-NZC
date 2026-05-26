@@ -19,6 +19,7 @@ import {
   History,
   TrendingUp,
   Home,
+  ArrowUpRight,
 } from "lucide-react";
 import {
   motion as Motion,
@@ -58,6 +59,7 @@ const Navbar = () => {
     "Summer Drop",
     "Baggy Jeans",
   ];
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
 
   const { isLoggedIn, user, logout } = useAuth();
   const { cartCount, wishlistCount } = useCommerce();
@@ -90,19 +92,66 @@ const Navbar = () => {
   }, []);
 
   // Search Logic
-  const handleSearch = (query) => {
+  const debounceRef = useRef(null);
+  const controllerRef = useRef(null);
+
+  const handleInputChange = (query) => {
+    setSearchQuery(query);
+
+    clearTimeout(debounceRef.current);
+
+    if (!query.trim()) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        // cancel previous request
+        if (controllerRef.current) {
+          controllerRef.current.abort();
+        }
+
+        controllerRef.current = new AbortController();
+
+        const response = await fetch(
+          `http://localhost:5000/api/products/suggestions?q=${encodeURIComponent(
+            query,
+          )}`,
+          {
+            signal: controllerRef.current.signal,
+          },
+        );
+
+        const data = await response.json();
+
+        setSearchSuggestions(data.suggestions || []);
+        setShowSuggestions(true);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error(error);
+        }
+      }
+    }, 300);
+  };
+
+  const submitSearch = (query) => {
     const term = query || searchQuery;
+
     if (!term.trim()) return;
 
-    // Local Storage logic
     const updatedRecent = [
       term,
       ...recentSearches.filter((s) => s !== term),
     ].slice(0, 5);
+
     setRecentSearches(updatedRecent);
+
     localStorage.setItem("recentSearches", JSON.stringify(updatedRecent));
 
     setShowSuggestions(false);
+
     navigate(`/search?q=${encodeURIComponent(term)}`);
   };
 
@@ -670,13 +719,19 @@ const Navbar = () => {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   onFocus={() => {
                     setShowSuggestions(true);
                     const saved = localStorage.getItem("recentSearches");
-                    if (saved) setRecentSearches(JSON.parse(saved));
+                    if (saved) {
+                      setRecentSearches(JSON.parse(saved));
+                    }
                   }}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      submitSearch(searchQuery);
+                    }
+                  }}
                   placeholder="Search collection..."
                   className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2.5 pl-6 pr-12 rounded-full text-[14px] font-normal outline-none focus:bg-white transition-all"
                 />
@@ -684,7 +739,7 @@ const Navbar = () => {
                   className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-black transition-colors"
                   onClick={() => {
                     setShowSuggestions(true);
-                    handleSearch();
+                    submitSearch(searchQuery);
                   }}
                 />
 
@@ -694,44 +749,149 @@ const Navbar = () => {
                       initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                      className="absolute top-full mt-2 left-0 w-full bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                      /* Micro layout tokens adjust dynamically based on isMobile */
+                      className={`absolute top-full mt-2 left-0 w-full bg-white/95 backdrop-blur-md border border-zinc-200 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100] ${
+                        isMobile ? "max-h-[300px]" : "max-h-[380px]"
+                      }`}
                     >
-                      <div className="p-5 space-y-6">
-                        {recentSearches.length > 0 && (
-                          <div className="space-y-3">
+                      {searchSuggestions.length === 0 ? (
+                        /* =========================================================
+             PANEL A: IDLE STATE (HISTORY & TRENDING SEARCHES)
+             ========================================================= */
+                        <div
+                          className={`${isMobile ? "p-4 space-y-5" : "p-5 space-y-6"}`}
+                        >
+                          {recentSearches.length > 0 && (
+                            <div
+                              className={isMobile ? "space-y-2.5" : "space-y-3"}
+                            >
+                              <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                <History size={12} /> Recent Searches
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {recentSearches.map((item) => (
+                                  <button
+                                    key={item}
+                                    onClick={() => submitSearch(item)}
+                                    className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                                  >
+                                    {item}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className={isMobile ? "space-y-2" : "space-y-3"}>
                             <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                              <History size={12} /> Recent Searches
+                              <TrendingUp size={12} /> Trending
                             </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {recentSearches.map((item) => (
+                            <div className="grid grid-cols-1 gap-1">
+                              {trendingSearches.map((item, index) => (
                                 <button
-                                  key={item}
-                                  onClick={() => handleSearch(item)}
-                                  className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                                  key={item + index}
+                                  onClick={() =>
+                                    submitSearch(item.label || item)
+                                  }
+                                  className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
                                 >
                                   {item}
                                 </button>
                               ))}
                             </div>
                           </div>
-                        )}
-                        <div className="space-y-3">
-                          <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                            <TrendingUp size={12} /> Trending
-                          </h4>
-                          <div className="grid grid-cols-1 gap-1">
-                            {trendingSearches.map((item) => (
-                              <button
-                                key={item}
-                                onClick={() => handleSearch(item)}
-                                className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
-                              >
-                                {item}
-                              </button>
-                            ))}
-                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        /* =========================================================
+             PANEL B: ACTIVE QUERY STATE (BACKEND SUGGESTIONS)
+             ========================================================= */
+                        <div className="flex flex-col p-1.5 overflow-y-auto no-scrollbar max-h-inherit">
+                          {searchSuggestions.map((item, index) => {
+                            const isProduct = item.type === "product";
+                            const isExactMatch =
+                              searchQuery.trim().toLowerCase() ===
+                              item.label.trim().toLowerCase();
+
+                            // Completely omit the rendering node on exact text matches
+                            if (!isProduct && isExactMatch) return null;
+
+                            return (
+                              <div
+                                key={item._id || index}
+                                onClick={() => {
+                                  if (isProduct) {
+                                    navigate(`/product/${item.slug}`);
+                                  } else {
+                                    submitSearch(item.label);
+                                  }
+                                }}
+                                className="flex items-center justify-between p-2 hover:bg-zinc-50 rounded-xl cursor-pointer transition-colors"
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  {isProduct ? (
+                                    /* Render Product Thumbnail Image */
+                                    <div
+                                      className={`${
+                                        isMobile ? "w-9 h-11" : "w-10 h-12"
+                                      } rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200/50`}
+                                    >
+                                      <img
+                                        src={item.image?.url}
+                                        alt={item.label}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    /* Render Simple Search icon placeholder for queries */
+                                    <div
+                                      className={`${
+                                        isMobile ? "w-9 h-9" : "w-10 h-10"
+                                      } flex items-center justify-center text-zinc-400 flex-shrink-0 bg-zinc-50 rounded-lg`}
+                                    >
+                                      <Search size={isMobile ? 13 : 14} />
+                                    </div>
+                                  )}
+
+                                  {/* Meta Label details layout */}
+                                  <div className="min-w-0 flex-1">
+                                    <p
+                                      className={`text-[13px] truncate ${
+                                        isProduct
+                                          ? "font-medium text-zinc-800"
+                                          : "text-zinc-600"
+                                      }`}
+                                    >
+                                      {item.label}
+                                    </p>
+                                    {isProduct && (
+                                      <span className="text-[9px] text-zinc-400 font-medium tracking-tight block mt-0.5">
+                                        Product View
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Render copy-up text utility action arrow button if query type */}
+                                {!isProduct && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleInputChange(item.label);
+                                    }}
+                                    className="p-1.5 hover:bg-zinc-100 text-zinc-400 hover:text-black rounded-md transition-all ml-2"
+                                  >
+                                    <ArrowUpRight
+                                      size={isMobile ? 15 : 16}
+                                      strokeWidth={2.2}
+                                    />
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </Motion.div>
                   )}
                 </AnimatePresence>
@@ -764,9 +924,9 @@ const Navbar = () => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && submitSearch(searchQuery)}
               placeholder="Search collection..."
               className="w-full bg-[#f9f9f9] border border-[#f0f0f0] py-2 pl-4 pr-10 rounded-full text-[13px] font-normal outline-none focus:bg-white transition-all"
             />
@@ -774,7 +934,7 @@ const Navbar = () => {
               className="w-3.5 h-3.5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-black transition-colors"
               onClick={() => {
                 setShowSuggestions(true);
-                handleSearch();
+                submitSearch(searchQuery);
               }}
             />
 
@@ -797,42 +957,124 @@ const Navbar = () => {
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   className="absolute top-full mt-2 left-0 w-full bg-white border border-zinc-200 rounded-2xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[99]"
                 >
-                  <div className="p-4 space-y-5">
-                    {recentSearches.length > 0 && (
-                      <div className="space-y-2.5">
+                  {searchSuggestions.length === 0 ? (
+                    /* =========================================================
+         STATE A: MOBILE IDLE VIEW (HISTORY & TRENDING CATEGORIES)
+         ========================================================= */
+                    <div className="p-4 space-y-5">
+                      {recentSearches.length > 0 && (
+                        <div className="space-y-2.5">
+                          <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                            <History size={12} /> Recent
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {recentSearches.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => submitSearch(item)}
+                                className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
                         <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                          <History size={12} /> Recent
+                          <TrendingUp size={12} /> Trending
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {recentSearches.map((item) => (
+                        <div className="grid grid-cols-1 gap-1">
+                          {trendingSearches.map((item, index) => (
                             <button
-                              key={item}
-                              onClick={() => handleSearch(item)}
-                              className="px-3 py-1.5 bg-zinc-50 border border-zinc-100 rounded-full text-[12px] text-zinc-600 hover:bg-zinc-100 hover:text-black transition-all"
+                              key={(item.label || item) + index}
+                              onClick={() => submitSearch(item.label || item)}
+                              className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
                             >
-                              {item}
+                              {item.label || item}
                             </button>
                           ))}
                         </div>
                       </div>
-                    )}
-                    <div className="space-y-2">
-                      <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                        <TrendingUp size={12} /> Trending
-                      </h4>
-                      <div className="grid grid-cols-1 gap-1">
-                        {trendingSearches.map((item) => (
-                          <button
-                            key={item}
-                            onClick={() => handleSearch(item)}
-                            className="text-left px-3 py-2 text-[13px] text-zinc-600 hover:bg-zinc-50 rounded-lg transition-colors"
-                          >
-                            {item}
-                          </button>
-                        ))}
-                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* =========================================================
+         STATE B: MOBILE ACTIVE SUGGESTIONS VIEW
+         ========================================================= */
+                    <div className="flex flex-col p-1.5 max-h-[300px] overflow-y-auto no-scrollbar">
+                      {searchSuggestions.map((item, index) => {
+                        const isProduct = item.type === "product";
+                        const isExactMatch =
+                          searchQuery.trim().toLowerCase() ===
+                          item.label.trim().toLowerCase();
+
+                        // Instantly filter out item row nodes if text matches search state exactly
+                        if (!isProduct && isExactMatch) return null;
+
+                        return (
+                          <div
+                            key={item._id || index}
+                            onClick={() => {
+                              if (isProduct) {
+                                navigate(`/product/${item.slug}`);
+                              } else {
+                                submitSearch(item.label);
+                              }
+                            }}
+                            className="flex items-center justify-between p-2 hover:bg-zinc-50 rounded-xl cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {isProduct ? (
+                                /* Render Product Thumbnail Image (Mobile-optimized compact footprint) */
+                                <div className="w-9 h-11 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200/50">
+                                  <img
+                                    src={item.image?.url}
+                                    alt={item.label}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                /* Render Simple Search icon placeholder for queries */
+                                <div className="w-9 h-9 flex items-center justify-center text-zinc-400 flex-shrink-0 bg-zinc-50 rounded-lg">
+                                  <Search size={13} />
+                                </div>
+                              )}
+
+                              {/* Text Labels container structure */}
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={`text-[13px] truncate ${isProduct ? "font-medium text-zinc-800" : "text-zinc-600"}`}
+                                >
+                                  {item.label}
+                                </p>
+
+                                {isProduct && (
+                                  <span className="text-[9px] text-zinc-400 font-medium tracking-tight block mt-0.5">
+                                    Product View
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Mobile layout contextual append-arrow actions */}
+                            {!isProduct && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInputChange(item.label);
+                                }}
+                                className="p-1.5 hover:bg-zinc-100 text-zinc-400 hover:text-black rounded-md transition-all ml-2"
+                              >
+                                <ArrowUpRight size={15} strokeWidth={2.2} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </Motion.div>
               )}
             </AnimatePresence>

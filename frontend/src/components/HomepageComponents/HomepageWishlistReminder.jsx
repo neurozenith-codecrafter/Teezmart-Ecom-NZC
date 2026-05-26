@@ -44,7 +44,7 @@ export default function HomepageWishlistReminder() {
         <div className="flex gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar snap-x">
           {wishlistItems.map((item, index) => (
             <div
-              key={item._id}
+              key={item._id + item.image + index}
               className="flex-none w-[145px] md:w-[170px] snap-start"
               /* Adjusted mobile animation styling below */
               style={
