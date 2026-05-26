@@ -5,7 +5,7 @@ import { PAGE_CONTAINER_CLASS } from "../constants/pageLayout";
 import { WhyUsSection } from "../components/HomepageComponents/WhyUsSection";
 import TShirtShowcase from "../components/HomepageComponents/TShirtShowcase";
 import HomePageCartReminder from "../components/HomepageComponents/HomepageCartReminder";
-import HomepageWishlistReminder from "../components/HomepageComponents/HomePageWishListReminder";
+import HomepageWishlistReminder from "../components/HomepageComponents/HomepageWishlistReminder";
 
 const Home = () => {
 
