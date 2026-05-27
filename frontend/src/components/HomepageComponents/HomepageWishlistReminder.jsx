@@ -2,11 +2,11 @@ import React from "react";
 import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCommerce } from "../../Hooks/useCommerce";
-import useDevice from "../../Hooks/useDevice";
+// import useDevice from "../../Hooks/useDevice";
 
 export default function HomepageWishlistReminder() {
   const navigate = useNavigate();
-  const { isMobile } = useDevice();
+  // const { isMobile } = useDevice();
 
   const { wishlistItems } = useCommerce();
   // Completely vanishes from the homepage if the user hasn't liked anything yet
@@ -21,7 +21,8 @@ export default function HomepageWishlistReminder() {
             <div className="flex items-center gap-2 text-zinc-900">
               <Heart
                 size={17}
-                className="fill-red-500 stroke-red-500 animate-pulse"
+                /* Turned off pulse animation on mobile; active on desktop only */
+                className="fill-red-500 stroke-red-500 md:animate-pulse"
               />
               <h2 className="text-[16px] md:text-lg font-bold tracking-tight">
                 Your Favorites Playlist
@@ -34,7 +35,7 @@ export default function HomepageWishlistReminder() {
 
           <button
             onClick={() => navigate("/wishlist")}
-            className="text-[11px] md:text-xs font-bold text-zinc-500 hover:text-zinc-900 underline underline-offset-4 transition-colors"
+            className="text-[11px] md:text-xs font-bold text-zinc-500 md:hover:text-zinc-900 underline underline-offset-4 transition-colors"
           >
             See All Items
           </button>
@@ -46,15 +47,7 @@ export default function HomepageWishlistReminder() {
             <div
               key={item._id + item.image + index}
               className="flex-none w-[145px] md:w-[170px] snap-start"
-              /* Adjusted mobile animation styling below */
-              style={
-                isMobile
-                  ? {
-                      animation: "fadeIn 0.3s ease-out both", // Standard fade without vertical movement
-                      animationDelay: "0s", // Removed sequential index stacking for immediate loading
-                    }
-                  : {}
-              }
+              /* Completely removed the dynamic style block to stop runtime evaluation lag */
             >
               <div className="space-y-2.5 group">
                 {/* Media Wrapper Frame */}
@@ -62,7 +55,8 @@ export default function HomepageWishlistReminder() {
                   <img
                     src={item.images?.[0]?.url}
                     alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-1000 ease-out md:group-hover:scale-[1.03]"
+                    /* Transition properties will now bypass mobile completely */
+                    className="w-full h-full object-cover transition-none md:transition-transform md:duration-1000 md:ease-out md:group-hover:scale-[1.03]"
                   />
                 </div>
 
